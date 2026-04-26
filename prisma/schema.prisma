@@ -1,0 +1,478 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  phone         String?
+  password      String
+  role          Role      @default(USER)
+  address       String?
+  emailVerified DateTime?
+  image              String?
+  dateOfBirth        DateTime?  @map("date_of_birth")
+  preferredLanguage  String?    @map("preferred_language")
+  emergencyContact   String?    @map("emergency_contact")
+  createdAt          DateTime   @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  doctor      Doctor?
+  sessions    Session[]
+  assignments Assignment[]
+  payments    Payment[]
+  orders      Order[]
+  accounts    Account[]
+  cartItems              CartItem[]
+  addresses              Address[]
+  passwordResetTokens    PasswordResetToken[]
+  workshopRegistrations  WorkshopRegistration[]
+  notifications          Notification[]
+  journalEntries         JournalEntry[]
+  assignmentResponses    AssignmentResponse[]
+}
+
+enum Role {
+  USER
+  DOCTOR
+  ADMIN
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Doctor {
+  id             String     @id @default(cuid())
+  userId         String     @unique
+  slug           String     @unique
+  photo          String?
+  designation    String
+  type           DoctorType
+  specialization String
+  qualification  String
+  experience     Int
+  bio            String     @db.Text
+  sessionPrice   Decimal    @db.Decimal(10, 2)
+  isActive       Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions    Session[]
+  assignments Assignment[]
+  slots       AvailableSlot[]
+  earnings    DoctorEarning[]
+}
+
+enum DoctorType {
+  COUNSELOR
+  PSYCHOLOGIST
+}
+
+model AvailableSlot {
+  id        String   @id @default(cuid())
+  doctorId  String
+  date      DateTime
+  isBooked  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id              String        @id @default(cuid())
+  userId          String
+  doctorId        String
+  date            DateTime
+  meetLink        String?
+  calendarEventId String?
+  status          SessionStatus @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  notes           String?       @db.Text
+  reminderSent    Boolean       @default(false)
+  followupSent    Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user    User           @relation(fields: [userId], references: [id])
+  doctor  Doctor         @relation(fields: [doctorId], references: [id])
+  payment Payment?
+  earning DoctorEarning?
+}
+
+enum SessionStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}
+
+model Assignment {
+  id            String           @id @default(cuid())
+  doctorId      String
+  userId        String
+  type          AssignmentType   @default(CUSTOM)
+  title         String
+  description   String?          @db.Text
+  instructions  String           @default("") @db.Text
+  fileUrl       String?
+  submissionUrl String?
+  status        AssignmentStatus @default(PENDING)
+  reviewNote    String?          @db.Text
+  dueDate       DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  doctor    Doctor               @relation(fields: [doctorId], references: [id])
+  user      User                 @relation(fields: [userId], references: [id])
+  responses AssignmentResponse[]
+
+  @@index([userId, status])
+  @@index([doctorId])
+}
+
+enum AssignmentType {
+  JOURNAL_PROMPT
+  READING
+  WORKSHEET
+  BREATHING
+  CUSTOM
+}
+
+enum AssignmentStatus {
+  PENDING
+  SUBMITTED
+  COMPLETED
+  SKIPPED
+  REVIEWED
+}
+
+model Workshop {
+  id             String   @id @default(cuid())
+  title          String
+  subtitle       String?
+  description    String   @db.Text
+  coverImageUrl  String?  @map("image")
+  instructorName String?
+  startsAt       DateTime @map("date")
+  durationMin    Int      @default(60)
+  priceCents     Int      @default(0)
+  capacity       Int?
+  published      Boolean  @default(false) @map("isPublished")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  registrations WorkshopRegistration[]
+}
+
+model WorkshopRegistration {
+  userId       String
+  workshopId   String
+  registeredAt DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workshop Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+
+  @@id([userId, workshopId])
+}
+
+model NgoVisit {
+  id          String   @id @default(cuid())
+  ngoName     String
+  location    String
+  description String   @db.Text
+  photos      String[]
+  visitDate   DateTime
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model NgoJoinRequest {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String
+  city      String
+  age       Int
+  interest  String   @db.Text
+  createdAt DateTime @default(now())
+}
+
+model WhatsappLink {
+  id        String   @id @default(cuid())
+  link      String
+  label     String   @default("NGO Drive")
+  updatedAt DateTime @updatedAt
+  updatedBy String
+}
+
+model StudyMaterial {
+  id          String            @id @default(cuid())
+  title       String
+  type        StudyMaterialType
+  price       Decimal?          @db.Decimal(10, 2)
+  fileUrl     String
+  coverImage  String?
+  isPublished Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+enum StudyMaterialType {
+  FREE
+  PAID
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @db.Text
+  price       Decimal  @db.Decimal(10, 2)
+  stock       Int      @default(0)
+  image       String?
+  sku         String?
+  weight      Float?   @default(0.5)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems OrderItem[]
+  cartItems  CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model Order {
+  id                   String         @id @default(cuid())
+  userId               String
+  totalAmount          Decimal        @db.Decimal(10, 2)
+  paymentStatus        PaymentStatus  @default(PENDING)
+  shippingStatus       ShippingStatus @default(PENDING)
+  shiprocketOrderId    Int?
+  shiprocketShipmentId Int?
+  awbCode              String?
+  courierName          String?
+  trackingUrl          String?
+  deliveryCharge       Decimal        @default(0) @db.Decimal(10, 2)
+  selectedCourierId    Int?
+  selectedCourierName  String?
+  shippingAddress      Json
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id])
+  orderItems OrderItem[]
+  payment    Payment?
+}
+
+enum ShippingStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  RETURNED
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Payment {
+  id                  String        @id @default(cuid())
+  userId              String
+  amount              Decimal       @db.Decimal(10, 2)
+  type                PaymentType
+  razorpayOrderId     String?       @unique
+  razorpayPaymentId   String?       @unique
+  razorpaySignature   String?
+  status              PaymentStatus @default(PENDING)
+  sessionId           String?       @unique
+  orderId             String?       @unique
+  studyMaterialId     String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  user    User           @relation(fields: [userId], references: [id])
+  session Session?       @relation(fields: [sessionId], references: [id])
+  order   Order?         @relation(fields: [orderId], references: [id])
+  earning DoctorEarning?
+}
+
+enum PaymentType {
+  SESSION
+  PRODUCT
+  EBOOK
+}
+
+model Address {
+  id           String   @id @default(cuid())
+  userId       String
+  label        String
+  name         String
+  phone        String
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  state        String
+  pincode      String
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model DoctorEarning {
+  id             String        @id @default(cuid())
+  doctorId       String
+  sessionId      String        @unique
+  paymentId      String        @unique
+  grossAmount    Decimal       @db.Decimal(10, 2)
+  doctorAmount   Decimal       @db.Decimal(10, 2)
+  platformAmount Decimal       @db.Decimal(10, 2)
+  status         EarningStatus @default(PENDING)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([doctorId])
+}
+
+enum EarningStatus {
+  PENDING
+  PAID
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String             @id @default(cuid())
+  userId    String
+  kind      NotificationKind
+  title     String
+  body      String
+  link      String?
+  createdAt DateTime           @default(now())
+  readAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+}
+
+enum NotificationKind {
+  SESSION_REMINDER
+  WORKSHOP
+  ORDER
+  REVIEW_PROMPT
+  SYSTEM
+  ASSIGNMENT_NEW
+  ASSIGNMENT_COMPLETED
+}
+
+model JournalEntry {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  title     String?
+  body      String   @db.Text
+  mood      Int?
+  entryDate DateTime @default(now()) @map("entry_date")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt       @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, entryDate(sort: Desc)])
+  @@map("journal_entries")
+}
+
+model AssignmentResponse {
+  id           String   @id @default(cuid())
+  assignmentId String   @map("assignment_id")
+  userId       String   @map("user_id")
+  responseText String?  @db.Text @map("response_text")
+  metadata     Json?
+  completedAt  DateTime @default(now()) @map("completed_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([assignmentId])
+  @@map("assignment_responses")
+}

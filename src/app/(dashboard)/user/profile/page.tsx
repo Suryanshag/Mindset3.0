@@ -1,0 +1,126 @@
+import { auth } from '@/lib/auth'
+import { redirect } from 'next/navigation'
+import { prisma } from '@/lib/prisma'
+import Link from 'next/link'
+import {
+  UserCircle,
+  MapPin,
+  CreditCard,
+  Bell,
+  HelpCircle,
+  Info,
+  LogOut,
+  ChevronRight,
+  Stethoscope,
+} from 'lucide-react'
+import AvatarUpload from '@/components/dashboard/avatar-upload'
+import SignOutButton from '@/components/dashboard/sign-out-button'
+
+const settingsItems = [
+  { label: 'Personal info', href: '/user/profile/personal', Icon: UserCircle },
+  { label: 'Addresses', href: '/user/profile/addresses', Icon: MapPin },
+  { label: 'Payments', href: '/user/profile/payments', Icon: CreditCard },
+  { label: 'Notifications', href: '/user/profile/notifications', Icon: Bell },
+  { label: 'Help & support', href: '/user/profile/help', Icon: HelpCircle },
+  { label: 'About', href: '/user/profile/about', Icon: Info },
+]
+
+export default async function ProfilePage() {
+  const session = await auth()
+  if (!session?.user?.id) redirect('/login')
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { name: true, email: true, image: true },
+  })
+
+  if (!user) redirect('/login')
+
+  const initials = user.name
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+
+  // Mock therapist data — will be wired to DB later
+  const therapist = {
+    name: 'Dr. Meera Sharma',
+    specialty: 'Clinical psychologist',
+    initials: 'MS',
+  }
+
+  return (
+    <div className="space-y-5">
+      {/* Avatar + name */}
+      <div className="flex flex-col items-center pt-4">
+        <AvatarUpload
+          currentUrl={user.image}
+          initials={initials}
+          size={96}
+        />
+        <p className="text-[16px] font-medium text-text mt-3">{user.name}</p>
+        <p className="text-[13px] text-text-muted">{user.email}</p>
+      </div>
+
+      {/* Your therapist */}
+      {therapist && (
+        <div
+          className="bg-bg-card rounded-2xl p-3.5"
+          style={{ border: '0.5px solid var(--color-border)' }}
+        >
+          <p className="text-[11px] font-medium text-text-faint uppercase tracking-wider mb-2.5">
+            Your therapist
+          </p>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center shrink-0">
+              <span className="text-xs font-medium text-white">
+                {therapist.initials}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[14px] font-medium text-text">
+                {therapist.name}
+              </p>
+              <p className="text-[12px] text-text-faint">
+                {therapist.specialty}
+              </p>
+            </div>
+            <Link
+              href="/user/sessions/book"
+              className="px-3 py-1.5 rounded-full bg-primary text-white text-[12px] font-medium shrink-0"
+            >
+              Book session
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Settings list */}
+      <div
+        className="bg-bg-card rounded-2xl overflow-hidden"
+        style={{ border: '0.5px solid var(--color-border)' }}
+      >
+        {settingsItems.map((item, i) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="flex items-center gap-3 px-4 py-3.5"
+            style={
+              i < settingsItems.length - 1
+                ? { borderBottom: '0.5px solid var(--color-border)' }
+                : undefined
+            }
+          >
+            <item.Icon size={18} className="text-text-muted shrink-0" />
+            <span className="flex-1 text-[14px] text-text">{item.label}</span>
+            <ChevronRight size={16} className="text-text-faint" />
+          </Link>
+        ))}
+      </div>
+
+      {/* Sign out */}
+      <SignOutButton />
+    </div>
+  )
+}

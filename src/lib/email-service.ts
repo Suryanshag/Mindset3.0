@@ -1,0 +1,259 @@
+import { Resend } from 'resend'
+import { render } from '@react-email/render'
+import SessionConfirmationEmail from '@/emails/session-confirmation'
+import SessionReminderEmail from '@/emails/session-reminder'
+import OrderConfirmationEmail from '@/emails/order-confirmation'
+import AssignmentCreatedEmail from '@/emails/assignment-created'
+import AssignmentSubmittedEmail from '@/emails/assignment-submitted'
+import NgoJoinConfirmationEmail from '@/emails/ngo-join-confirmation'
+import WelcomeEmail from '@/emails/welcome'
+import PaymentFailedEmail from '@/emails/payment-failed'
+import SessionCancelledEmail from '@/emails/session-cancelled'
+import EbookPurchasedEmail from '@/emails/ebook-purchased'
+import SessionFollowupEmail from '@/emails/session-followup'
+import PasswordResetEmail from '@/emails/password-reset'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+const FROM = process.env.RESEND_FROM_EMAIL ?? 'Mindset <onboarding@resend.dev>'
+
+// Helper: fire and forget with logging
+function sendEmail(
+  to: string,
+  subject: string,
+  htmlPromise: Promise<string>,
+  tag: string
+): void {
+  htmlPromise
+    .then((html) =>
+      resend.emails.send({ from: FROM, to, subject, html })
+    )
+    .then(() => {
+      console.log(`[EMAIL] ✓ ${tag} sent to ${to}`)
+    })
+    .catch((err) => {
+      console.error(`[EMAIL] ✗ ${tag} failed for ${to}:`, err)
+    })
+}
+
+// 1. Session confirmation (to user after payment)
+export function sendSessionConfirmation(
+  to: string,
+  props: {
+    userName: string
+    doctorName: string
+    doctorDesignation: string
+    sessionDate: Date
+    meetLink: string | null
+  }
+): void {
+  sendEmail(
+    to,
+    `Session Confirmed — ${props.doctorName}`,
+    render(SessionConfirmationEmail(props)),
+    'session-confirmation'
+  )
+}
+
+// 2. Session reminder (sent by cron job)
+export function sendSessionReminder(
+  to: string,
+  props: {
+    userName: string
+    doctorName: string
+    sessionDate: Date
+    meetLink: string | null
+    hoursUntil: number
+  }
+): void {
+  sendEmail(
+    to,
+    `Reminder: Your session is in ${props.hoursUntil} hours`,
+    render(SessionReminderEmail(props)),
+    'session-reminder'
+  )
+}
+
+// 3. Order confirmation (to user after payment)
+export function sendOrderConfirmation(
+  to: string,
+  props: {
+    userName: string
+    orderId: string
+    items: { name: string; quantity: number; price: number }[]
+    totalAmount: number
+    shippingAddress: {
+      name: string
+      addressLine1: string
+      addressLine2?: string
+      city: string
+      state: string
+      pincode: string
+    }
+    deliveryCharge?: number
+    courierName?: string
+  }
+): void {
+  sendEmail(
+    to,
+    `Order Confirmed — #${props.orderId.slice(-8).toUpperCase()}`,
+    render(OrderConfirmationEmail(props)),
+    'order-confirmation'
+  )
+}
+
+// 4. Assignment created (to user when doctor creates assignment)
+export function sendAssignmentCreated(
+  to: string,
+  props: {
+    userName: string
+    doctorName: string
+    assignmentTitle: string
+    dueDate: Date | null
+    description: string
+  }
+): void {
+  sendEmail(
+    to,
+    `New Assignment: ${props.assignmentTitle}`,
+    render(AssignmentCreatedEmail(props)),
+    'assignment-created'
+  )
+}
+
+// 5. Assignment submitted (to doctor when user submits)
+export function sendAssignmentSubmitted(
+  to: string,
+  props: {
+    doctorName: string
+    userName: string
+    assignmentTitle: string
+    submittedAt: Date
+  }
+): void {
+  sendEmail(
+    to,
+    `Assignment Submitted: ${props.assignmentTitle}`,
+    render(AssignmentSubmittedEmail(props)),
+    'assignment-submitted'
+  )
+}
+
+// 7. Welcome email (sent on registration)
+export function sendWelcomeEmail(
+  to: string,
+  props: { userName: string }
+): void {
+  sendEmail(
+    to,
+    'Welcome to Mindset 🌱',
+    render(WelcomeEmail(props)),
+    'welcome'
+  )
+}
+
+// 8. Payment failed
+export function sendPaymentFailed(
+  to: string,
+  props: {
+    userName: string
+    amount: number
+    type: 'SESSION' | 'EBOOK' | 'PRODUCT'
+    retryUrl: string
+  }
+): void {
+  sendEmail(
+    to,
+    'Payment unsuccessful — please try again',
+    render(PaymentFailedEmail(props)),
+    'payment-failed'
+  )
+}
+
+// 9. Session cancelled
+export function sendSessionCancelled(
+  to: string,
+  props: {
+    userName: string
+    doctorName: string
+    sessionDate: Date
+    cancelledBy: 'DOCTOR' | 'ADMIN' | 'USER'
+    refundNote?: string
+  }
+): void {
+  sendEmail(
+    to,
+    'Your session has been cancelled',
+    render(SessionCancelledEmail(props)),
+    'session-cancelled'
+  )
+}
+
+// 10. Ebook purchased
+export function sendEbookPurchased(
+  to: string,
+  props: {
+    userName: string
+    ebookTitle: string
+    amount: number
+  }
+): void {
+  sendEmail(
+    to,
+    `Purchase confirmed: ${props.ebookTitle}`,
+    render(EbookPurchasedEmail(props)),
+    'ebook-purchased'
+  )
+}
+
+// 11. Session follow-up
+export function sendSessionFollowup(
+  to: string,
+  props: {
+    userName: string
+    doctorName: string
+    sessionDate: Date
+  }
+): void {
+  sendEmail(
+    to,
+    `How did your session go, ${props.userName}?`,
+    render(SessionFollowupEmail(props)),
+    'session-followup'
+  )
+}
+
+// 12. Password reset
+export function sendPasswordResetEmail(
+  to: string,
+  props: {
+    userName: string
+    resetUrl: string
+    expiresInMinutes: number
+  }
+): void {
+  sendEmail(
+    to,
+    'Reset your Mindset password',
+    render(PasswordResetEmail(props)),
+    'password-reset'
+  )
+}
+
+// 6. NGO join confirmation (to user when they join a visit)
+export function sendNgoJoinConfirmation(
+  to: string,
+  props: {
+    userName: string
+    ngoName: string
+    visitDate: Date
+    location: string
+    whatsappLink: string | null
+  }
+): void {
+  sendEmail(
+    to,
+    `You're registered for the ${props.ngoName} visit!`,
+    render(NgoJoinConfirmationEmail(props)),
+    'ngo-join-confirmation'
+  )
+}
