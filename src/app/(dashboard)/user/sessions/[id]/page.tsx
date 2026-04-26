@@ -6,6 +6,8 @@ import { Video, Calendar, Clock, CheckCircle, XCircle, ChevronRight } from 'luci
 import PageHeader from '@/components/dashboard/page-header'
 import CancelSessionButton from './cancel-button'
 import ChapterView from '@/components/dashboard/desktop/chapter-view'
+import RailPortal from '@/components/dashboard/desktop/rail-portal'
+import SessionRail from '@/components/dashboard/desktop/session-rail'
 import { getChapterData } from '@/lib/queries/reflection'
 
 export default async function SessionDetailPage({
@@ -262,7 +264,22 @@ export default async function SessionDetailPage({
       {/* Desktop: Chapter view */}
       <div className="hidden lg:block">
         {chapterData ? (
-          <ChapterView chapter={chapterData} />
+          <>
+            <ChapterView chapter={chapterData} />
+            <RailPortal>
+              <SessionRail
+                doctor={{
+                  name: doctorName,
+                  designation: session.doctor.designation,
+                  photo: session.doctor.photo,
+                }}
+                doctorId={session.doctorId}
+                sessionId={session.id}
+                canCancel={canCancel}
+                assignments={relatedAssignments}
+              />
+            </RailPortal>
+          </>
         ) : (
           <div className="py-8">
             <p className="text-[14px] text-text-faint">Session not found.</p>

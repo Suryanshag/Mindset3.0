@@ -8,6 +8,8 @@ import ProfileCompletionCard from '@/components/dashboard/profile-completion-car
 import TodaysFocus from '@/components/dashboard/todays-focus'
 import WorkshopBanner from '@/components/dashboard/workshop-banner'
 import ReflectionLanding from '@/components/dashboard/desktop/reflection-landing'
+import RailPortal from '@/components/dashboard/desktop/rail-portal'
+import HomeRail from '@/components/dashboard/desktop/home-rail'
 import { getNextWorkshop, getUnreadNotificationCount, getUpcomingSession, getTodaysMoodCheckIn, getUserStats } from '@/lib/queries/dashboard'
 import { getReflectionLandingData } from '@/lib/queries/reflection'
 
@@ -153,7 +155,12 @@ export default async function UserHome({
       {/* Desktop: Reflection landing */}
       <div className="hidden lg:block">
         {reflectionData ? (
-          <ReflectionLanding data={reflectionData} />
+          <>
+            <ReflectionLanding data={reflectionData} />
+            <RailPortal>
+              <HomeRail />
+            </RailPortal>
+          </>
         ) : (
           <div className="py-8">
             <h1 className="text-[22px] font-medium text-text">Welcome to Mindset</h1>
