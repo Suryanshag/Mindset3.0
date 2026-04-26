@@ -10,7 +10,7 @@ import WorkshopBanner from '@/components/dashboard/workshop-banner'
 import ReflectionLanding from '@/components/dashboard/desktop/reflection-landing'
 import RailPortal from '@/components/dashboard/desktop/rail-portal'
 import HomeRail from '@/components/dashboard/desktop/home-rail'
-import { getNextWorkshop, getUnreadNotificationCount, getUpcomingSession, getTodaysMoodCheckIn, getUserStats } from '@/lib/queries/dashboard'
+import { getNextWorkshop, getUnreadNotificationCount, getUpcomingSession, getTodaysMoodCheckIn, getUserStats, getUserEngagementState } from '@/lib/queries/dashboard'
 import { getReflectionLandingData } from '@/lib/queries/reflection'
 
 export default async function UserHome({
@@ -27,7 +27,7 @@ export default async function UserHome({
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
   // Fetch all data in parallel — mobile + desktop
-  const [dbUser, workshop, unreadCount, pendingAssignments, upcomingSession, todaysMood, realStats, reflectionData] = await Promise.all([
+  const [dbUser, workshop, unreadCount, pendingAssignments, upcomingSession, todaysMood, realStats, reflectionData, engagementState] = await Promise.all([
     userId
       ? prisma.user
           .findUnique({
@@ -72,6 +72,9 @@ export default async function UserHome({
     userId
       ? getReflectionLandingData(userId).catch(() => null)
       : Promise.resolve(null),
+    userId
+      ? getUserEngagementState(userId).catch(() => 'empty' as const)
+      : Promise.resolve('empty' as const),
   ])
 
   // Derive user display info from real DB row
@@ -156,9 +159,9 @@ export default async function UserHome({
       <div className="hidden lg:block">
         {reflectionData ? (
           <>
-            <ReflectionLanding data={reflectionData} />
+            <ReflectionLanding data={reflectionData} engagementState={engagementState} />
             <RailPortal>
-              <HomeRail />
+              <HomeRail engagementState={engagementState} />
             </RailPortal>
           </>
         ) : (

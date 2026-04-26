@@ -3,13 +3,15 @@
 import { usePathname } from 'next/navigation'
 import Spine from '@/components/dashboard/spine'
 import type { SpineSession } from '@/lib/queries/reflection'
+import type { EngagementState } from '@/lib/queries/dashboard'
 
 type Props = {
   spineSessions: SpineSession[]
+  engagementState: EngagementState
   children: React.ReactNode
 }
 
-export default function DesktopContent({ spineSessions, children }: Props) {
+export default function DesktopContent({ spineSessions, engagementState, children }: Props) {
   const pathname = usePathname()
 
   // Reflection routes: /user or /user/sessions/[id]
@@ -21,7 +23,7 @@ export default function DesktopContent({ spineSessions, children }: Props) {
 
   return (
     <div className={`desktop-shell min-h-dvh ${showRail ? 'with-rail' : 'no-rail'}`}>
-      <Spine sessions={spineSessions} />
+      <Spine sessions={spineSessions} engagementState={engagementState} />
 
       <main className="bg-bg-app overflow-y-auto">
         <div className="mx-auto max-w-[720px] px-8 py-8">

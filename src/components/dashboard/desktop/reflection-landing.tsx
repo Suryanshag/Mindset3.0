@@ -1,6 +1,7 @@
 import Link from 'next/link'
-import { Video } from 'lucide-react'
+import { Video, Search, PenLine, Compass } from 'lucide-react'
 import type { ReflectionLandingData } from '@/lib/queries/reflection'
+import type { EngagementState } from '@/lib/queries/dashboard'
 
 function getGreeting(): string {
   const h = new Date().getHours()
@@ -10,8 +11,14 @@ function getGreeting(): string {
   return 'Hi'
 }
 
-function lastSessionPhrase(daysSince: number, doctorName: string): string {
+function lastSessionPhrase(daysSince: number, doctorName: string, isFirst: boolean): string {
   const firstName = doctorName.split(' ')[0]
+  if (isFirst) {
+    if (daysSince <= 3) return `You had your first session with ${firstName} ${daysSince <= 1 ? 'yesterday' : `${daysSince} days ago`}.`
+    if (daysSince <= 7) return `You had your first session with ${firstName} earlier this week.`
+    if (daysSince <= 14) return `You had your first session with ${firstName} last week.`
+    return `You had your first session with ${firstName} a little while ago.`
+  }
   if (daysSince <= 1) return `You met with ${firstName} yesterday.`
   if (daysSince <= 3) return `Your last session with ${firstName} was ${daysSince} days ago.`
   if (daysSince <= 7) return `Your last session with ${firstName} was earlier this week.`
@@ -26,7 +33,6 @@ function daysUntil(date: Date): string {
     (date.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
   )
   if (diff <= 0) {
-    // Today — show time
     return `today at ${date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -47,11 +53,17 @@ const ASSIGNMENT_VERBS: Record<string, string> = {
 
 export default function ReflectionLanding({
   data,
+  engagementState,
 }: {
   data: ReflectionLandingData
+  engagementState: EngagementState
 }) {
   const greeting = getGreeting()
   const firstName = data.userName.split(' ')[0]
+
+  if (engagementState === 'empty') {
+    return <EmptyState greeting={greeting} firstName={firstName} />
+  }
 
   const todayStr = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -59,12 +71,15 @@ export default function ReflectionLanding({
     month: 'long',
   })
 
-  // Build adaptive prose about last session
+  const isPartial = engagementState === 'partial'
+  const isFirstSession = isPartial && data.lastSession !== null
+
+  // Adaptive prose
   const daysSinceLastSession = data.lastSession
     ? Math.floor((Date.now() - new Date(data.lastSession.date).getTime()) / (1000 * 60 * 60 * 24))
     : null
   const sessionProse = data.lastSession && daysSinceLastSession !== null
-    ? lastSessionPhrase(daysSinceLastSession, data.lastSession.doctorName)
+    ? lastSessionPhrase(daysSinceLastSession, data.lastSession.doctorName, isFirstSession)
     : null
   const entriesProse = data.entriesSinceLastSession > 0
     ? `You\u2019ve written ${data.entriesSinceLastSession} ${data.entriesSinceLastSession === 1 ? 'entry' : 'entries'} since.`
@@ -74,7 +89,7 @@ export default function ReflectionLanding({
     : null
   const showSchedulePrompt = daysSinceLastSession !== null && daysSinceLastSession > 30
 
-  // Join window check for next session
+  // Join window
   const joinWindowOpen = data.nextSession
     ? (() => {
         const now = Date.now()
@@ -90,7 +105,7 @@ export default function ReflectionLanding({
       })()
     : false
 
-  // Pending items list
+  // Pending items
   const pendingItems: { label: string; href: string }[] = []
   for (const a of data.pendingAssignments) {
     const verb = ASSIGNMENT_VERBS[a.type] ?? 'Complete'
@@ -128,6 +143,11 @@ export default function ReflectionLanding({
           <p className="text-[16px] font-serif text-text-muted leading-[1.7]">
             {sessionProse}
           </p>
+          {isPartial && !entriesProse && !completedProse && (
+            <p className="text-[16px] font-serif text-text-muted leading-[1.7] mt-2">
+              As you continue, this space will fill with what comes between your sessions.
+            </p>
+          )}
           {entriesProse && (
             <p className="text-[16px] font-serif text-text-muted leading-[1.7] mt-2">
               {entriesProse}
@@ -159,7 +179,7 @@ export default function ReflectionLanding({
         <div className="mb-10">
           <div className="h-px mb-8" style={{ backgroundColor: 'var(--color-border)' }} />
           <p className="text-[16px] font-serif text-text-muted leading-[1.7]">
-            You haven&apos;t had a session yet. Find a therapist who fits you.
+            You haven{'\u2019'}t had a session yet. Find a therapist who fits you.
           </p>
           <Link
             href="/doctors"
@@ -215,7 +235,7 @@ export default function ReflectionLanding({
 
       {/* A few things to do */}
       {pendingItems.length > 0 && (
-        <div>
+        <div className="mb-10">
           <div className="h-px mb-8" style={{ backgroundColor: 'var(--color-border)' }} />
           <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px] mb-3">
             A few things to do
@@ -227,7 +247,7 @@ export default function ReflectionLanding({
                   href={item.href}
                   className="text-[14px] text-text hover:text-primary transition-colors duration-150"
                 >
-                  • {item.label}
+                  {'\u2022'} {item.label}
                 </Link>
               </li>
             ))}
@@ -242,6 +262,117 @@ export default function ReflectionLanding({
           )}
         </div>
       )}
+
+      {/* Partial state: take your next step */}
+      {isPartial && (
+        <div>
+          <div className="h-px mb-8" style={{ backgroundColor: 'var(--color-border)' }} />
+          <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px] mb-3">
+            Take your next step
+          </p>
+          <div className="space-y-2">
+            <Link
+              href="/user/practice/journal/new"
+              className="text-[14px] text-text hover:text-primary transition-colors duration-150"
+            >
+              {'\u2022'} Write a journal entry
+            </Link>
+            <Link
+              href="/user/discover"
+              className="block text-[14px] text-text hover:text-primary transition-colors duration-150"
+            >
+              {'\u2022'} Browse the library
+            </Link>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Empty state: brand new user, no activity */
+function EmptyState({ greeting, firstName }: { greeting: string; firstName: string }) {
+  return (
+    <div className="py-4">
+      {/* Greeting — no date line for empty state */}
+      <div className="mb-10">
+        <h1 className="text-[22px] font-medium text-text">
+          {greeting}, {firstName}
+        </h1>
+      </div>
+
+      <div className="mb-10">
+        <div className="h-px mb-8" style={{ backgroundColor: 'var(--color-border)' }} />
+        <p className="text-[16px] font-serif italic text-text-muted leading-[1.7]">
+          Mindset is a space for the work you do between sessions{'\u2009'}{'\u2014'}{'\u2009'}and
+          a place to look back on it as your journey unfolds.
+        </p>
+      </div>
+
+      {/* First steps */}
+      <div className="h-px mb-8" style={{ backgroundColor: 'var(--color-border)' }} />
+      <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px] mb-5">
+        First steps
+      </p>
+
+      <div className="space-y-3">
+        {/* Find a therapist — primary card with accent */}
+        <Link
+          href="/doctors"
+          className="block rounded-xl p-5 bg-bg-card transition-colors duration-150 hover:bg-white/80"
+          style={{ border: '0.5px solid var(--color-border)', borderLeft: '3px solid var(--color-accent)' }}
+        >
+          <div className="flex items-start gap-3">
+            <Search size={18} className="text-accent shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[15px] font-medium text-text">Find a therapist</p>
+              <p className="text-[13px] text-text-muted mt-1 leading-relaxed">
+                Browse our therapists and book your first session.
+              </p>
+            </div>
+          </div>
+          <p className="text-[13px] text-primary font-medium mt-3 ml-[30px]">
+            Begin →
+          </p>
+        </Link>
+
+        {/* Write first entry */}
+        <Link
+          href="/user/practice/journal/new"
+          className="block rounded-xl p-5 bg-bg-card transition-colors duration-150 hover:bg-white/80"
+          style={{ border: '0.5px solid var(--color-border)' }}
+        >
+          <div className="flex items-start gap-3">
+            <PenLine size={18} className="text-text-muted shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[15px] font-medium text-text">Write your first entry</p>
+              <p className="text-[13px] text-text-muted mt-1 leading-relaxed">
+                Journal anything you{'\u2019'}d like to remember or work through.
+              </p>
+            </div>
+          </div>
+          <p className="text-[13px] text-primary font-medium mt-3 ml-[30px]">
+            Begin →
+          </p>
+        </Link>
+
+        {/* Browse workshops */}
+        <Link
+          href="/user/discover/workshops"
+          className="block rounded-xl p-5 bg-bg-card transition-colors duration-150 hover:bg-white/80"
+          style={{ border: '0.5px solid var(--color-border)' }}
+        >
+          <div className="flex items-start gap-3">
+            <Compass size={18} className="text-text-muted shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[15px] font-medium text-text">Browse workshops</p>
+              <p className="text-[13px] text-text-muted mt-1 leading-relaxed">
+                Free and paid workshops on different aspects of wellness.
+              </p>
+            </div>
+          </div>
+        </Link>
+      </div>
     </div>
   )
 }

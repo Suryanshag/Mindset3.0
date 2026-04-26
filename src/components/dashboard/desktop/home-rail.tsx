@@ -1,7 +1,23 @@
 import Link from 'next/link'
-import { PenLine, Compass, Calendar } from 'lucide-react'
+import { PenLine, Compass, Calendar, Search, BookOpen } from 'lucide-react'
+import type { EngagementState } from '@/lib/queries/dashboard'
 
-export default function HomeRail() {
+export default function HomeRail({ engagementState }: { engagementState: EngagementState }) {
+  if (engagementState === 'empty') {
+    return (
+      <div className="space-y-5">
+        <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px]">
+          Quick actions
+        </p>
+        <div className="space-y-2">
+          <RailAction href="/doctors" icon={Search} label="Find a therapist" />
+          <RailAction href="/user/discover/workshops" icon={Compass} label="Browse workshops" />
+          <RailAction href="/user/discover" icon={BookOpen} label="Browse library" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-5">
       <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px]">

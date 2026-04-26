@@ -12,6 +12,7 @@ import {
   PenLine,
 } from 'lucide-react'
 import type { SpineSession } from '@/lib/queries/reflection'
+import type { EngagementState } from '@/lib/queries/dashboard'
 
 const SPACES = [
   { href: '/user/sessions', label: 'Sessions', Icon: CalendarDays },
@@ -23,6 +24,7 @@ const SPACES = [
 
 type Props = {
   sessions?: SpineSession[]
+  engagementState?: EngagementState
 }
 
 /** Group sessions by "Month Year" key. */
@@ -39,7 +41,7 @@ function groupByMonth(sessions: SpineSession[]) {
   return groups
 }
 
-export default function Spine({ sessions = [] }: Props) {
+export default function Spine({ sessions = [], engagementState = 'engaged' }: Props) {
   const pathname = usePathname()
   const { data: authSession } = useSession()
 
@@ -92,16 +94,18 @@ export default function Spine({ sessions = [] }: Props) {
         </Link>
       </div>
 
-      {/* Reflection section — scrollable */}
+      {/* Reflection section — scrollable, hidden for empty users */}
       <div className="px-4 mt-4 overflow-y-auto min-h-0 scrollbar-hide">
-        <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px] mb-2">
-          Reflection
-        </p>
-        {sessions.length === 0 ? (
-          <p className="text-[12px] text-text-faint px-3 py-2 leading-relaxed">
-            Your past sessions will appear here once you&apos;ve had a few
-          </p>
-        ) : (
+        {engagementState !== 'empty' && (
+          <>
+            <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px] mb-2">
+              Reflection
+            </p>
+            {sessions.length === 0 ? (
+              <p className="text-[12px] text-text-faint px-3 py-2 leading-relaxed">
+                Your past sessions will appear here
+              </p>
+            ) : (
           <div className="space-y-3">
             {Array.from(grouped.entries()).map(([month, items]) => (
               <div key={month}>
@@ -144,6 +148,8 @@ export default function Spine({ sessions = [] }: Props) {
               </div>
             ))}
           </div>
+        )}
+          </>
         )}
       </div>
 

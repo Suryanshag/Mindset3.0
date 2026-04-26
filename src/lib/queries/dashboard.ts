@@ -171,3 +171,32 @@ export async function getUnreadNotificationCount(userId: string): Promise<number
     where: { userId, readAt: null },
   })
 }
+
+/**
+ * Determine user engagement state for reflection mode.
+ * - empty: zero past sessions AND zero journal entries AND zero completed assignments
+ * - partial: 1-2 past sessions OR <3 journal entries OR <2 completed assignments
+ * - engaged: 3+ past sessions AND 3+ journal entries AND 2+ completed assignments
+ */
+export type EngagementState = 'empty' | 'partial' | 'engaged'
+
+export async function getUserEngagementState(userId: string): Promise<EngagementState> {
+  const now = new Date()
+  const [pastSessions, journalCount, completedCount] = await Promise.all([
+    prisma.session.count({
+      where: { userId, date: { lt: now }, status: { in: ['COMPLETED', 'CONFIRMED'] } },
+    }),
+    prisma.journalEntry.count({ where: { userId } }),
+    prisma.assignment.count({
+      where: { userId, status: { in: ['COMPLETED', 'SUBMITTED', 'REVIEWED'] } },
+    }),
+  ])
+
+  if (pastSessions === 0 && journalCount === 0 && completedCount === 0) {
+    return 'empty'
+  }
+  if (pastSessions >= 3 && journalCount >= 3 && completedCount >= 2) {
+    return 'engaged'
+  }
+  return 'partial'
+}
