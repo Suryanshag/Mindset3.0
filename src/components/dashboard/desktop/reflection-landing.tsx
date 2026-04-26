@@ -128,7 +128,7 @@ export default function ReflectionLanding({
             href={`/user/sessions/${data.lastSession.id}`}
             className="inline-block text-[14px] text-primary font-medium mt-4 hover:underline"
           >
-            Open chapter &nearr;
+            Open chapter ↗
           </Link>
         </div>
       ) : (
@@ -203,7 +203,7 @@ export default function ReflectionLanding({
                   href={item.href}
                   className="text-[14px] text-text hover:text-primary transition-colors duration-150"
                 >
-                  &bull; {item.label}
+                  • {item.label}
                 </Link>
               </li>
             ))}

@@ -140,7 +140,7 @@ function JournalCard({
         &ldquo;{preview}&rdquo;
       </p>
       <p className="text-[13px] text-primary font-medium mt-3 hover:underline">
-        Read entry &rarr;
+        Read entry →
       </p>
     </Link>
   )
@@ -181,7 +181,7 @@ function AssignmentCard({
         </p>
       </div>
       <span className="text-[13px] text-primary font-medium shrink-0 mt-0.5">
-        View &rarr;
+        View →
       </span>
     </Link>
   )
@@ -213,7 +213,7 @@ function WorkshopCard({
         </p>
       </div>
       <span className="text-[13px] text-primary font-medium shrink-0 mt-0.5">
-        View &rarr;
+        View →
       </span>
     </Link>
   )

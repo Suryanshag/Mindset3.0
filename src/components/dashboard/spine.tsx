@@ -115,6 +115,11 @@ export default function Spine({ sessions = [] }: Props) {
                       month: 'short',
                       day: 'numeric',
                     })
+                    const timeLabel = s.date.toLocaleTimeString('en-US', {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true,
+                    }).toLowerCase()
                     const doctorFirst = s.doctorName.split(' ')[0]
                     return (
                       <Link
@@ -126,8 +131,8 @@ export default function Spine({ sessions = [] }: Props) {
                             : 'text-text hover:bg-white/60'
                         }`}
                       >
-                        <span className="text-[13px] font-medium leading-tight">
-                          Session, {dateLabel}
+                        <span className="text-[13px] font-medium leading-tight truncate">
+                          {dateLabel} · {timeLabel}
                         </span>
                         <span className="text-[11px] text-text-faint opacity-0 group-hover:opacity-100 transition-opacity truncate">
                           {doctorFirst}
