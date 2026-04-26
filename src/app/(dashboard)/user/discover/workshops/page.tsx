@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
-import Link from 'next/link'
-import { ArrowLeft, CalendarDays, Ticket } from 'lucide-react'
+import { CalendarDays, Ticket } from 'lucide-react'
+import PageHeader from '@/components/dashboard/page-header'
 
 export default async function WorkshopsListPage() {
   const now = new Date()
@@ -22,102 +22,99 @@ export default async function WorkshopsListPage() {
   ])
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center gap-3">
-        <Link href="/user/discover" className="p-1">
-          <ArrowLeft size={20} className="text-text-muted" />
-        </Link>
-        <h1 className="text-[16px] font-medium text-text">Workshops</h1>
-      </div>
+    <div>
+      <PageHeader title="Workshops" back="/user/discover" />
 
-      {upcoming.length > 0 && (
-        <div>
-          <p className="text-[12px] font-medium text-text-faint uppercase tracking-wider mb-2.5">
-            Upcoming
-          </p>
-          <div className="space-y-2.5">
-            {upcoming.map((ws) => (
-              <div
-                key={ws.id}
-                className="bg-bg-card rounded-2xl p-4 flex gap-3"
-                style={{ border: '0.5px solid var(--color-border)' }}
-              >
-                <div className="w-12 h-12 rounded-xl bg-accent-tint flex items-center justify-center shrink-0 overflow-hidden">
-                  {ws.coverImageUrl ? (
-                    <img
-                      src={ws.coverImageUrl}
-                      alt={ws.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Ticket size={20} className="text-accent" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-medium text-text line-clamp-1">
-                    {ws.title}
-                  </p>
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <CalendarDays size={12} className="text-text-faint" />
-                    <p className="text-[12px] text-text-faint">
-                      {ws.startsAt.toLocaleDateString('en-IN', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
+      <div className="space-y-5 pt-3.5">
+        {upcoming.length > 0 && (
+          <div>
+            <p className="text-[12px] font-medium text-text-faint uppercase tracking-wider mb-2.5">
+              Upcoming
+            </p>
+            <div className="space-y-2">
+              {upcoming.map((ws) => (
+                <div
+                  key={ws.id}
+                  className="bg-bg-card rounded-2xl py-3 px-3.5 flex gap-3"
+                  style={{ border: '0.5px solid var(--color-border)' }}
+                >
+                  <div className="w-10 h-10 rounded-xl bg-accent-tint flex items-center justify-center shrink-0 overflow-hidden">
+                    {ws.coverImageUrl ? (
+                      <img
+                        src={ws.coverImageUrl}
+                        alt={ws.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Ticket size={18} className="text-accent" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[15px] font-medium text-text line-clamp-1">
+                      {ws.title}
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <CalendarDays size={12} className="text-text-faint" />
+                      <p className="text-[12px] text-text-muted">
+                        {ws.startsAt.toLocaleDateString('en-IN', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </p>
+                    </div>
+                    {ws.subtitle && (
+                      <p className="text-[12px] text-text-muted mt-0.5 line-clamp-1">
+                        {ws.subtitle}
+                      </p>
+                    )}
+                    <p className="text-[12px] font-medium text-primary mt-0.5">
+                      {ws.priceCents === 0
+                        ? 'Free'
+                        : `\u20B9${(ws.priceCents / 100).toFixed(0)}`}
                     </p>
                   </div>
-                  {ws.subtitle && (
-                    <p className="text-[12px] text-text-muted mt-1 line-clamp-1">
-                      {ws.subtitle}
-                    </p>
-                  )}
-                  <p className="text-[12px] font-medium text-primary mt-1">
-                    {ws.priceCents === 0
-                      ? 'Free'
-                      : `\u20B9${(ws.priceCents / 100).toFixed(0)}`}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {past.length > 0 && (
+          <div>
+            <p className="text-[12px] font-medium text-text-faint uppercase tracking-wider mb-2.5">
+              Past
+            </p>
+            <div className="space-y-2">
+              {past.map((ws) => (
+                <div
+                  key={ws.id}
+                  className="bg-bg-card rounded-2xl py-3 px-3.5 opacity-60"
+                  style={{ border: '0.5px solid var(--color-border)' }}
+                >
+                  <p className="text-[15px] font-medium text-text line-clamp-1">
+                    {ws.title}
+                  </p>
+                  <p className="text-[12px] text-text-muted">
+                    {ws.startsAt.toLocaleDateString('en-IN', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })}
                   </p>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {past.length > 0 && (
-        <div>
-          <p className="text-[12px] font-medium text-text-faint uppercase tracking-wider mb-2.5">
-            Past
-          </p>
-          <div className="space-y-2.5">
-            {past.map((ws) => (
-              <div
-                key={ws.id}
-                className="bg-bg-card rounded-2xl p-4 opacity-60"
-                style={{ border: '0.5px solid var(--color-border)' }}
-              >
-                <p className="text-[14px] font-medium text-text line-clamp-1">
-                  {ws.title}
-                </p>
-                <p className="text-[12px] text-text-faint">
-                  {ws.startsAt.toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
-                </p>
-              </div>
-            ))}
+        {upcoming.length === 0 && past.length === 0 && (
+          <div className="flex flex-col items-center py-12">
+            <Ticket size={28} className="text-text-faint mb-2" />
+            <p className="text-[14px] text-text-muted">No workshops yet</p>
           </div>
-        </div>
-      )}
-
-      {upcoming.length === 0 && past.length === 0 && (
-        <div className="flex flex-col items-center py-12">
-          <Ticket size={28} className="text-text-faint mb-2" />
-          <p className="text-[14px] text-text-muted">No workshops yet</p>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

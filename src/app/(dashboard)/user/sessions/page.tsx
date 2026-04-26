@@ -5,6 +5,7 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { Video, ChevronRight, CheckCircle } from 'lucide-react'
 import TabControl from '@/components/dashboard/sessions/tab-control'
+import PageHeader from '@/components/dashboard/page-header'
 
 const doctorSelect = {
   designation: true,
@@ -49,13 +50,17 @@ export default async function SessionsPage({
 
   return (
     <div>
-      <Suspense>
-        <TabControl />
-      </Suspense>
+      <PageHeader title="Sessions" />
 
-      {tab === 'upcoming' && <UpcomingTab userId={userId} />}
-      {tab === 'past' && <PastTab userId={userId} />}
-      {tab === 'assignments' && <AssignmentsTab userId={userId} />}
+      <div className="pt-3.5">
+        <Suspense>
+          <TabControl />
+        </Suspense>
+
+        {tab === 'upcoming' && <UpcomingTab userId={userId} />}
+        {tab === 'past' && <PastTab userId={userId} />}
+        {tab === 'assignments' && <AssignmentsTab userId={userId} />}
+      </div>
     </div>
   )
 }

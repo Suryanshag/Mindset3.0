@@ -1,18 +1,14 @@
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
 import JournalCompose from '@/components/dashboard/journal/journal-compose'
+import PageHeader from '@/components/dashboard/page-header'
 
 export default function NewJournalEntryPage() {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <Link href="/user/practice/journal" className="p-1">
-          <ArrowLeft size={20} className="text-text-muted" />
-        </Link>
-        <h1 className="text-[16px] font-medium text-text">New entry</h1>
-      </div>
+    <div>
+      <PageHeader title="New entry" back="/user/practice/journal" />
 
-      <JournalCompose mode="create" />
+      <div className="pt-3.5">
+        <JournalCompose mode="create" />
+      </div>
     </div>
   )
 }

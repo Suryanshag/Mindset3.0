@@ -1,9 +1,8 @@
 import { auth } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
 import AssignmentResponseSurface from '@/components/dashboard/assignments/assignment-response'
+import PageHeader from '@/components/dashboard/page-header'
 
 export default async function AssignmentDetailPage({
   params,
@@ -31,31 +30,26 @@ export default async function AssignmentDetailPage({
   const response = assignment.responses[0] ?? null
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <Link href="/user/practice/assignments" className="p-1">
-          <ArrowLeft size={20} className="text-text-muted" />
-        </Link>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-[16px] font-medium text-text line-clamp-1">
-            {assignment.title}
-          </h1>
-          <p className="text-[12px] text-text-faint">
-            {assignment.doctor.user.name}
-          </p>
-        </div>
-      </div>
+    <div>
+      <PageHeader title={assignment.title} back="/user/practice/assignments" />
 
-      {assignment.dueDate && (
-        <p className="text-[12px] text-text-faint">
-          Due{' '}
-          {assignment.dueDate.toLocaleDateString('en-IN', {
-            weekday: 'short',
-            day: 'numeric',
-            month: 'short',
-          })}
-        </p>
-      )}
+      <div className="space-y-3.5 pt-3.5">
+        <div className="flex items-center gap-2 text-[12px] text-text-muted">
+          <span>{assignment.doctor.user.name}</span>
+          {assignment.dueDate && (
+            <>
+              <span>·</span>
+              <span>
+                Due{' '}
+                {assignment.dueDate.toLocaleDateString('en-IN', {
+                  weekday: 'short',
+                  day: 'numeric',
+                  month: 'short',
+                })}
+              </span>
+            </>
+          )}
+        </div>
 
       {/* Instructions */}
       {assignment.instructions && (
@@ -111,6 +105,7 @@ export default async function AssignmentDetailPage({
           type={assignment.type}
         />
       ) : null}
+      </div>
     </div>
   )
 }

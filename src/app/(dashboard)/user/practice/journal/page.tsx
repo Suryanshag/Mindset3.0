@@ -2,8 +2,9 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { getJournalEntries } from '@/lib/queries/journal'
 import Link from 'next/link'
-import { ArrowLeft, Plus, BookOpen } from 'lucide-react'
+import { Plus, BookOpen } from 'lucide-react'
 import JournalFilters from '@/components/dashboard/journal/journal-filters'
+import PageHeader from '@/components/dashboard/page-header'
 
 const MOOD_EMOJI = ['', '😞', '😔', '😐', '🙂', '😊']
 
@@ -40,26 +41,26 @@ export default async function JournalListPage({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/user/practice" className="p-1">
-            <ArrowLeft size={20} className="text-text-muted" />
+    <div>
+      <PageHeader
+        title="Journal"
+        back="/user/practice"
+        rightAction={
+          <Link
+            href="/user/practice/journal/new"
+            className="w-9 h-9 rounded-full bg-primary flex items-center justify-center"
+          >
+            <Plus size={18} className="text-white" />
           </Link>
-          <h1 className="text-[16px] font-medium text-text">Journal</h1>
-        </div>
-        <Link
-          href="/user/practice/journal/new"
-          className="w-9 h-9 rounded-full bg-primary flex items-center justify-center"
-        >
-          <Plus size={18} className="text-white" />
-        </Link>
-      </div>
-
-      <JournalFilters
-        currentSearch={search}
-        currentMood={mood}
+        }
       />
+
+      <div className="sticky top-14 z-20 bg-bg-app py-3">
+        <JournalFilters
+          currentSearch={search}
+          currentMood={mood}
+        />
+      </div>
 
       {entries.length === 0 ? (
         <div className="flex flex-col items-center py-16">
@@ -89,17 +90,17 @@ export default async function JournalListPage({
                   <Link
                     key={entry.id}
                     href={`/user/practice/journal/${entry.id}`}
-                    className="flex gap-3 bg-bg-card rounded-2xl p-3.5"
+                    className="flex gap-3 bg-bg-card rounded-2xl py-3 px-3.5"
                     style={{ border: '0.5px solid var(--color-border)' }}
                   >
-                    <div className="w-11 h-11 rounded-xl bg-primary-tint flex items-center justify-center shrink-0">
-                      <span className="text-[18px] font-semibold text-primary leading-none">
+                    <div className="w-10 h-10 rounded-xl bg-primary-tint flex items-center justify-center shrink-0">
+                      <span className="text-[17px] font-semibold text-primary leading-none">
                         {entry.entryDate.getDate()}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
                       {entry.title && (
-                        <p className="text-[14px] font-medium text-text line-clamp-1">
+                        <p className="text-[15px] font-medium text-text line-clamp-1">
                           {entry.title}
                         </p>
                       )}

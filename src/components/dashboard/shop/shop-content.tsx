@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { ShoppingCart, ShoppingBag, Plus } from 'lucide-react'
+import PageHeader from '@/components/dashboard/page-header'
 
 type Product = {
   id: string
@@ -20,28 +21,31 @@ export default function ShopContent({
   const featured = products[0] ?? null
 
   return (
-    <div className="space-y-4">
-      {/* Header with cart icon */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-[16px] font-medium text-text">Shop</h1>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/user/shop/orders"
-            className="text-[12px] font-medium text-primary"
-          >
-            My orders
-          </Link>
-          <Link href="/user/shop/cart" className="relative p-1">
-            <ShoppingCart size={20} className="text-text-muted" />
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent text-[9px] font-medium text-white flex items-center justify-center">
-                {cartCount}
-              </span>
-            )}
-          </Link>
-        </div>
-      </div>
+    <div>
+      <PageHeader
+        title="Shop"
+        back="/user/discover"
+        rightAction={
+          <div className="flex items-center gap-3">
+            <Link
+              href="/user/shop/orders"
+              className="text-[12px] font-medium text-primary"
+            >
+              My orders
+            </Link>
+            <Link href="/user/shop/cart" className="relative p-1">
+              <ShoppingCart size={20} className="text-text-muted" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent text-[9px] font-medium text-white flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+          </div>
+        }
+      />
 
+      <div className="space-y-3.5 pt-3.5">
       {/* Featured product banner */}
       {featured && (
         <div className="rounded-2xl bg-primary-tint p-4">
@@ -85,6 +89,7 @@ export default function ShopContent({
           <p className="text-[14px] text-text-muted">No products available yet</p>
         </div>
       )}
+      </div>
     </div>
   )
 }

@@ -2,9 +2,10 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { Ticket, BookOpen, ShoppingBag, ChevronRight } from 'lucide-react'
 import { getNextWorkshop } from '@/lib/queries/dashboard'
+import PageHeader from '@/components/dashboard/page-header'
 
 export default async function DiscoverHubPage() {
-  const [workshop, recentMaterials, featuredProduct] = await Promise.all([
+  const [workshop, recentMaterials, featuredProduct, upcomingCount, materialCount] = await Promise.all([
     getNextWorkshop().catch(() => null),
     prisma.studyMaterial
       .findMany({
@@ -21,6 +22,12 @@ export default async function DiscoverHubPage() {
         orderBy: { createdAt: 'desc' },
       })
       .catch(() => null),
+    prisma.workshop
+      .count({ where: { published: true, startsAt: { gte: new Date() } } })
+      .catch(() => 0),
+    prisma.studyMaterial
+      .count({ where: { isPublished: true } })
+      .catch(() => 0),
   ])
 
   const sections = [
@@ -57,32 +64,43 @@ export default async function DiscoverHubPage() {
     },
   ]
 
-  return (
-    <div className="space-y-4">
-      <h1 className="text-[16px] font-medium text-text">Discover</h1>
+  const statsLine = [
+    upcomingCount > 0 ? `${upcomingCount} upcoming workshop${upcomingCount > 1 ? 's' : ''}` : null,
+    materialCount > 0 ? `${materialCount} book${materialCount > 1 ? 's' : ''} in library` : null,
+  ].filter(Boolean).join(' · ')
 
-      <div className="space-y-2.5">
-        {sections.map((s) => (
-          <Link
-            key={s.title}
-            href={s.href}
-            className="flex items-center gap-3.5 bg-bg-card rounded-2xl p-4"
-            style={{ border: '0.5px solid var(--color-border)' }}
-          >
-            <div
-              className={`w-10 h-10 rounded-xl ${s.color} flex items-center justify-center shrink-0`}
+  return (
+    <div>
+      <PageHeader title="Discover" />
+
+      <div className="space-y-3.5 pt-3.5">
+        {statsLine && (
+          <p className="text-[12px] text-text-faint">{statsLine}</p>
+        )}
+
+        <div className="space-y-2">
+          {sections.map((s) => (
+            <Link
+              key={s.title}
+              href={s.href}
+              className="flex items-center gap-3.5 bg-bg-card rounded-2xl py-3.5 px-3.5"
+              style={{ border: '0.5px solid var(--color-border)' }}
             >
-              <s.Icon size={20} className={s.iconColor} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[14px] font-medium text-text">{s.title}</p>
-              <p className="text-[12px] text-text-faint line-clamp-1">
-                {s.subtitle}
-              </p>
-            </div>
-            <ChevronRight size={16} className="text-text-faint shrink-0" />
-          </Link>
-        ))}
+              <div
+                className={`w-10 h-10 rounded-xl ${s.color} flex items-center justify-center shrink-0`}
+              >
+                <s.Icon size={20} className={s.iconColor} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[15px] font-medium text-text">{s.title}</p>
+                <p className="text-[12px] text-text-faint line-clamp-1">
+                  {s.subtitle}
+                </p>
+              </div>
+              <ChevronRight size={16} className="text-text-faint shrink-0" />
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   )

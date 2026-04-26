@@ -1,9 +1,8 @@
 import { auth } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
 import { getJournalEntry } from '@/lib/queries/journal'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
 import JournalCompose from '@/components/dashboard/journal/journal-compose'
+import PageHeader from '@/components/dashboard/page-header'
 
 export default async function EditJournalEntryPage({
   params,
@@ -18,24 +17,21 @@ export default async function EditJournalEntryPage({
   if (!entry) notFound()
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <Link href={`/user/practice/journal/${id}`} className="p-1">
-          <ArrowLeft size={20} className="text-text-muted" />
-        </Link>
-        <h1 className="text-[16px] font-medium text-text">Edit entry</h1>
-      </div>
+    <div>
+      <PageHeader title="Edit entry" back={`/user/practice/journal/${id}`} />
 
-      <JournalCompose
-        mode="edit"
-        entryId={id}
-        initial={{
-          title: entry.title ?? '',
-          body: entry.body,
-          mood: entry.mood,
-          entryDate: entry.entryDate.toISOString().split('T')[0],
-        }}
-      />
+      <div className="pt-3.5">
+        <JournalCompose
+          mode="edit"
+          entryId={id}
+          initial={{
+            title: entry.title ?? '',
+            body: entry.body,
+            mood: entry.mood,
+            entryDate: entry.entryDate.toISOString().split('T')[0],
+          }}
+        />
+      </div>
     </div>
   )
 }

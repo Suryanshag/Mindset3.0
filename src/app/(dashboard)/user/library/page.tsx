@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { BookOpen } from 'lucide-react'
 import { prisma } from '@/lib/prisma'
+import PageHeader from '@/components/dashboard/page-header'
 
 type StudyMaterial = {
   id: string
@@ -45,9 +46,10 @@ export default async function LibraryPage() {
   // "Recommended" shows real study materials from DB.
 
   return (
-    <div className="space-y-5">
-      <h1 className="text-[16px] font-medium text-text">Library</h1>
+    <div>
+      <PageHeader title="Library" back="/user/discover" />
 
+      <div className="space-y-5 pt-3.5">
       {/* My library — empty state until purchase tracking exists */}
       <div className="flex flex-col items-center py-12">
         <BookOpen size={28} className="text-text-faint mb-2" />
@@ -88,6 +90,7 @@ export default async function LibraryPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
