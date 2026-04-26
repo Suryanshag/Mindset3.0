@@ -5,7 +5,7 @@ import type { Workshop, Session as DashboardSession } from '@/types/dashboard'
  * Next published workshop starting within the next 14 days.
  * Returns null if none found.
  */
-export async function getNextWorkshop(): Promise<Workshop | null> {
+export async function getNextWorkshop(userId?: string): Promise<Workshop | null> {
   const now = new Date()
   const twoWeeks = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000)
 
@@ -19,6 +19,14 @@ export async function getNextWorkshop(): Promise<Workshop | null> {
 
   if (!ws) return null
 
+  let isRegistered = false
+  if (userId) {
+    const reg = await prisma.workshopRegistration.findUnique({
+      where: { userId_workshopId: { userId, workshopId: ws.id } },
+    }).catch(() => null)
+    isRegistered = !!reg
+  }
+
   return {
     id: ws.id,
     title: ws.title,
@@ -30,6 +38,8 @@ export async function getNextWorkshop(): Promise<Workshop | null> {
     }),
     price: ws.priceCents === 0 ? 'Free' : `\u20B9${(ws.priceCents / 100).toFixed(0)}`,
     imageUrl: ws.coverImageUrl,
+    isRegistered,
+    whatsappUrl: ws.whatsappGroupUrl ?? null,
   }
 }
 

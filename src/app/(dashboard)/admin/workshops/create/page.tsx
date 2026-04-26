@@ -16,6 +16,7 @@ export default function CreateWorkshopPage() {
     description: '',
     image: '',
     date: '',
+    whatsappGroupUrl: '',
     isPublished: false,
   })
 
@@ -46,6 +47,7 @@ export default function CreateWorkshopPage() {
         isPublished: form.isPublished,
       }
       if (form.image) body.image = form.image
+      if (form.whatsappGroupUrl) body.whatsappGroupUrl = form.whatsappGroupUrl
 
       const res = await fetch('/api/admin/workshops', {
         method: 'POST',
@@ -110,6 +112,16 @@ export default function CreateWorkshopPage() {
               <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="text-sm text-gray-600" />
             )}
             {uploading && <p className="text-xs text-gray-500 mt-1">Uploading...</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp group URL (optional)</label>
+            <input
+              type="url"
+              value={form.whatsappGroupUrl}
+              onChange={(e) => setForm({ ...form, whatsappGroupUrl: e.target.value })}
+              placeholder="https://chat.whatsapp.com/..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900"
+            />
           </div>
           <div className="flex items-center gap-2">
             <input

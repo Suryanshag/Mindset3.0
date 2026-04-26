@@ -23,6 +23,8 @@ export type Workshop = {
   time: string // e.g. "4:00 PM"
   price: string // "Free" or "₹499"
   imageUrl: string | null
+  isRegistered: boolean
+  whatsappUrl: string | null
 }
 
 export type DashboardData = {

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Ticket } from 'lucide-react'
+import { Ticket, MessageCircle } from 'lucide-react'
 import type { Workshop } from '@/types/dashboard'
 
 type Props = {
@@ -31,7 +31,7 @@ export default function WorkshopBanner({ workshop }: Props) {
               letterSpacing: '0.6px',
             }}
           >
-            New workshop
+            {workshop.isRegistered ? 'Enrolled' : 'New workshop'}
           </span>
           <p className="text-[15px] font-medium">{workshop.title}</p>
           <p className="text-[12px] mt-0.5" style={{ color: 'rgba(255,255,255,0.8)' }}>
@@ -39,13 +39,36 @@ export default function WorkshopBanner({ workshop }: Props) {
           </p>
         </div>
       </div>
-      <div className="flex justify-end mt-3">
-        <Link
-          href={`/workshops/${workshop.id}`}
-          className="inline-block px-4 py-2 rounded-full bg-white text-accent text-[13px] font-medium"
-        >
-          Reserve spot
-        </Link>
+      <div className="flex justify-end mt-3 gap-2">
+        {workshop.isRegistered ? (
+          <>
+            {workshop.whatsappUrl && (
+              <a
+                href={workshop.whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-accent text-[13px] font-medium"
+              >
+                <MessageCircle size={14} />
+                WhatsApp group
+              </a>
+            )}
+            <Link
+              href={`/user/discover/workshops/${workshop.id}`}
+              className="inline-block px-4 py-2 rounded-full text-[13px] font-medium"
+              style={{ backgroundColor: 'rgba(255,255,255,0.25)' }}
+            >
+              View details
+            </Link>
+          </>
+        ) : (
+          <Link
+            href={`/user/discover/workshops/${workshop.id}`}
+            className="inline-block px-4 py-2 rounded-full bg-white text-accent text-[13px] font-medium"
+          >
+            Reserve spot
+          </Link>
+        )}
       </div>
     </div>
   )

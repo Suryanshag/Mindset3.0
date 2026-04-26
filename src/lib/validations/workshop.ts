@@ -18,6 +18,7 @@ export const createWorkshopSchema = z.object({
   durationMin: z.number().int().min(1).default(60),
   priceCents: z.number().int().min(0).default(0),
   capacity: z.number().int().min(1).optional(),
+  whatsappGroupUrl: z.string().url().optional(),
   isPublished: z.boolean().optional(),
   published: z.boolean().optional(),
 }).refine(
@@ -37,6 +38,7 @@ export function resolveWorkshopFields(d: z.infer<typeof createWorkshopSchema>) {
     durationMin: d.durationMin,
     priceCents: d.priceCents,
     capacity: d.capacity,
+    whatsappGroupUrl: d.whatsappGroupUrl,
     published: d.published ?? d.isPublished ?? false,
   }
 }

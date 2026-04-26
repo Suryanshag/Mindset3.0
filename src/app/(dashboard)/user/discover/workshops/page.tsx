@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
-import { CalendarDays, Ticket } from 'lucide-react'
+import Link from 'next/link'
+import { CalendarDays, Ticket, ChevronRight } from 'lucide-react'
 import PageHeader from '@/components/dashboard/page-header'
 
 export default async function WorkshopsListPage() {
@@ -33,8 +34,9 @@ export default async function WorkshopsListPage() {
             </p>
             <div className="space-y-2">
               {upcoming.map((ws) => (
-                <div
+                <Link
                   key={ws.id}
+                  href={`/user/discover/workshops/${ws.id}`}
                   className="bg-bg-card rounded-2xl py-3 px-3.5 flex gap-3"
                   style={{ border: '0.5px solid var(--color-border)' }}
                 >
@@ -74,7 +76,8 @@ export default async function WorkshopsListPage() {
                         : `\u20B9${(ws.priceCents / 100).toFixed(0)}`}
                     </p>
                   </div>
-                </div>
+                  <ChevronRight size={16} className="text-text-faint shrink-0 self-center" />
+                </Link>
               ))}
             </div>
           </div>

@@ -178,19 +178,20 @@ enum AssignmentStatus {
 }
 
 model Workshop {
-  id             String   @id @default(cuid())
-  title          String
-  subtitle       String?
-  description    String   @db.Text
-  coverImageUrl  String?  @map("image")
-  instructorName String?
-  startsAt       DateTime @map("date")
-  durationMin    Int      @default(60)
-  priceCents     Int      @default(0)
-  capacity       Int?
-  published      Boolean  @default(false) @map("isPublished")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                String   @id @default(cuid())
+  title             String
+  subtitle          String?
+  description       String   @db.Text
+  coverImageUrl     String?  @map("image")
+  instructorName    String?
+  startsAt          DateTime @map("date")
+  durationMin       Int      @default(60)
+  priceCents        Int      @default(0)
+  capacity          Int?
+  whatsappGroupUrl  String?  @map("whatsapp_group_url")
+  published         Boolean  @default(false) @map("isPublished")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   registrations WorkshopRegistration[]
 }

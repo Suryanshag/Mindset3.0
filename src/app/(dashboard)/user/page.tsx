@@ -39,7 +39,7 @@ export default async function UserHome({
           })
           .catch(() => null)
       : Promise.resolve(null),
-    getNextWorkshop().catch(() => null),
+    getNextWorkshop(userId ?? undefined).catch(() => null),
     userId ? getUnreadNotificationCount(userId).catch(() => 0) : Promise.resolve(0),
     userId
       ? prisma.assignment
