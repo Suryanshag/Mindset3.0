@@ -6285,3 +6285,17 @@ body .wp-site-blocks .ws-card__img-wrap--poster {
     box-shadow: inset 2px 0 0 var(--color-primary);
 }
 
+/* Desktop hover utilities */
+@media (hover: hover) and (min-width: 1024px) {
+    /* Primary buttons: slight darken on hover */
+    .bg-primary:hover {
+        background-color: var(--color-primary-soft);
+    }
+
+    /* Inline links: underline on hover */
+    .text-primary:hover {
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+}
+
