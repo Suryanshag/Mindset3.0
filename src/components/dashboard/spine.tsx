@@ -11,6 +11,7 @@ import {
   UserCircle,
   PenLine,
 } from 'lucide-react'
+import type { SpineSession } from '@/lib/queries/reflection'
 
 const SPACES = [
   { href: '/user/sessions', label: 'Sessions', Icon: CalendarDays },
@@ -20,12 +21,30 @@ const SPACES = [
   { href: '/user/profile', label: 'Profile', Icon: UserCircle },
 ]
 
-export default function Spine() {
-  const pathname = usePathname()
-  const { data: session } = useSession()
+type Props = {
+  sessions?: SpineSession[]
+}
 
-  const userName = session?.user?.name ?? 'User'
-  const userImage = session?.user?.image ?? null
+/** Group sessions by "Month Year" key. */
+function groupByMonth(sessions: SpineSession[]) {
+  const groups = new Map<string, SpineSession[]>()
+  for (const s of sessions) {
+    const key = s.date.toLocaleDateString('en-US', {
+      month: 'long',
+      year: 'numeric',
+    })
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key)!.push(s)
+  }
+  return groups
+}
+
+export default function Spine({ sessions = [] }: Props) {
+  const pathname = usePathname()
+  const { data: authSession } = useSession()
+
+  const userName = authSession?.user?.name ?? 'User'
+  const userImage = authSession?.user?.image ?? null
   const userInitials = userName
     .split(' ')
     .map((w: string) => w[0])
@@ -33,7 +52,7 @@ export default function Spine() {
     .toUpperCase()
     .slice(0, 2)
 
-  function isActive(href: string) {
+  function isSpaceActive(href: string) {
     if (href === '/user') return pathname === '/user'
     return pathname.startsWith(href)
   }
@@ -44,17 +63,19 @@ export default function Spine() {
     month: 'long',
   })
 
+  const grouped = groupByMonth(sessions)
+
   return (
-    <aside className="spine sticky top-0 h-dvh flex flex-col overflow-y-auto">
+    <aside className="spine sticky top-0 h-dvh grid overflow-hidden" style={{ gridTemplateRows: 'auto auto 1fr auto auto' }}>
       {/* Logo */}
-      <div className="h-16 flex items-center px-4">
+      <div className="h-16 flex items-center px-4 shrink-0">
         <Link href="/" className="text-[20px] font-bold text-text tracking-tight">
           Mindset
         </Link>
       </div>
 
       {/* Today — pinned top item */}
-      <div className="px-3">
+      <div className="px-3 shrink-0">
         <Link
           href="/user"
           className={`spine-item flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150 ${
@@ -71,24 +92,64 @@ export default function Spine() {
         </Link>
       </div>
 
-      {/* Reflection section — stubbed for sprint 7 */}
-      <div className="px-4 mt-5">
+      {/* Reflection section — scrollable */}
+      <div className="px-4 mt-4 overflow-y-auto min-h-0 scrollbar-hide">
         <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px] mb-2">
           Reflection
         </p>
-        <p className="text-[12px] text-text-faint px-3 py-2 leading-relaxed">
-          Your past sessions will appear here once you&apos;ve had a few
-        </p>
+        {sessions.length === 0 ? (
+          <p className="text-[12px] text-text-faint px-3 py-2 leading-relaxed">
+            Your past sessions will appear here once you&apos;ve had a few
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {Array.from(grouped.entries()).map(([month, items]) => (
+              <div key={month}>
+                <p className="text-[11px] text-text-faint font-medium mb-1 px-1">
+                  {month}
+                </p>
+                <div className="space-y-0.5">
+                  {items.map((s) => {
+                    const active = pathname === `/user/sessions/${s.id}`
+                    const dateLabel = s.date.toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                    })
+                    const doctorFirst = s.doctorName.split(' ')[0]
+                    return (
+                      <Link
+                        key={s.id}
+                        href={`/user/sessions/${s.id}`}
+                        className={`spine-item flex items-center gap-2.5 px-3 py-1.5 rounded-lg transition-colors duration-150 group ${
+                          active
+                            ? 'spine-item--active bg-primary-tint text-primary'
+                            : 'text-text hover:bg-white/60'
+                        }`}
+                      >
+                        <span className="text-[13px] font-medium leading-tight">
+                          Session, {dateLabel}
+                        </span>
+                        <span className="text-[11px] text-text-faint opacity-0 group-hover:opacity-100 transition-opacity truncate">
+                          {doctorFirst}
+                        </span>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Spaces — main navigation */}
-      <div className="px-4 mt-5 flex-1">
+      {/* Spaces — main navigation, pinned */}
+      <div className="px-4 pt-3 pb-1 shrink-0" style={{ borderTop: '0.5px solid var(--color-border)' }}>
         <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px] mb-2">
           Spaces
         </p>
-        <nav className="space-y-0.5 px-0">
+        <nav className="space-y-0.5">
           {SPACES.map(({ href, label, Icon }) => {
-            const active = isActive(href)
+            const active = isSpaceActive(href)
             return (
               <Link
                 key={href}
@@ -108,7 +169,7 @@ export default function Spine() {
       </div>
 
       {/* User profile pill — bottom */}
-      <div className="px-3 pb-4 mt-auto">
+      <div className="px-3 pb-4 pt-2 shrink-0">
         <Link
           href="/user/profile"
           className="spine-item flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150 hover:bg-white/60"

@@ -6264,12 +6264,20 @@ body .wp-site-blocks .ws-card__img-wrap--poster {
     min-height: 100vh;
 }
 
-/* 1024-1279: hide rail, two columns */
+/* Utility pages: no rail, always two columns */
+.desktop-shell.no-rail {
+    grid-template-columns: 280px 1fr;
+}
+.desktop-shell.no-rail .desktop-rail {
+    display: none;
+}
+
+/* 1024-1279: hide rail even on reflection routes */
 @media (max-width: 1279px) {
-    .desktop-shell {
+    .desktop-shell.with-rail {
         grid-template-columns: 280px 1fr;
     }
-    .desktop-rail {
+    .desktop-shell.with-rail .desktop-rail {
         display: none;
     }
 }
