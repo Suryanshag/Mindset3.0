@@ -1,0 +1,5 @@
+export const SUPPORT_EMAIL = 'mindset.org.connect@gmail.com'
+export const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/EahWvy2Mojm6s3gnK9SGP5'
+export const INSTAGRAM_URL = 'https://www.instagram.com/mindset.org.in'
+export const LINKEDIN_URL = 'https://www.linkedin.com/company/mindsetbymuskan'
+export const YOUTUBE_URL = 'https://www.youtube.com/@Mindset_By_Muskan?sub_confirmation=1'

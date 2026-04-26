@@ -6,12 +6,9 @@ import {
   UserCircle,
   MapPin,
   CreditCard,
-  Bell,
   HelpCircle,
   Info,
-  LogOut,
   ChevronRight,
-  Stethoscope,
 } from 'lucide-react'
 import AvatarUpload from '@/components/dashboard/avatar-upload'
 import SignOutButton from '@/components/dashboard/sign-out-button'
@@ -21,7 +18,6 @@ const settingsItems = [
   { label: 'Personal info', href: '/user/profile/personal', Icon: UserCircle },
   { label: 'Addresses', href: '/user/profile/addresses', Icon: MapPin },
   { label: 'Payments', href: '/user/profile/payments', Icon: CreditCard },
-  { label: 'Notifications', href: '/user/profile/notifications', Icon: Bell },
   { label: 'Help & support', href: '/user/profile/help', Icon: HelpCircle },
   { label: 'About', href: '/user/profile/about', Icon: Info },
 ]
@@ -30,10 +26,27 @@ export default async function ProfilePage() {
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { name: true, email: true, image: true },
-  })
+  // Fetch user + most recent session's doctor as "your therapist"
+  const [user, latestSession] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { name: true, email: true, image: true },
+    }),
+    prisma.session.findFirst({
+      where: { userId: session.user.id },
+      orderBy: { date: 'desc' },
+      select: {
+        doctorId: true,
+        doctor: {
+          select: {
+            designation: true,
+            photo: true,
+            user: { select: { name: true } },
+          },
+        },
+      },
+    }),
+  ])
 
   if (!user) redirect('/login')
 
@@ -44,12 +57,20 @@ export default async function ProfilePage() {
     .toUpperCase()
     .slice(0, 2)
 
-  // Mock therapist data — will be wired to DB later
-  const therapist = {
-    name: 'Dr. Meera Sharma',
-    specialty: 'Clinical psychologist',
-    initials: 'MS',
-  }
+  const therapist = latestSession
+    ? {
+        name: latestSession.doctor.user.name,
+        specialty: latestSession.doctor.designation,
+        initials: latestSession.doctor.user.name
+          .split(' ')
+          .map((w: string) => w[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2),
+        photo: latestSession.doctor.photo,
+        doctorId: latestSession.doctorId,
+      }
+    : null
 
   return (
     <div>
@@ -77,11 +98,19 @@ export default async function ProfilePage() {
             Your therapist
           </p>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center shrink-0">
-              <span className="text-xs font-medium text-white">
-                {therapist.initials}
-              </span>
-            </div>
+            {therapist.photo ? (
+              <img
+                src={therapist.photo}
+                alt={therapist.name}
+                className="w-10 h-10 rounded-full object-cover shrink-0"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center shrink-0">
+                <span className="text-xs font-medium text-white">
+                  {therapist.initials}
+                </span>
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <p className="text-[14px] font-medium text-text">
                 {therapist.name}
@@ -91,7 +120,7 @@ export default async function ProfilePage() {
               </p>
             </div>
             <Link
-              href="/user/sessions/book"
+              href={`/user/sessions/book${therapist.doctorId ? `?doctorId=${therapist.doctorId}` : ''}`}
               className="px-3 py-1.5 rounded-full bg-primary text-white text-[12px] font-medium shrink-0"
             >
               Book session
