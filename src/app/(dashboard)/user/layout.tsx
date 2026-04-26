@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import BottomNav from '@/components/dashboard/bottom-nav'
+import MobileShell from '@/components/dashboard/mobile-shell'
+import DesktopShell from '@/components/dashboard/desktop-shell'
 
 const ROLE_HOME: Record<string, string> = {
   ADMIN: '/admin',
@@ -25,15 +26,16 @@ export default async function UserDashboardLayout({
   }
 
   return (
-    <div className="min-h-dvh bg-bg-app lg:max-w-md lg:mx-auto lg:shadow-sm">
-      {/* Safe-area top spacer */}
-      <div style={{ height: 'env(safe-area-inset-top)' }} />
+    <>
+      {/* Mobile: below lg breakpoint */}
+      <div className="lg:hidden">
+        <MobileShell>{children}</MobileShell>
+      </div>
 
-      <main className="px-4 pb-24 pt-4">
-        {children}
-      </main>
-
-      <BottomNav />
-    </div>
+      {/* Desktop: lg and above */}
+      <div className="hidden lg:block">
+        <DesktopShell>{children}</DesktopShell>
+      </div>
+    </>
   )
 }
