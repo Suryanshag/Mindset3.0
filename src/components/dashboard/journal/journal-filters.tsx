@@ -4,7 +4,13 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import { Search, SlidersHorizontal } from 'lucide-react'
 
-const MOOD_EMOJI = ['😞', '😔', '😐', '🙂', '😊']
+const MOOD_DOTS = [
+  { face: '·_·', tint: '#FCE7E3' },
+  { face: '.-.', tint: '#FBE9DD' },
+  { face: '‿‿', tint: '#DDE9DC' },
+  { face: '^‿^', tint: '#DDE9DC' },
+  { face: '^◡^', tint: '#E8E4F2' },
+]
 
 export default function JournalFilters({
   currentSearch,
@@ -69,21 +75,22 @@ export default function JournalFilters({
       </div>
 
       {showFilters && (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <span className="text-[11px] text-text-faint mr-1">Mood:</span>
-          {MOOD_EMOJI.map((emoji, i) => {
+          {MOOD_DOTS.map((dot, i) => {
             const mood = i + 1
             const active = currentMood === mood
             return (
               <button
                 key={mood}
                 onClick={() => handleMoodFilter(mood)}
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-[16px] ${
-                  active ? 'bg-primary-tint ring-1 ring-primary' : 'bg-bg-card'
-                }`}
-                style={!active ? { border: '0.5px solid var(--color-border)' } : undefined}
+                className="w-8 h-8 rounded-full flex items-center justify-center transition-all"
+                style={{
+                  backgroundColor: dot.tint,
+                  border: active ? '2px solid var(--color-primary)' : '2px solid transparent',
+                }}
               >
-                {emoji}
+                <span className="text-[10px] text-text-muted leading-none">{dot.face}</span>
               </button>
             )
           })}
