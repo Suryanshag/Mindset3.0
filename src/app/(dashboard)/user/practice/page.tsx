@@ -71,29 +71,29 @@ export default async function PracticeHubPage() {
           <p className="text-[12px] text-text-faint">{statsLine}</p>
         )}
 
-        <div className="space-y-2">
+        <div className="space-y-2 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-4">
           {sections.map((s) => {
             const Wrapper = s.disabled ? 'div' : Link
             return (
               <Wrapper
                 key={s.title}
                 href={s.href}
-                className={`flex items-center gap-3.5 bg-bg-card rounded-2xl py-3.5 px-3.5 ${
+                className={`flex items-center gap-3.5 lg:flex-col lg:items-start lg:gap-3 bg-bg-card rounded-2xl py-3.5 px-3.5 lg:p-5 lg:min-h-[160px] transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5 ${
                   s.disabled ? 'opacity-50' : ''
                 }`}
                 style={{ border: '0.5px solid var(--color-border)' }}
               >
                 <div
-                  className={`w-10 h-10 rounded-xl ${s.color} flex items-center justify-center shrink-0`}
+                  className={`w-10 h-10 lg:w-11 lg:h-11 rounded-xl ${s.color} flex items-center justify-center shrink-0`}
                 >
                   <s.Icon size={20} className={s.iconColor} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[15px] font-medium text-text">{s.title}</p>
-                  <p className="text-[12px] text-text-faint">{s.subtitle}</p>
+                  <p className="text-[12px] lg:text-[13px] text-text-faint lg:mt-1">{s.subtitle}</p>
                 </div>
                 {!s.disabled && (
-                  <ChevronRight size={16} className="text-text-faint shrink-0" />
+                  <ChevronRight size={16} className="text-text-faint shrink-0 lg:hidden" />
                 )}
               </Wrapper>
             )

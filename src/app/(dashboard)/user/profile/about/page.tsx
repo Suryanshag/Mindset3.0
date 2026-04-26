@@ -43,7 +43,7 @@ export default function AboutPage() {
         >
           <a
             href={`mailto:${SUPPORT_EMAIL}`}
-            className="flex items-center gap-3 px-4 py-3.5"
+            className="flex items-center gap-3 px-4 py-3.5 lg:py-4 transition-colors duration-150 lg:hover:bg-white/60"
             style={{ borderBottom: '0.5px solid var(--color-border)' }}
           >
             <Mail size={16} className="text-text-faint shrink-0" />
@@ -53,7 +53,7 @@ export default function AboutPage() {
             href={WHATSAPP_GROUP_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 px-4 py-3.5"
+            className="flex items-center gap-3 px-4 py-3.5 lg:py-4 transition-colors duration-150 lg:hover:bg-white/60"
           >
             <MessageCircle size={16} className="text-text-faint shrink-0" />
             <span className="text-[13px] text-text-muted">WhatsApp community</span>

@@ -66,7 +66,7 @@ export default async function AssignmentsListPage({
                 <Link
                   key={a.id}
                   href={`/user/practice/assignments/${a.id}`}
-                  className="flex items-center gap-3 bg-bg-card rounded-2xl py-3 px-3.5"
+                  className="flex items-center gap-3 lg:gap-4 bg-bg-card rounded-2xl py-3 px-3.5 lg:p-4 transition-colors duration-150 lg:hover:bg-white/80"
                   style={{ border: '0.5px solid var(--color-border)' }}
                 >
                   <div

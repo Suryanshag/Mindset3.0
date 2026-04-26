@@ -27,7 +27,7 @@ export default function PageHeader({ title, subtitle, back, rightAction }: Props
 
   return (
     <div
-      className="sticky top-0 z-30 bg-bg-app -mx-4 px-4 grid items-center"
+      className="sticky top-0 z-30 bg-bg-app -mx-4 px-4 lg:mx-0 lg:px-0 grid items-center"
       style={{
         height: hasSubtitle ? '76px' : '56px',
         gridTemplateColumns: '56px 1fr 56px',
@@ -40,14 +40,14 @@ export default function PageHeader({ title, subtitle, back, rightAction }: Props
           typeof back === 'string' ? (
             <Link
               href={back}
-              className="w-11 h-11 flex items-center justify-center"
+              className="w-11 h-11 flex items-center justify-center rounded-full transition-colors duration-150 lg:hover:bg-white/60"
             >
               <ArrowLeft size={22} className="text-text" />
             </Link>
           ) : (
             <button
               onClick={handleBack}
-              className="w-11 h-11 flex items-center justify-center"
+              className="w-11 h-11 flex items-center justify-center rounded-full transition-colors duration-150 lg:hover:bg-white/60"
             >
               <ArrowLeft size={22} className="text-text" />
             </button>

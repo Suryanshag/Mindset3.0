@@ -91,7 +91,7 @@ export default async function JournalListPage({
                   <Link
                     key={entry.id}
                     href={`/user/practice/journal/${entry.id}`}
-                    className="flex gap-3 bg-bg-card rounded-2xl py-3 px-3.5"
+                    className="flex gap-3 lg:gap-4 bg-bg-card rounded-2xl py-3 px-3.5 lg:p-4 transition-colors duration-150 lg:hover:bg-white/80"
                     style={{ border: '0.5px solid var(--color-border)' }}
                   >
                     <div className="w-10 h-10 rounded-xl bg-primary-tint flex items-center justify-center shrink-0">

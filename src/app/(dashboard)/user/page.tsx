@@ -112,7 +112,7 @@ export default async function UserHome({
   const moreCount = Math.max(0, pendingAssignments.length - 1)
 
   return (
-    <div className="space-y-3.5">
+    <div className="space-y-3.5 lg:space-y-5">
       {/* 1. Header */}
       <Header
         name={userName}

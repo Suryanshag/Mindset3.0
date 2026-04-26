@@ -46,7 +46,7 @@ export default async function JournalDetailPage({
         }
       />
 
-      <div className="space-y-3.5 pt-3.5">
+      <div className="space-y-3.5 pt-3.5 lg:max-w-[680px] lg:mx-auto lg:pt-6">
         {entry.mood && (
           <div className="flex items-center gap-2">
             <span className="text-[20px]">{MOOD_EMOJI[entry.mood]}</span>
@@ -54,11 +54,11 @@ export default async function JournalDetailPage({
         )}
 
         {entry.title && (
-          <h2 className="text-[20px] font-semibold text-text">{entry.title}</h2>
+          <h2 className="text-[20px] lg:text-[24px] font-semibold text-text">{entry.title}</h2>
         )}
 
         <div
-          className="text-[16px] text-text font-serif whitespace-pre-wrap"
+          className="text-[16px] lg:text-[17px] text-text font-serif whitespace-pre-wrap"
           style={{ lineHeight: '1.8' }}
         >
           {entry.body}

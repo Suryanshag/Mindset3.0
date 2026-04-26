@@ -113,8 +113,8 @@ export default async function WorkshopDetailPage({
         )}
       </div>
 
-      {/* Sticky registration button — above bottom nav */}
-      <div className="fixed left-0 right-0 z-40 p-4 bg-bg/80 backdrop-blur-sm lg:max-w-md lg:mx-auto" style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))', borderTop: '0.5px solid var(--color-border)' }}>
+      {/* Sticky registration button — above bottom nav on mobile, bottom-0 on desktop */}
+      <div className="fixed left-0 right-0 z-40 p-4 bg-bg-app/80 backdrop-blur-sm lg:sticky lg:bottom-0 lg:left-auto lg:right-auto lg:max-w-[720px] lg:mx-auto lg:px-0 lg:pb-6" style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))', borderTop: '0.5px solid var(--color-border)' }}>
         <WorkshopRegisterButton
           workshopId={workshop.id}
           isPast={isPast}

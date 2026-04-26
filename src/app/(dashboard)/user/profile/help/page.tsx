@@ -45,7 +45,7 @@ export default function HelpPage() {
               href={item.href}
               target={item.href.startsWith('mailto:') ? undefined : '_blank'}
               rel={item.href.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
-              className="flex items-center gap-3.5 px-4 py-3.5"
+              className="flex items-center gap-3.5 px-4 py-3.5 lg:py-4 transition-colors duration-150 lg:hover:bg-white/60"
               style={
                 i < items.length - 1
                   ? { borderBottom: '0.5px solid var(--color-border)' }

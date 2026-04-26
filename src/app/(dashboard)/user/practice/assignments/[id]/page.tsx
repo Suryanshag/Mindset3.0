@@ -33,7 +33,7 @@ export default async function AssignmentDetailPage({
     <div>
       <PageHeader title={assignment.title} back="/user/practice/assignments" />
 
-      <div className="space-y-3.5 pt-3.5">
+      <div className="space-y-3.5 pt-3.5 lg:max-w-[680px] lg:mx-auto">
         <div className="flex items-center gap-2 text-[12px] text-text-muted">
           <span>{assignment.doctor.user.name}</span>
           {assignment.dueDate && (
@@ -60,7 +60,7 @@ export default async function AssignmentDetailPage({
           <p className="text-[11px] font-medium text-text-faint uppercase tracking-wider mb-2">
             Instructions
           </p>
-          <p className="text-[14px] text-text whitespace-pre-wrap">
+          <p className="text-[14px] lg:text-[16px] text-text whitespace-pre-wrap lg:font-serif lg:leading-relaxed">
             {assignment.instructions}
           </p>
         </div>
@@ -86,7 +86,7 @@ export default async function AssignmentDetailPage({
             Your response
           </p>
           {response.responseText && (
-            <p className="text-[14px] text-text whitespace-pre-wrap">
+            <p className="text-[14px] lg:text-[16px] text-text whitespace-pre-wrap lg:font-serif lg:leading-relaxed">
               {response.responseText}
             </p>
           )}

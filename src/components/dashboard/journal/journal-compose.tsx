@@ -97,30 +97,58 @@ export default function JournalCompose({ mode, entryId, initial }: Props) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 lg:max-w-[680px] lg:mx-auto">
       {error && (
         <p className="text-[13px] text-red-600 bg-red-50 px-3 py-2 rounded-xl">
           {error}
         </p>
       )}
 
-      {/* Date picker */}
-      <input
-        type="date"
-        value={entryDate}
-        onChange={(e) => setEntryDate(e.target.value)}
-        className="w-full px-3 py-2 rounded-xl bg-bg-card text-[13px] text-text"
-        style={{ border: '0.5px solid var(--color-border)' }}
-      />
+      {/* Date + mood strip on desktop */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-4">
+        <input
+          type="date"
+          value={entryDate}
+          onChange={(e) => setEntryDate(e.target.value)}
+          className="w-full lg:w-auto px-3 py-2 rounded-xl bg-bg-card text-[13px] text-text"
+          style={{ border: '0.5px solid var(--color-border)' }}
+        />
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] text-text-faint mr-1">Mood:</span>
+          {MOOD_EMOJI.map((emoji, i) => {
+            const value = i + 1
+            const active = mood === value
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setMood(active ? null : value)}
+                className={`w-9 h-9 rounded-full flex items-center justify-center text-[18px] transition-all ${
+                  active
+                    ? 'bg-primary-tint ring-2 ring-primary scale-110'
+                    : 'bg-bg-card lg:hover:bg-white/80'
+                }`}
+                style={
+                  !active
+                    ? { border: '0.5px solid var(--color-border)' }
+                    : undefined
+                }
+              >
+                {emoji}
+              </button>
+            )
+          })}
+        </div>
+      </div>
 
-      {/* Title (optional) */}
+      {/* Title — large and quiet on desktop */}
       <input
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Title (optional)"
         maxLength={500}
-        className="w-full px-3 py-2 rounded-xl bg-bg-card text-[15px] font-medium text-text placeholder:text-text-faint"
+        className="w-full px-3 py-2 lg:px-0 lg:py-3 rounded-xl lg:rounded-none bg-bg-card lg:bg-transparent text-[15px] lg:text-[24px] font-medium text-text placeholder:text-text-faint lg:border-none lg:focus:outline-none lg:focus:ring-0"
         style={{ border: '0.5px solid var(--color-border)' }}
       />
 
@@ -130,53 +158,27 @@ export default function JournalCompose({ mode, entryId, initial }: Props) {
         onChange={(e) => setBody(e.target.value)}
         placeholder="Write your thoughts..."
         rows={12}
-        className="w-full px-4 py-3 rounded-2xl bg-bg-card text-[16px] text-text placeholder:text-text-faint resize-none font-serif"
+        className="w-full px-4 py-3 lg:px-0 lg:py-2 rounded-2xl lg:rounded-none bg-bg-card lg:bg-transparent text-[16px] lg:text-[17px] text-text placeholder:text-text-faint resize-none font-serif lg:border-none lg:focus:outline-none lg:focus:ring-0"
         style={{
           border: '0.5px solid var(--color-border)',
           lineHeight: '1.8',
         }}
       />
 
-      {/* Mood selector */}
-      <div className="flex items-center gap-2">
-        <span className="text-[12px] text-text-faint mr-1">Mood:</span>
-        {MOOD_EMOJI.map((emoji, i) => {
-          const value = i + 1
-          const active = mood === value
-          return (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setMood(active ? null : value)}
-              className={`w-9 h-9 rounded-full flex items-center justify-center text-[18px] transition-all ${
-                active
-                  ? 'bg-primary-tint ring-2 ring-primary scale-110'
-                  : 'bg-bg-card'
-              }`}
-              style={
-                !active
-                  ? { border: '0.5px solid var(--color-border)' }
-                  : undefined
-              }
-            >
-              {emoji}
-            </button>
-          )
-        })}
+      {/* Submit — full width mobile, auto width desktop top-right */}
+      <div className="lg:flex lg:justify-end">
+        <button
+          onClick={handleSubmit}
+          disabled={isPending || !body.trim()}
+          className="w-full lg:w-auto lg:px-8 py-3 rounded-2xl lg:rounded-full bg-primary text-white text-[14px] font-medium disabled:opacity-50 transition-colors duration-150 lg:hover:bg-primary-soft"
+        >
+          {isPending
+            ? 'Saving...'
+            : mode === 'edit'
+              ? 'Update entry'
+              : 'Save entry'}
+        </button>
       </div>
-
-      {/* Submit */}
-      <button
-        onClick={handleSubmit}
-        disabled={isPending || !body.trim()}
-        className="w-full py-3 rounded-2xl bg-primary text-white text-[14px] font-medium disabled:opacity-50"
-      >
-        {isPending
-          ? 'Saving...'
-          : mode === 'edit'
-            ? 'Update entry'
-            : 'Save entry'}
-      </button>
     </div>
   )
 }

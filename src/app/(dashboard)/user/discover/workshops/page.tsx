@@ -37,10 +37,10 @@ export default async function WorkshopsListPage() {
                 <Link
                   key={ws.id}
                   href={`/user/discover/workshops/${ws.id}`}
-                  className="bg-bg-card rounded-2xl py-3 px-3.5 flex gap-3"
+                  className="bg-bg-card rounded-2xl py-3 px-3.5 lg:p-4 flex gap-3 lg:gap-4 transition-colors duration-150 lg:hover:bg-white/80"
                   style={{ border: '0.5px solid var(--color-border)' }}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-accent-tint flex items-center justify-center shrink-0 overflow-hidden">
+                  <div className="w-10 h-10 lg:w-20 lg:h-20 rounded-xl bg-accent-tint flex items-center justify-center shrink-0 overflow-hidden">
                     {ws.coverImageUrl ? (
                       <img
                         src={ws.coverImageUrl}

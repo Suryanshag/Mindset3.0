@@ -23,10 +23,10 @@ export default function TabControl() {
         <button
           key={t.key}
           onClick={() => setTab(t.key)}
-          className={`flex-1 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+          className={`flex-1 py-2 rounded-lg text-[13px] font-medium transition-colors duration-150 ${
             active === t.key
               ? 'bg-bg-card text-text shadow-sm'
-              : 'text-text-faint'
+              : 'text-text-faint lg:hover:text-text-muted'
           }`}
         >
           {t.label}

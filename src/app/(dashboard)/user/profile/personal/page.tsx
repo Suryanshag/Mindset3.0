@@ -94,7 +94,7 @@ export default function PersonalInfoPage() {
       <div className="space-y-3.5 pt-5">
         {/* Form card */}
         <div
-          className="bg-bg-card rounded-2xl p-4 space-y-4"
+          className="bg-bg-card rounded-2xl p-4 lg:p-6 space-y-4"
           style={{ border: '0.5px solid var(--color-border)' }}
         >
           <Field
@@ -103,19 +103,21 @@ export default function PersonalInfoPage() {
             onChange={(v) => setForm({ ...form, name: v })}
             placeholder="Your full name"
           />
-          <Field
-            label="Phone number"
-            value={form.phone}
-            onChange={(v) => setForm({ ...form, phone: v })}
-            placeholder="9876543210"
-            type="tel"
-          />
-          <Field
-            label="Date of birth"
-            value={form.dateOfBirth}
-            onChange={(v) => setForm({ ...form, dateOfBirth: v })}
-            type="date"
-          />
+          <div className="lg:grid lg:grid-cols-2 lg:gap-4 space-y-4 lg:space-y-0">
+            <Field
+              label="Phone number"
+              value={form.phone}
+              onChange={(v) => setForm({ ...form, phone: v })}
+              placeholder="9876543210"
+              type="tel"
+            />
+            <Field
+              label="Date of birth"
+              value={form.dateOfBirth}
+              onChange={(v) => setForm({ ...form, dateOfBirth: v })}
+              type="date"
+            />
+          </div>
           <Field
             label="Preferred language"
             value={form.preferredLanguage}
@@ -142,7 +144,7 @@ export default function PersonalInfoPage() {
         <button
           onClick={handleSave}
           disabled={saving || !form.name.trim()}
-          className="w-full h-[48px] rounded-full bg-primary text-white text-[14px] font-medium disabled:opacity-50 flex items-center justify-center"
+          className="w-full lg:w-auto lg:px-10 h-[48px] rounded-full bg-primary text-white text-[14px] font-medium disabled:opacity-50 flex items-center justify-center transition-colors duration-150 lg:hover:bg-primary-soft"
         >
           {saving ? <Loader2 size={18} className="animate-spin" /> : 'Save changes'}
         </button>

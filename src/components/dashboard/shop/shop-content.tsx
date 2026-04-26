@@ -78,7 +78,7 @@ export default function ShopContent({
 
       {/* Product grid */}
       {products.length > 0 ? (
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 lg:gap-4">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
@@ -97,7 +97,7 @@ export default function ShopContent({
 function ProductCard({ product }: { product: Product }) {
   return (
     <div
-      className="bg-bg-card rounded-2xl p-2.5"
+      className="bg-bg-card rounded-2xl p-2.5 lg:p-3 transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
       style={{ border: '0.5px solid var(--color-border)' }}
     >
       <Link href={`/products/${product.id}`}>

@@ -70,19 +70,19 @@ export default async function LibraryPage() {
           <p className="text-[12px] font-medium text-text-faint uppercase tracking-wider mb-2.5">
             Recommended for you
           </p>
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 lg:gap-4">
             {materials.map((item) => (
               <Link
                 key={item.id}
                 href="/study-materials"
-                className="bg-bg-card rounded-2xl p-2.5"
+                className="bg-bg-card rounded-2xl p-2.5 lg:p-3 transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
                 style={{ border: '0.5px solid var(--color-border)' }}
               >
                 <MaterialCover item={item} />
-                <p className="text-[13px] font-medium text-text mt-2 line-clamp-2">
+                <p className="text-[13px] lg:text-[14px] font-medium text-text mt-2 line-clamp-2">
                   {item.title}
                 </p>
-                <p className="text-[11px] text-text-faint mt-0.5">
+                <p className="text-[11px] lg:text-[12px] text-text-faint mt-0.5">
                   {item.type === 'FREE' ? 'Free' : `\u20B9${Number(item.price)}`}
                 </p>
               </Link>

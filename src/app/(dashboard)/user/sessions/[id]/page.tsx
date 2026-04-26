@@ -86,24 +86,24 @@ export default async function SessionDetailPage({
       <div className="space-y-3.5 pt-5">
         {/* Doctor card */}
         <div
-          className="bg-bg-card rounded-2xl p-4"
+          className="bg-bg-card rounded-2xl p-4 lg:p-5"
           style={{ border: '0.5px solid var(--color-border)' }}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 lg:gap-4">
             {session.doctor.photo ? (
               <img
                 src={session.doctor.photo}
                 alt={doctorName}
-                className="w-14 h-14 rounded-full object-cover shrink-0"
+                className="w-14 h-14 lg:w-16 lg:h-16 rounded-full object-cover shrink-0"
               />
             ) : (
-              <div className="w-14 h-14 rounded-full bg-accent flex items-center justify-center shrink-0">
+              <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-full bg-accent flex items-center justify-center shrink-0">
                 <span className="text-sm font-medium text-white">{doctorInitials}</span>
               </div>
             )}
             <div className="flex-1 min-w-0">
               <p className="text-[16px] font-medium text-text">{doctorName}</p>
-              <p className="text-[13px] text-text-muted">{session.doctor.designation}</p>
+              <p className="text-[13px] lg:text-[14px] text-text-muted">{session.doctor.designation}</p>
             </div>
           </div>
         </div>

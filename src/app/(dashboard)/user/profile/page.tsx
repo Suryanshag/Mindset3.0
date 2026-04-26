@@ -140,7 +140,7 @@ export default async function ProfilePage() {
           <Link
             key={item.href}
             href={item.href}
-            className="flex items-center gap-3 px-4 py-3.5"
+            className="flex items-center gap-3 px-4 py-3.5 lg:py-4 transition-colors duration-150 lg:hover:bg-white/60"
             style={
               i < settingsItems.length - 1
                 ? { borderBottom: '0.5px solid var(--color-border)' }
