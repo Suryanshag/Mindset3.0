@@ -197,10 +197,12 @@ export async function getChapterData(userId: string, sessionId: string) {
     select: { date: true },
   })
 
-  // Window: from session date to next session date (or +14 days)
-  const windowEnd = nextSession
+  // Window: from session date to next session date (or +14 days), capped at now
+  const now = new Date()
+  const rawEnd = nextSession
     ? nextSession.date
     : new Date(session.date.getTime() + 14 * 86400000)
+  const windowEnd = rawEnd < now ? rawEnd : now
 
   // Fetch all orbiting content within the window
   const [journalEntries, completedAssignments, attendedWorkshops] =

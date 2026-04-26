@@ -1,6 +1,13 @@
 import Link from 'next/link'
 import CancelSessionButton from '@/app/(dashboard)/user/sessions/[id]/cancel-button'
 
+/** Extract a short display name, skipping "Dr." / "Dr" prefix. */
+function shortName(fullName: string): string {
+  const parts = fullName.split(' ').filter(Boolean)
+  if (parts.length > 1 && /^Dr\.?$/i.test(parts[0])) return parts[1]
+  return parts[0] ?? fullName
+}
+
 type SessionRailProps = {
   doctor: {
     name: string
@@ -50,7 +57,7 @@ export default function SessionRail({
         href={`/user/sessions/book?doctorId=${doctorId}`}
         className="flex items-center justify-center w-full py-2.5 rounded-full bg-primary text-white text-[13px] font-medium"
       >
-        Book follow-up with {doctor.name.split(' ')[0]}
+        Book follow-up with {shortName(doctor.name)}
       </Link>
 
       {/* Assignments from this session */}

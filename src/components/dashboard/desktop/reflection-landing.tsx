@@ -11,8 +11,15 @@ function getGreeting(): string {
   return 'Hi'
 }
 
+/** Extract a short display name, skipping "Dr." / "Dr" prefix. */
+function shortName(fullName: string): string {
+  const parts = fullName.split(' ').filter(Boolean)
+  if (parts.length > 1 && /^Dr\.?$/i.test(parts[0])) return parts[1]
+  return parts[0] ?? fullName
+}
+
 function lastSessionPhrase(daysSince: number, doctorName: string, isFirst: boolean): string {
-  const firstName = doctorName.split(' ')[0]
+  const firstName = shortName(doctorName)
   if (isFirst) {
     if (daysSince <= 3) return `You had your first session with ${firstName} ${daysSince <= 1 ? 'yesterday' : `${daysSince} days ago`}.`
     if (daysSince <= 7) return `You had your first session with ${firstName} earlier this week.`
