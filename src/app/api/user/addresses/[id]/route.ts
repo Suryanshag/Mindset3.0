@@ -6,16 +6,17 @@ import { addressSchema } from '@/lib/validations/address'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await auth()
     if (!session?.user?.id || session.user.role !== 'USER') {
       return errorResponse('Unauthorized', 401)
     }
 
     const address = await prisma.address.findFirst({
-      where: { id: params.id, userId: session.user.id },
+      where: { id, userId: session.user.id },
     })
 
     if (!address) return errorResponse('Address not found', 404)
@@ -28,16 +29,17 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await auth()
     if (!session?.user?.id || session.user.role !== 'USER') {
       return errorResponse('Unauthorized', 401)
     }
 
     const existing = await prisma.address.findFirst({
-      where: { id: params.id, userId: session.user.id },
+      where: { id, userId: session.user.id },
     })
     if (!existing) return errorResponse('Address not found', 404)
 
@@ -52,13 +54,13 @@ export async function PATCH(
         await tx.address.updateMany({
           where: {
             userId: session.user.id,
-            id: { not: params.id },
+            id: { not: id },
           },
           data: { isDefault: false },
         })
       }
       return tx.address.update({
-        where: { id: params.id },
+        where: { id },
         data: parsed.data,
       })
     })
@@ -72,21 +74,22 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await auth()
     if (!session?.user?.id || session.user.role !== 'USER') {
       return errorResponse('Unauthorized', 401)
     }
 
     const address = await prisma.address.findFirst({
-      where: { id: params.id, userId: session.user.id },
+      where: { id, userId: session.user.id },
     })
     if (!address) return errorResponse('Address not found', 404)
 
     await prisma.$transaction(async (tx) => {
-      await tx.address.delete({ where: { id: params.id } })
+      await tx.address.delete({ where: { id } })
 
       if (address.isDefault) {
         const oldest = await tx.address.findFirst({

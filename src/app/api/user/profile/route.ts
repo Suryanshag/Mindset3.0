@@ -17,6 +17,9 @@ export async function GET() {
         phone: true,
         address: true,
         image: true,
+        dateOfBirth: true,
+        preferredLanguage: true,
+        emergencyContact: true,
         createdAt: true,
       },
     })
@@ -50,6 +53,9 @@ export async function PATCH(req: Request) {
         phone: true,
         address: true,
         image: true,
+        dateOfBirth: true,
+        preferredLanguage: true,
+        emergencyContact: true,
         createdAt: true,
       },
     })
