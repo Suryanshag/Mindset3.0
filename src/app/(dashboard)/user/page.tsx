@@ -7,7 +7,9 @@ import StatsRow from '@/components/dashboard/stats-row'
 import ProfileCompletionCard from '@/components/dashboard/profile-completion-card'
 import TodaysFocus from '@/components/dashboard/todays-focus'
 import WorkshopBanner from '@/components/dashboard/workshop-banner'
+import ReflectionLanding from '@/components/dashboard/desktop/reflection-landing'
 import { getNextWorkshop, getUnreadNotificationCount, getUpcomingSession, getTodaysMoodCheckIn, getUserStats } from '@/lib/queries/dashboard'
+import { getReflectionLandingData } from '@/lib/queries/reflection'
 
 export default async function UserHome({
   searchParams,
@@ -22,8 +24,8 @@ export default async function UserHome({
   endOfToday.setHours(23, 59, 59, 999)
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
-  // Real data: user info, workshop, notifications, pending assignments, upcoming session
-  const [dbUser, workshop, unreadCount, pendingAssignments, upcomingSession, todaysMood, realStats] = await Promise.all([
+  // Fetch all data in parallel — mobile + desktop
+  const [dbUser, workshop, unreadCount, pendingAssignments, upcomingSession, todaysMood, realStats, reflectionData] = await Promise.all([
     userId
       ? prisma.user
           .findUnique({
@@ -65,6 +67,9 @@ export default async function UserHome({
     userId
       ? getUserStats(userId).catch(() => ({ streak: 0, sessionsCompleted: 0, mindfulHours: 0 }))
       : Promise.resolve({ streak: 0, sessionsCompleted: 0, mindfulHours: 0 }),
+    userId
+      ? getReflectionLandingData(userId).catch(() => null)
+      : Promise.resolve(null),
   ])
 
   // Derive user display info from real DB row
@@ -112,46 +117,50 @@ export default async function UserHome({
   const moreCount = Math.max(0, pendingAssignments.length - 1)
 
   return (
-    <div className="space-y-3.5 lg:space-y-5">
-      {/* 1. Header */}
-      <Header
-        name={userName}
-        avatarInitials={avatarInitials}
-        avatarUrl={avatarUrl}
-        streak={realStats.streak}
-        unreadNotifications={unreadCount}
-      />
+    <>
+      {/* Mobile dashboard */}
+      <div className="lg:hidden space-y-3.5">
+        <Header
+          name={userName}
+          avatarInitials={avatarInitials}
+          avatarUrl={avatarUrl}
+          streak={realStats.streak}
+          unreadNotifications={unreadCount}
+        />
+        <MoodCheckIn todaysCheckIn={todaysMood} />
+        <NextSessionCard session={upcomingSession} />
+        {hasAnyStats ? (
+          <StatsRow stats={realStats} />
+        ) : (
+          <ProfileCompletionCard done={profileDone} total={profileTotal} />
+        )}
+        {focusItem && (
+          <div>
+            <TodaysFocus item={focusItem} />
+            {moreCount > 0 && (
+              <a
+                href="/user/practice/assignments"
+                className="block text-[11px] text-primary font-medium mt-1.5 ml-1"
+              >
+                + {moreCount} more in your assignments
+              </a>
+            )}
+          </div>
+        )}
+        {workshop && <WorkshopBanner workshop={workshop} />}
+      </div>
 
-      {/* 2. Mood check-in — real data */}
-      <MoodCheckIn todaysCheckIn={todaysMood} />
-
-      {/* 3. Next session card — real data */}
-      <NextSessionCard session={upcomingSession} />
-
-      {/* 4. Stats row vs profile completion — mutually exclusive */}
-      {hasAnyStats ? (
-        <StatsRow stats={realStats} />
-      ) : (
-        <ProfileCompletionCard done={profileDone} total={profileTotal} />
-      )}
-
-      {/* 5. Today's focus — real pending assignments */}
-      {focusItem && (
-        <div>
-          <TodaysFocus item={focusItem} />
-          {moreCount > 0 && (
-            <a
-              href="/user/practice/assignments"
-              className="block text-[11px] text-primary font-medium mt-1.5 ml-1"
-            >
-              + {moreCount} more in your assignments
-            </a>
-          )}
-        </div>
-      )}
-
-      {/* 6. Workshop banner — real data from DB */}
-      {workshop && <WorkshopBanner workshop={workshop} />}
-    </div>
+      {/* Desktop: Reflection landing */}
+      <div className="hidden lg:block">
+        {reflectionData ? (
+          <ReflectionLanding data={reflectionData} />
+        ) : (
+          <div className="py-8">
+            <h1 className="text-[22px] font-medium text-text">Welcome to Mindset</h1>
+            <p className="text-[14px] text-text-faint mt-1">Your reflection space is loading...</p>
+          </div>
+        )}
+      </div>
+    </>
   )
 }
