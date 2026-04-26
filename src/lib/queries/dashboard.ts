@@ -65,6 +65,74 @@ export async function getUpcomingSession(userId: string): Promise<DashboardSessi
 }
 
 /**
+ * Streak: consecutive days with at least one engagement event.
+ */
+export async function getUserStreak(userId: string): Promise<number> {
+  const events = await prisma.$queryRaw<{ d: Date }[]>`
+    SELECT DISTINCT DATE(occurred_at AT TIME ZONE 'UTC') as d
+    FROM engagement_events
+    WHERE user_id = ${userId}
+    ORDER BY d DESC
+    LIMIT 90
+  `
+
+  if (events.length === 0) return 0
+
+  const toDateStr = (d: Date) => {
+    const dt = new Date(d)
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`
+  }
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+
+  const firstEventDate = toDateStr(events[0].d)
+  const todayStr = toDateStr(today)
+  const yesterdayStr = toDateStr(yesterday)
+
+  // Streak only counts if user engaged today or yesterday
+  if (firstEventDate !== todayStr && firstEventDate !== yesterdayStr) {
+    return 0
+  }
+
+  let streak = 1
+  for (let i = 1; i < events.length; i++) {
+    const prev = new Date(events[i - 1].d)
+    prev.setDate(prev.getDate() - 1)
+    if (toDateStr(events[i].d) === toDateStr(prev)) {
+      streak++
+    } else {
+      break
+    }
+  }
+  return streak
+}
+
+/**
+ * Dashboard stats: sessions completed, mindful hours, streak.
+ */
+export async function getUserStats(userId: string) {
+  const [streak, sessionsCompleted] = await Promise.all([
+    getUserStreak(userId),
+    prisma.session.count({
+      where: { userId, status: 'COMPLETED' },
+    }),
+  ])
+
+  // Mindful hours: sum of breathing assignment durations (stored in metadata.durationSeconds)
+  // For v1, use 0 — most users won't have breathing data yet
+  const mindfulHours = 0
+
+  return {
+    streak,
+    sessionsCompleted,
+    mindfulHours,
+  }
+}
+
+/**
  * Today's mood check-in for a user (null if not checked in today).
  */
 export async function getTodaysMoodCheckIn(userId: string): Promise<{ mood: 1|2|3|4|5 } | null> {

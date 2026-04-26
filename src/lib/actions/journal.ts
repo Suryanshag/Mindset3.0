@@ -31,8 +31,17 @@ export async function createJournalEntry(formData: FormData) {
     },
   })
 
+  // Log engagement event for streak tracking
+  await prisma.engagementEvent.create({
+    data: {
+      userId: session.user.id,
+      kind: 'JOURNAL_ENTRY_CREATED',
+    },
+  }).catch(() => {})
+
   revalidatePath('/user/practice/journal')
   revalidatePath('/user/practice')
+  revalidatePath('/user')
   return { id: entry.id }
 }
 

@@ -7,11 +7,7 @@ import StatsRow from '@/components/dashboard/stats-row'
 import ProfileCompletionCard from '@/components/dashboard/profile-completion-card'
 import TodaysFocus from '@/components/dashboard/todays-focus'
 import WorkshopBanner from '@/components/dashboard/workshop-banner'
-import {
-  getPlaceholderDashboard,
-  getPlaceholderEmptyDashboard,
-} from '@/lib/placeholders/dashboard'
-import { getNextWorkshop, getUnreadNotificationCount, getUpcomingSession, getTodaysMoodCheckIn } from '@/lib/queries/dashboard'
+import { getNextWorkshop, getUnreadNotificationCount, getUpcomingSession, getTodaysMoodCheckIn, getUserStats } from '@/lib/queries/dashboard'
 
 export default async function UserHome({
   searchParams,
@@ -21,18 +17,13 @@ export default async function UserHome({
   const params = await searchParams
   const session = await auth()
   const userId = session?.user?.id
-  const isEmpty = params.empty === '1'
-
-  const placeholder = isEmpty
-    ? getPlaceholderEmptyDashboard()
-    : getPlaceholderDashboard()
 
   const endOfToday = new Date()
   endOfToday.setHours(23, 59, 59, 999)
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
   // Real data: user info, workshop, notifications, pending assignments, upcoming session
-  const [dbUser, workshop, unreadCount, pendingAssignments, upcomingSession, todaysMood] = await Promise.all([
+  const [dbUser, workshop, unreadCount, pendingAssignments, upcomingSession, todaysMood, realStats] = await Promise.all([
     userId
       ? prisma.user
           .findUnique({
@@ -71,6 +62,9 @@ export default async function UserHome({
       : Promise.resolve([]),
     userId ? getUpcomingSession(userId).catch(() => null) : Promise.resolve(null),
     userId ? getTodaysMoodCheckIn(userId).catch(() => null) : Promise.resolve(null),
+    userId
+      ? getUserStats(userId).catch(() => ({ streak: 0, sessionsCompleted: 0, mindfulHours: 0 }))
+      : Promise.resolve({ streak: 0, sessionsCompleted: 0, mindfulHours: 0 }),
   ])
 
   // Derive user display info from real DB row
@@ -96,9 +90,9 @@ export default async function UserHome({
   const profileTotal = profileFields.length
 
   const hasAnyStats =
-    placeholder.stats.sessionsCompleted > 0 ||
-    placeholder.stats.mindfulHours > 0 ||
-    placeholder.stats.streak > 0
+    realStats.sessionsCompleted > 0 ||
+    realStats.mindfulHours > 0 ||
+    realStats.streak > 0
 
   // Build TodaysFocus from real assignments
   const focusAssignment = pendingAssignments[0] ?? null
@@ -124,7 +118,7 @@ export default async function UserHome({
         name={userName}
         avatarInitials={avatarInitials}
         avatarUrl={avatarUrl}
-        streak={placeholder.streak}
+        streak={realStats.streak}
         unreadNotifications={unreadCount}
       />
 
@@ -136,7 +130,7 @@ export default async function UserHome({
 
       {/* 4. Stats row vs profile completion — mutually exclusive */}
       {hasAnyStats ? (
-        <StatsRow stats={placeholder.stats} />
+        <StatsRow stats={realStats} />
       ) : (
         <ProfileCompletionCard done={profileDone} total={profileTotal} />
       )}

@@ -36,6 +36,7 @@ model User {
   journalEntries         JournalEntry[]
   assignmentResponses    AssignmentResponse[]
   moodCheckIns           MoodCheckIn[]
+  engagementEvents       EngagementEvent[]
 }
 
 enum Role {
@@ -460,6 +461,26 @@ model JournalEntry {
 
   @@index([userId, entryDate(sort: Desc)])
   @@map("journal_entries")
+}
+
+enum EngagementKind {
+  MOOD_LOGGED
+  SESSION_ATTENDED
+  ASSIGNMENT_COMPLETED
+  JOURNAL_ENTRY_CREATED
+}
+
+model EngagementEvent {
+  id         String         @id @default(cuid())
+  userId     String         @map("user_id")
+  kind       EngagementKind
+  occurredAt DateTime       @default(now()) @map("occurred_at")
+  metadata   Json?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, occurredAt(sort: Desc)])
+  @@map("engagement_events")
 }
 
 model MoodCheckIn {

@@ -50,6 +50,14 @@ export async function completeAssignment(
     revalidatePath('/user/practice/journal')
   }
 
+  // Log engagement event for streak tracking
+  await prisma.engagementEvent.create({
+    data: {
+      userId: session.user.id,
+      kind: 'ASSIGNMENT_COMPLETED',
+    },
+  }).catch(() => {})
+
   // Notify the doctor
   await prisma.notification.create({
     data: {

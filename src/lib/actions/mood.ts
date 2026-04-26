@@ -31,6 +31,14 @@ export async function logMoodCheckIn(mood: number) {
     },
   })
 
+  // Log engagement event for streak tracking
+  await prisma.engagementEvent.create({
+    data: {
+      userId: session.user.id,
+      kind: 'MOOD_LOGGED',
+    },
+  }).catch(() => {}) // non-blocking
+
   revalidatePath('/user')
   return { success: true }
 }
