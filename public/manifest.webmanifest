@@ -1,0 +1,22 @@
+{
+  "name": "Mindset",
+  "short_name": "Mindset",
+  "description": "Mental health care — accessible, affordable, stigma-free",
+  "start_url": "/user",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#F7F2EA",
+  "background_color": "#F7F2EA",
+  "icons": [
+    {
+      "src": "/images/Logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/images/Logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}

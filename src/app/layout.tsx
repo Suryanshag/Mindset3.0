@@ -20,6 +20,7 @@ const barlowCondensed = Barlow_Condensed({
 export const metadata: Metadata = {
   title: "Mindset",
   description: "Mental Health Platform",
+  manifest: "/manifest.webmanifest",
 };
 
 export default async function RootLayout({

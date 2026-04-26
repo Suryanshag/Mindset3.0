@@ -8,6 +8,7 @@ import {
   CreditCard,
   HelpCircle,
   Info,
+  ExternalLink,
   ChevronRight,
 } from 'lucide-react'
 import AvatarUpload from '@/components/dashboard/avatar-upload'
@@ -20,6 +21,7 @@ const settingsItems = [
   { label: 'Payments', href: '/user/profile/payments', Icon: CreditCard },
   { label: 'Help & support', href: '/user/profile/help', Icon: HelpCircle },
   { label: 'About', href: '/user/profile/about', Icon: Info },
+  { label: 'Visit website', href: '/', Icon: ExternalLink },
 ]
 
 export default async function ProfilePage() {

@@ -60,10 +60,20 @@ export default function Navbar({ light = false }: { light?: boolean }) {
     document.body.classList.remove('overflow-hidden')
   }
 
-  const authHref = session?.user
+  const isLoggedIn = !!session?.user
+  const authHref = isLoggedIn
     ? ROLE_HOME[session.user.role ?? ''] ?? '/user'
     : '/login'
-  const authLabel = session?.user ? 'Dashboard' : 'Login'
+  const authLabel = isLoggedIn ? 'Open dashboard' : 'Login'
+  const userInitials = isLoggedIn
+    ? (session.user.name ?? 'U')
+        .split(' ')
+        .map((w: string) => w[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : ''
+  const userImage = isLoggedIn ? session.user.image : null
 
   const headerClasses = `block-header${light ? ' block-header--light' : ''}${scrollBack ? ' -scroll-back' : ''}`
 
@@ -101,7 +111,14 @@ export default function Navbar({ light = false }: { light?: boolean }) {
               {status === 'loading' ? (
                 <span className="block-header__auth-placeholder" />
               ) : (
-                <Link href={authHref} className="block-header__auth-btn">
+                <Link href={authHref} className="block-header__auth-btn" style={isLoggedIn ? { display: 'flex', alignItems: 'center', gap: '8px' } : undefined}>
+                  {isLoggedIn && (
+                    userImage ? (
+                      <img src={userImage} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
+                    ) : (
+                      <span style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--teal, #2D5A4F)', color: '#fff', fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{userInitials}</span>
+                    )
+                  )}
                   {authLabel}
                 </Link>
               )}
