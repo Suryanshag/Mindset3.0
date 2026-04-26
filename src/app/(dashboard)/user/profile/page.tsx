@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import AvatarUpload from '@/components/dashboard/avatar-upload'
 import SignOutButton from '@/components/dashboard/sign-out-button'
+import PageHeader from '@/components/dashboard/page-header'
 
 const settingsItems = [
   { label: 'Personal info', href: '/user/profile/personal', Icon: UserCircle },
@@ -51,9 +52,12 @@ export default async function ProfilePage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div>
+      <PageHeader title="Profile" subtitle="Account and settings" />
+
+      <div className="space-y-5 pt-3.5">
       {/* Avatar + name */}
-      <div className="flex flex-col items-center pt-4">
+      <div className="flex flex-col items-center pt-2">
         <AvatarUpload
           currentUrl={user.image}
           initials={initials}
@@ -121,6 +125,7 @@ export default async function ProfilePage() {
 
       {/* Sign out */}
       <SignOutButton />
+      </div>
     </div>
   )
 }

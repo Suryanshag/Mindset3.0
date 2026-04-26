@@ -64,7 +64,7 @@ export default async function PracticeHubPage() {
 
   return (
     <div>
-      <PageHeader title="Practice" />
+      <PageHeader title="Practice" subtitle="Your space between sessions" />
 
       <div className="space-y-3.5 pt-3.5">
         {statsLine && (

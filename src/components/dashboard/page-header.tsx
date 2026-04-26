@@ -7,11 +7,12 @@ import type { ReactNode } from 'react'
 
 type Props = {
   title: string
+  subtitle?: string
   back?: boolean | string
   rightAction?: ReactNode
 }
 
-export default function PageHeader({ title, back, rightAction }: Props) {
+export default function PageHeader({ title, subtitle, back, rightAction }: Props) {
   const router = useRouter()
 
   const handleBack = () => {
@@ -22,38 +23,52 @@ export default function PageHeader({ title, back, rightAction }: Props) {
     }
   }
 
+  const hasSubtitle = !!subtitle
+
   return (
     <div
-      className="sticky top-0 z-30 bg-bg-app flex items-center h-14 -mx-4 px-4"
-      style={{ borderBottom: '0.5px solid var(--color-border)' }}
+      className="sticky top-0 z-30 bg-bg-app -mx-4 px-4 grid items-center"
+      style={{
+        height: hasSubtitle ? '76px' : '56px',
+        gridTemplateColumns: '56px 1fr 56px',
+        borderBottom: '0.5px solid var(--color-border)',
+      }}
     >
-      {back && (
-        typeof back === 'string' ? (
-          <Link
-            href={back}
-            className="w-11 h-11 flex items-center justify-center shrink-0 -ml-1.5"
-          >
-            <ArrowLeft size={22} className="text-text" />
-          </Link>
-        ) : (
-          <button
-            onClick={handleBack}
-            className="w-11 h-11 flex items-center justify-center shrink-0 -ml-1.5"
-          >
-            <ArrowLeft size={22} className="text-text" />
-          </button>
-        )
-      )}
+      {/* Left: back button or spacer — always 56px wide */}
+      <div className="flex items-center justify-start">
+        {back ? (
+          typeof back === 'string' ? (
+            <Link
+              href={back}
+              className="w-11 h-11 flex items-center justify-center"
+            >
+              <ArrowLeft size={22} className="text-text" />
+            </Link>
+          ) : (
+            <button
+              onClick={handleBack}
+              className="w-11 h-11 flex items-center justify-center"
+            >
+              <ArrowLeft size={22} className="text-text" />
+            </button>
+          )
+        ) : null}
+      </div>
 
-      <h1 className="flex-1 min-w-0 text-[17px] font-medium text-text truncate">
-        {title}
-      </h1>
+      {/* Center: title + optional subtitle */}
+      <div className="min-w-0">
+        <h1 className="text-[17px] font-medium text-text truncate">{title}</h1>
+        {hasSubtitle && (
+          <p className="text-[13px] text-text-muted truncate mt-0.5">
+            {subtitle}
+          </p>
+        )}
+      </div>
 
-      {rightAction && (
-        <div className="shrink-0 ml-2">
-          {rightAction}
-        </div>
-      )}
+      {/* Right: action slot or spacer — always 56px wide */}
+      <div className="flex items-center justify-end">
+        {rightAction ?? null}
+      </div>
     </div>
   )
 }

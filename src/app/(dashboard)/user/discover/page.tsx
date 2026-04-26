@@ -71,7 +71,7 @@ export default async function DiscoverHubPage() {
 
   return (
     <div>
-      <PageHeader title="Discover" />
+      <PageHeader title="Discover" subtitle="Workshops, library, and shop" />
 
       <div className="space-y-3.5 pt-3.5">
         {statsLine && (

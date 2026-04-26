@@ -44,6 +44,7 @@ export default async function JournalListPage({
     <div>
       <PageHeader
         title="Journal"
+        subtitle="Private space — only you can read this"
         back="/user/practice"
         rightAction={
           <Link
@@ -55,7 +56,7 @@ export default async function JournalListPage({
         }
       />
 
-      <div className="sticky top-14 z-20 bg-bg-app py-3">
+      <div className="sticky top-[76px] z-20 bg-bg-app py-3">
         <JournalFilters
           currentSearch={search}
           currentMood={mood}

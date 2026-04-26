@@ -50,7 +50,7 @@ export default async function SessionsPage({
 
   return (
     <div>
-      <PageHeader title="Sessions" />
+      <PageHeader title="Sessions" subtitle="Your appointments and notes" />
 
       <div className="pt-3.5">
         <Suspense>
