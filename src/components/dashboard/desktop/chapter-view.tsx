@@ -1,27 +1,35 @@
 import Link from 'next/link'
-import { BookOpen, ClipboardList, Ticket } from 'lucide-react'
+import { ClipboardList, Ticket } from 'lucide-react'
 import type { ChapterData, TimelineItem } from '@/lib/queries/reflection'
 
-function daysLater(sessionDate: Date, eventDate: Date): string {
-  const diff = Math.round(
-    (eventDate.getTime() - sessionDate.getTime()) / (1000 * 60 * 60 * 24)
-  )
-  if (diff <= 0) return 'That same day'
-  if (diff === 1) return 'The next day'
-  return `${diff} days later`
+const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
-function verbForType(item: TimelineItem): string {
+function numberToWord(n: number): string {
+  return NUMBER_WORDS[n] ?? String(n)
+}
+
+type Verb = 'wrote' | 'completed' | 'attended'
+
+function verbForType(item: TimelineItem): Verb {
   switch (item.type) {
-    case 'journal':
-      return 'you wrote:'
-    case 'assignment':
-      return 'you completed:'
-    case 'workshop':
-      return 'you attended:'
-    default:
-      return ''
+    case 'journal': return 'wrote'
+    case 'assignment': return 'completed'
+    case 'workshop': return 'attended'
+    default: return 'completed'
   }
+}
+
+function relativeIntro(daysAfter: number, kind: Verb): string {
+  if (daysAfter <= 0) return `That same day, you ${kind}:`
+  if (daysAfter === 1) return `The next day, you ${kind}:`
+  if (daysAfter <= 3) return `${capitalize(numberToWord(daysAfter))} days later, you ${kind}:`
+  if (daysAfter <= 7) return `Later that week, you ${kind}:`
+  if (daysAfter <= 14) return `The following week, you ${kind}:`
+  return `${daysAfter} days later, you ${kind}:`
 }
 
 export default function ChapterView({ chapter }: { chapter: ChapterData }) {
@@ -48,7 +56,7 @@ export default function ChapterView({ chapter }: { chapter: ChapterData }) {
           Session with {session.doctorName}
         </h1>
         <p className="text-[14px] text-text-faint mt-1">
-          {dateStr} &middot; {timeStr}
+          {dateStr} · {timeStr}
         </p>
       </div>
 
@@ -57,13 +65,13 @@ export default function ChapterView({ chapter }: { chapter: ChapterData }) {
         <div className="mb-8">
           <div className="h-px mb-6" style={{ backgroundColor: 'var(--color-border)' }} />
           <p className="text-[15px] font-serif italic text-text-muted leading-[1.7]">
-            &ldquo;{session.notes}&rdquo;
+            {'\u201C'}{session.notes}{'\u201D'}
           </p>
         </div>
       )}
 
-      {/* Timeline */}
-      {timeline.length > 0 ? (
+      {/* Timeline — only rendered when there IS content */}
+      {timeline.length > 0 && (
         <div>
           <div className="h-px mb-6" style={{ backgroundColor: 'var(--color-border)' }} />
           <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px] mb-6">
@@ -72,17 +80,18 @@ export default function ChapterView({ chapter }: { chapter: ChapterData }) {
 
           <div className="space-y-8">
             {timeline.map((item, i) => {
-              const dayLabel = daysLater(session.date, item.date)
+              const daysAfter = Math.round(
+                (item.date.getTime() - session.date.getTime()) / (1000 * 60 * 60 * 24)
+              )
               const verb = verbForType(item)
+              const intro = relativeIntro(daysAfter, verb)
 
               return (
                 <div key={`${item.type}-${i}`}>
-                  {/* Prose intro */}
-                  <p className="text-[15px] font-serif italic text-text-muted mb-3">
-                    {dayLabel}, {verb}
+                  <p className="text-[16px] font-serif italic text-text-muted mb-2 mt-6 first:mt-0">
+                    {intro}
                   </p>
 
-                  {/* Card */}
                   {item.type === 'journal' && (
                     <JournalCard entry={item.data} />
                   )}
@@ -96,13 +105,6 @@ export default function ChapterView({ chapter }: { chapter: ChapterData }) {
               )
             })}
           </div>
-        </div>
-      ) : (
-        <div>
-          <div className="h-px mb-6" style={{ backgroundColor: 'var(--color-border)' }} />
-          <p className="text-[14px] text-text-faint">
-            Nothing else recorded from this period.
-          </p>
         </div>
       )}
     </div>
@@ -120,10 +122,9 @@ function JournalCard({
     month: 'long',
   })
 
-  // Truncate body to ~150 chars
   const preview =
     entry.body.length > 150
-      ? entry.body.slice(0, 150).trimEnd() + '...'
+      ? entry.body.slice(0, 150).trimEnd() + '\u2026'
       : entry.body
 
   return (
@@ -137,7 +138,7 @@ function JournalCard({
         <p className="text-[14px] font-medium text-text mb-1">{entry.title}</p>
       )}
       <p className="text-[15px] font-serif text-text-muted leading-[1.6] line-clamp-3">
-        &ldquo;{preview}&rdquo;
+        {'\u201C'}{preview}{'\u201D'}
       </p>
       <p className="text-[13px] text-primary font-medium mt-3 hover:underline">
         Read entry →

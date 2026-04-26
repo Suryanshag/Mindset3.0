@@ -10,13 +10,15 @@ function getGreeting(): string {
   return 'Hi'
 }
 
-function daysAgo(date: Date): string {
-  const diff = Math.floor(
-    (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24)
-  )
-  if (diff === 0) return 'today'
-  if (diff === 1) return 'yesterday'
-  return `${diff} days ago`
+function lastSessionPhrase(daysSince: number, doctorName: string): string {
+  const firstName = doctorName.split(' ')[0]
+  if (daysSince <= 1) return `You met with ${firstName} yesterday.`
+  if (daysSince <= 3) return `Your last session with ${firstName} was ${daysSince} days ago.`
+  if (daysSince <= 7) return `Your last session with ${firstName} was earlier this week.`
+  if (daysSince <= 14) return `Your last session with ${firstName} was last week.`
+  if (daysSince <= 30) return `It\u2019s been a few weeks since your session with ${firstName}.`
+  if (daysSince <= 60) return `It\u2019s been over a month since your last session.`
+  return `It\u2019s been a while since you last met with ${firstName}.`
 }
 
 function daysUntil(date: Date): string {
@@ -57,18 +59,20 @@ export default function ReflectionLanding({
     month: 'long',
   })
 
-  // Build the "last session" prose
-  let lastSessionProse = ''
-  if (data.lastSession) {
-    const ago = daysAgo(data.lastSession.date)
-    lastSessionProse = `Your last session was ${ago} with ${data.lastSession.doctorName}.`
-    if (data.entriesSinceLastSession > 0) {
-      lastSessionProse += ` You wrote ${data.entriesSinceLastSession} ${data.entriesSinceLastSession === 1 ? 'entry' : 'entries'} since.`
-    }
-    if (data.completedSinceLastSession > 0) {
-      lastSessionProse += ` Completed ${data.completedSinceLastSession} ${data.completedSinceLastSession === 1 ? 'exercise' : 'exercises'}.`
-    }
-  }
+  // Build adaptive prose about last session
+  const daysSinceLastSession = data.lastSession
+    ? Math.floor((Date.now() - new Date(data.lastSession.date).getTime()) / (1000 * 60 * 60 * 24))
+    : null
+  const sessionProse = data.lastSession && daysSinceLastSession !== null
+    ? lastSessionPhrase(daysSinceLastSession, data.lastSession.doctorName)
+    : null
+  const entriesProse = data.entriesSinceLastSession > 0
+    ? `You\u2019ve written ${data.entriesSinceLastSession} ${data.entriesSinceLastSession === 1 ? 'entry' : 'entries'} since.`
+    : null
+  const completedProse = data.completedSinceLastSession > 0
+    ? `You\u2019ve completed ${data.completedSinceLastSession} ${data.completedSinceLastSession === 1 ? 'exercise' : 'exercises'}.`
+    : null
+  const showSchedulePrompt = daysSinceLastSession !== null && daysSinceLastSession > 30
 
   // Join window check for next session
   const joinWindowOpen = data.nextSession
@@ -118,22 +122,42 @@ export default function ReflectionLanding({
       </div>
 
       {/* Last session reflection */}
-      {data.lastSession ? (
+      {data.lastSession && sessionProse ? (
         <div className="mb-10">
-          <div className="h-px bg-border mb-8" style={{ backgroundColor: 'var(--color-border)' }} />
+          <div className="h-px mb-8" style={{ backgroundColor: 'var(--color-border)' }} />
           <p className="text-[16px] font-serif text-text-muted leading-[1.7]">
-            {lastSessionProse}
+            {sessionProse}
           </p>
-          <Link
-            href={`/user/sessions/${data.lastSession.id}`}
-            className="inline-block text-[14px] text-primary font-medium mt-4 hover:underline"
-          >
-            Open chapter ↗
-          </Link>
+          {entriesProse && (
+            <p className="text-[16px] font-serif text-text-muted leading-[1.7] mt-2">
+              {entriesProse}
+            </p>
+          )}
+          {completedProse && (
+            <p className="text-[16px] font-serif text-text-muted leading-[1.7] mt-2">
+              {completedProse}
+            </p>
+          )}
+          <div className="flex items-center gap-4 mt-4">
+            <Link
+              href={`/user/sessions/${data.lastSession.id}`}
+              className="text-[14px] text-primary font-medium hover:underline"
+            >
+              Open chapter ↗
+            </Link>
+            {showSchedulePrompt && (
+              <Link
+                href={`/user/sessions/book?doctorId=${data.lastSession.doctorId}`}
+                className="text-[14px] text-text-muted hover:text-primary transition-colors duration-150"
+              >
+                Want to schedule another?
+              </Link>
+            )}
+          </div>
         </div>
-      ) : (
+      ) : !data.lastSession ? (
         <div className="mb-10">
-          <div className="h-px bg-border mb-8" style={{ backgroundColor: 'var(--color-border)' }} />
+          <div className="h-px mb-8" style={{ backgroundColor: 'var(--color-border)' }} />
           <p className="text-[16px] font-serif text-text-muted leading-[1.7]">
             You haven&apos;t had a session yet. Find a therapist who fits you.
           </p>
@@ -144,7 +168,7 @@ export default function ReflectionLanding({
             Find a therapist
           </Link>
         </div>
-      )}
+      ) : null}
 
       {/* Next up */}
       {data.nextSession && (

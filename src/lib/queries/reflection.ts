@@ -58,6 +58,7 @@ export async function getReflectionLandingData(userId: string) {
       select: {
         id: true,
         date: true,
+        doctorId: true,
         doctor: {
           select: {
             user: { select: { name: true } },
@@ -148,6 +149,7 @@ export async function getReflectionLandingData(userId: string) {
       ? {
           id: lastSession.id,
           date: lastSession.date,
+          doctorId: lastSession.doctorId,
           doctorName: lastSession.doctor.user.name,
         }
       : null,
