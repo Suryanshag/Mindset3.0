@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { Calendar, Clock, Users, Ticket } from 'lucide-react'
+import { Ticket } from 'lucide-react'
 import PageHeader from '@/components/dashboard/page-header'
 import WorkshopRegisterButton from './register-button'
 
@@ -42,24 +42,22 @@ export default async function WorkshopDetailPage({
     <div>
       <PageHeader title="Workshop" back="/user/discover/workshops" />
 
-      <div className="space-y-3.5 pt-5">
-        {/* Cover image or icon */}
+      <div className="space-y-3.5 pt-5 pb-24">
+        {/* Cover image — natural aspect ratio, no cropping */}
         {workshop.coverImageUrl ? (
-          <div className="rounded-2xl overflow-hidden aspect-video">
-            <img
-              src={workshop.coverImageUrl}
-              alt={workshop.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
+          <img
+            src={workshop.coverImageUrl}
+            alt={workshop.title}
+            className="w-full h-auto rounded-2xl"
+          />
         ) : (
-          <div className="rounded-2xl bg-accent-tint flex items-center justify-center aspect-video">
+          <div className="rounded-2xl bg-accent-tint flex items-center justify-center aspect-[3/4]">
             <Ticket size={48} className="text-accent" />
           </div>
         )}
 
         {/* Title + instructor */}
-        <div>
+        <div className="-mt-0.5">
           <h2 className="text-[20px] font-medium text-text">{workshop.title}</h2>
           {workshop.instructorName && (
             <p className="text-[14px] text-text-muted mt-1">
@@ -68,59 +66,55 @@ export default async function WorkshopDetailPage({
           )}
         </div>
 
-        {/* Info card */}
+        {/* Info card — plain text, no icons */}
         <div
-          className="bg-bg-card rounded-2xl p-4 space-y-3"
+          className="bg-bg-card rounded-2xl p-4 space-y-2"
           style={{ border: '0.5px solid var(--color-border)' }}
         >
-          <div className="flex items-center gap-3">
-            <Calendar size={16} className="text-text-faint shrink-0" />
-            <p className="text-[14px] text-text">
-              {workshop.startsAt.toLocaleDateString('en-IN', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Clock size={16} className="text-text-faint shrink-0" />
-            <p className="text-[14px] text-text">
-              {workshop.startsAt.toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true,
-              })}
-              {' '}&middot; {workshop.durationMin} min
-            </p>
-          </div>
+          <p className="text-[14px] text-text">
+            {workshop.startsAt.toLocaleDateString('en-IN', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })}
+          </p>
+          <p className="text-[14px] text-text">
+            {workshop.startsAt.toLocaleTimeString('en-US', {
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true,
+            })}
+            {' '}&middot; {workshop.durationMin} min
+          </p>
           {workshop.capacity && (
-            <div className="flex items-center gap-3">
-              <Users size={16} className="text-text-faint shrink-0" />
-              <p className="text-[14px] text-text">
-                {workshop._count.registrations} of {workshop.capacity} spots filled
-              </p>
-            </div>
+            <p className="text-[14px] text-text">
+              {workshop._count.registrations} of {workshop.capacity} spots filled
+            </p>
           )}
           <p className="text-[15px] font-medium text-primary">
             {isFree ? 'Free' : `\u20B9${(workshop.priceCents / 100).toFixed(0)}`}
           </p>
         </div>
 
-        {/* Description */}
+        {/* Description — hidden when empty */}
         {workshop.description && (
           <div
             className="bg-bg-card rounded-2xl p-4"
             style={{ border: '0.5px solid var(--color-border)' }}
           >
+            <p className="text-[11px] font-medium text-text-faint uppercase tracking-wider mb-2">
+              About this workshop
+            </p>
             <p className="text-[14px] text-text leading-relaxed whitespace-pre-line">
               {workshop.description}
             </p>
           </div>
         )}
+      </div>
 
-        {/* Action button */}
+      {/* Sticky registration button — above bottom nav */}
+      <div className="fixed left-0 right-0 z-40 p-4 bg-bg/80 backdrop-blur-sm lg:max-w-md lg:mx-auto" style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))', borderTop: '0.5px solid var(--color-border)' }}>
         <WorkshopRegisterButton
           workshopId={workshop.id}
           isPast={isPast}
