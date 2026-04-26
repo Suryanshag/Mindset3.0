@@ -1,5 +1,3 @@
-import { Flame, CheckCircle, Clock } from 'lucide-react'
-
 type Props = {
   stats: {
     sessionsCompleted: number
@@ -13,25 +11,16 @@ export default function StatsRow({ stats }: Props) {
     {
       label: 'Streak',
       value: `${stats.streak}d`,
-      Icon: Flame,
-      color: 'text-accent',
-      bg: 'bg-accent-tint',
       show: stats.streak > 0,
     },
     {
       label: 'Sessions',
       value: String(stats.sessionsCompleted),
-      Icon: CheckCircle,
-      color: 'text-primary',
-      bg: 'bg-primary-tint',
       show: stats.sessionsCompleted > 0,
     },
     {
       label: 'Mindful hrs',
       value: String(stats.mindfulHours),
-      Icon: Clock,
-      color: 'text-primary-soft',
-      bg: 'bg-primary-tint',
       show: stats.mindfulHours > 0,
     },
   ]
@@ -42,7 +31,7 @@ export default function StatsRow({ stats }: Props) {
 
   return (
     <div
-      className={`grid gap-2.5 ${
+      className={`grid gap-2 ${
         visible.length === 1
           ? 'grid-cols-1 max-w-[140px] mx-auto'
           : visible.length === 2
@@ -53,16 +42,13 @@ export default function StatsRow({ stats }: Props) {
       {visible.map((item) => (
         <div
           key={item.label}
-          className="bg-bg-card rounded-2xl p-3 flex flex-col items-center gap-1.5"
-          style={{ border: '0.5px solid var(--color-border)' }}
+          className="bg-bg-card rounded-2xl px-3 py-3 flex flex-col items-center justify-center"
+          style={{ border: '0.5px solid var(--color-border)', height: '64px' }}
         >
-          <div
-            className={`w-8 h-8 rounded-full ${item.bg} flex items-center justify-center`}
-          >
-            <item.Icon size={16} className={item.color} />
-          </div>
-          <p className="text-[16px] font-medium text-text">{item.value}</p>
-          <p className="text-[11px] text-text-faint">{item.label}</p>
+          <p className="text-[20px] font-medium text-text leading-tight">
+            {item.value}
+          </p>
+          <p className="text-[10px] text-text-faint mt-0.5">{item.label}</p>
         </div>
       ))}
     </div>
