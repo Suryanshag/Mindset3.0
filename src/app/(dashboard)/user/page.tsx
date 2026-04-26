@@ -11,7 +11,7 @@ import {
   getPlaceholderDashboard,
   getPlaceholderEmptyDashboard,
 } from '@/lib/placeholders/dashboard'
-import { getNextWorkshop, getUnreadNotificationCount } from '@/lib/queries/dashboard'
+import { getNextWorkshop, getUnreadNotificationCount, getUpcomingSession } from '@/lib/queries/dashboard'
 
 export default async function UserHome({
   searchParams,
@@ -31,8 +31,8 @@ export default async function UserHome({
   endOfToday.setHours(23, 59, 59, 999)
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
-  // Real data: user info, workshop, notifications, pending assignments
-  const [dbUser, workshop, unreadCount, pendingAssignments] = await Promise.all([
+  // Real data: user info, workshop, notifications, pending assignments, upcoming session
+  const [dbUser, workshop, unreadCount, pendingAssignments, upcomingSession] = await Promise.all([
     userId
       ? prisma.user
           .findUnique({
@@ -69,6 +69,7 @@ export default async function UserHome({
           })
           .catch(() => [])
       : Promise.resolve([]),
+    userId ? getUpcomingSession(userId).catch(() => null) : Promise.resolve(null),
   ])
 
   // Derive user display info from real DB row
@@ -129,8 +130,8 @@ export default async function UserHome({
       {/* 2. Mood check-in */}
       <MoodCheckIn todaysCheckIn={placeholder.todaysCheckIn} />
 
-      {/* 3. Next session card — always rendered */}
-      <NextSessionCard session={placeholder.upcomingSession} />
+      {/* 3. Next session card — real data */}
+      <NextSessionCard session={upcomingSession} />
 
       {/* 4. Stats row vs profile completion — mutually exclusive */}
       {hasAnyStats ? (

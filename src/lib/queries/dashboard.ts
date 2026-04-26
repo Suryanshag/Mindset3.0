@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import type { Workshop } from '@/types/dashboard'
+import type { Workshop, Session as DashboardSession } from '@/types/dashboard'
 
 /**
  * Next published workshop starting within the next 14 days.
@@ -30,6 +30,37 @@ export async function getNextWorkshop(): Promise<Workshop | null> {
     }),
     price: ws.priceCents === 0 ? 'Free' : `\u20B9${(ws.priceCents / 100).toFixed(0)}`,
     imageUrl: ws.coverImageUrl,
+  }
+}
+
+/**
+ * Next upcoming session for a user (status PENDING or CONFIRMED, date >= now).
+ */
+export async function getUpcomingSession(userId: string): Promise<DashboardSession | null> {
+  const s = await prisma.session.findFirst({
+    where: {
+      userId,
+      date: { gte: new Date() },
+      status: { in: ['PENDING', 'CONFIRMED'] },
+    },
+    orderBy: { date: 'asc' },
+    include: {
+      doctor: {
+        include: { user: { select: { name: true } } },
+      },
+    },
+  })
+
+  if (!s) return null
+
+  return {
+    id: s.id,
+    doctorName: s.doctor.user.name,
+    doctorSpecialty: s.doctor.designation,
+    doctorAvatarUrl: s.doctor.photo,
+    date: s.date.toISOString(),
+    meetLink: s.meetLink,
+    status: s.status as DashboardSession['status'],
   }
 }
 
