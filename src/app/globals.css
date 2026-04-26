@@ -71,6 +71,7 @@
     --color-bg-spine:     #F2EDE3;
 
     --font-heading: "var(--font-heading-var)", "Barlow Condensed", "Helvetica", "Arial", sans-serif;
+    --font-serif: "var(--font-serif-var)", "Source Serif 4", "Georgia", "Times New Roman", serif;
 }
 
 /* RESET */

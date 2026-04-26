@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Nunito, Barlow_Condensed } from "next/font/google";
+import { Nunito, Barlow_Condensed, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import AuthSessionProvider from "@/components/providers/session-provider";
 import { CartProvider } from "@/lib/cart-context";
@@ -17,6 +17,13 @@ const barlowCondensed = Barlow_Condensed({
   weight: ["600", "700", "800"],
 });
 
+const sourceSerif = Source_Serif_4({
+  subsets: ["latin"],
+  variable: "--font-serif-var",
+  weight: ["400", "600"],
+  style: ["normal", "italic"],
+});
+
 export const metadata: Metadata = {
   title: "Mindset",
   description: "Mental Health Platform",
@@ -32,7 +39,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${nunito.variable} ${barlowCondensed.variable}`}
+        className={`${nunito.variable} ${barlowCondensed.variable} ${sourceSerif.variable}`}
         suppressHydrationWarning
       >
         <AuthSessionProvider session={session}>
