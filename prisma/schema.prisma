@@ -35,6 +35,7 @@ model User {
   notifications          Notification[]
   journalEntries         JournalEntry[]
   assignmentResponses    AssignmentResponse[]
+  moodCheckIns           MoodCheckIn[]
 }
 
 enum Role {
@@ -459,6 +460,21 @@ model JournalEntry {
 
   @@index([userId, entryDate(sort: Desc)])
   @@map("journal_entries")
+}
+
+model MoodCheckIn {
+  id            String   @id @default(cuid())
+  userId        String   @map("user_id")
+  mood          Int      // 1..5
+  note          String?  @db.Text
+  checkedInDate DateTime @map("checked_in_date") @db.Date
+  checkedInAt   DateTime @default(now()) @map("checked_in_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, checkedInDate])
+  @@index([userId, checkedInDate(sort: Desc)])
+  @@map("mood_check_ins")
 }
 
 model AssignmentResponse {

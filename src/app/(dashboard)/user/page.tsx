@@ -11,7 +11,7 @@ import {
   getPlaceholderDashboard,
   getPlaceholderEmptyDashboard,
 } from '@/lib/placeholders/dashboard'
-import { getNextWorkshop, getUnreadNotificationCount, getUpcomingSession } from '@/lib/queries/dashboard'
+import { getNextWorkshop, getUnreadNotificationCount, getUpcomingSession, getTodaysMoodCheckIn } from '@/lib/queries/dashboard'
 
 export default async function UserHome({
   searchParams,
@@ -32,7 +32,7 @@ export default async function UserHome({
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
   // Real data: user info, workshop, notifications, pending assignments, upcoming session
-  const [dbUser, workshop, unreadCount, pendingAssignments, upcomingSession] = await Promise.all([
+  const [dbUser, workshop, unreadCount, pendingAssignments, upcomingSession, todaysMood] = await Promise.all([
     userId
       ? prisma.user
           .findUnique({
@@ -70,6 +70,7 @@ export default async function UserHome({
           .catch(() => [])
       : Promise.resolve([]),
     userId ? getUpcomingSession(userId).catch(() => null) : Promise.resolve(null),
+    userId ? getTodaysMoodCheckIn(userId).catch(() => null) : Promise.resolve(null),
   ])
 
   // Derive user display info from real DB row
@@ -127,8 +128,8 @@ export default async function UserHome({
         unreadNotifications={unreadCount}
       />
 
-      {/* 2. Mood check-in */}
-      <MoodCheckIn todaysCheckIn={placeholder.todaysCheckIn} />
+      {/* 2. Mood check-in — real data */}
+      <MoodCheckIn todaysCheckIn={todaysMood} />
 
       {/* 3. Next session card — real data */}
       <NextSessionCard session={upcomingSession} />

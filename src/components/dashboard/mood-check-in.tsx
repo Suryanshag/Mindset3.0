@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
+import { logMoodCheckIn } from '@/lib/actions/mood'
 
 const moods = [
   { value: 1, face: '·_·', label: 'Low', tint: '#FCE7E3' },
@@ -19,6 +20,15 @@ export default function MoodCheckIn({ todaysCheckIn }: Props) {
     todaysCheckIn?.mood ?? null
   )
   const [collapsed, setCollapsed] = useState(todaysCheckIn !== null)
+  const [isPending, startTransition] = useTransition()
+
+  function handleSelect(value: number) {
+    setSelected(value)
+    setCollapsed(true)
+    startTransition(async () => {
+      await logMoodCheckIn(value)
+    })
+  }
 
   if (collapsed && selected !== null) {
     const mood = moods.find((m) => m.value === selected)
@@ -35,7 +45,7 @@ export default function MoodCheckIn({ todaysCheckIn }: Props) {
             <span className="text-[11px] text-text-muted leading-none">{mood?.face}</span>
           </div>
           <span className="text-[13px] text-text-muted">
-            Logged today &middot; {mood?.label}
+            {isPending ? 'Saving...' : 'Logged today'} &middot; {mood?.label}
           </span>
         </div>
         <button
@@ -62,10 +72,7 @@ export default function MoodCheckIn({ todaysCheckIn }: Props) {
           return (
             <button
               key={mood.value}
-              onClick={() => {
-                setSelected(mood.value)
-                setCollapsed(true)
-              }}
+              onClick={() => handleSelect(mood.value)}
               className="flex flex-col items-center gap-1.5"
             >
               <div

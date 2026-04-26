@@ -65,6 +65,27 @@ export async function getUpcomingSession(userId: string): Promise<DashboardSessi
 }
 
 /**
+ * Today's mood check-in for a user (null if not checked in today).
+ */
+export async function getTodaysMoodCheckIn(userId: string): Promise<{ mood: 1|2|3|4|5 } | null> {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const checkIn = await prisma.moodCheckIn.findUnique({
+    where: {
+      userId_checkedInDate: {
+        userId,
+        checkedInDate: today,
+      },
+    },
+    select: { mood: true },
+  })
+
+  if (!checkIn) return null
+  return { mood: checkIn.mood as 1|2|3|4|5 }
+}
+
+/**
  * Count of unread notifications for a user.
  */
 export async function getUnreadNotificationCount(userId: string): Promise<number> {
