@@ -12,6 +12,8 @@ import SessionCancelledEmail from '@/emails/session-cancelled'
 import EbookPurchasedEmail from '@/emails/ebook-purchased'
 import SessionFollowupEmail from '@/emails/session-followup'
 import PasswordResetEmail from '@/emails/password-reset'
+import OrderShippedEmail from '@/emails/order-shipped'
+import OrderDeliveredEmail from '@/emails/order-delivered'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = process.env.RESEND_FROM_EMAIL ?? 'Mindset <onboarding@resend.dev>'
@@ -236,6 +238,43 @@ export function sendPasswordResetEmail(
     'Reset your Mindset password',
     render(PasswordResetEmail(props)),
     'password-reset'
+  )
+}
+
+// 13. Order shipped
+export function sendOrderShipped(
+  to: string,
+  props: {
+    userName: string
+    orderId: string
+    courierName: string | null
+    awbCode: string | null
+    trackingUrl: string | null
+  }
+): void {
+  const shortId = props.orderId.slice(-8).toUpperCase()
+  sendEmail(
+    to,
+    `Your order has shipped — #${shortId}`,
+    render(OrderShippedEmail(props)),
+    'order-shipped'
+  )
+}
+
+// 14. Order delivered
+export function sendOrderDelivered(
+  to: string,
+  props: {
+    userName: string
+    orderId: string
+  }
+): void {
+  const shortId = props.orderId.slice(-8).toUpperCase()
+  sendEmail(
+    to,
+    `Your order has arrived — #${shortId}`,
+    render(OrderDeliveredEmail(props)),
+    'order-delivered'
   )
 }
 

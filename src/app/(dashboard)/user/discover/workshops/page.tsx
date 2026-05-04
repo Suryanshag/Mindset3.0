@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import Image from 'next/image'
 import Link from 'next/link'
 import { CalendarDays, Ticket, ChevronRight } from 'lucide-react'
 import PageHeader from '@/components/dashboard/page-header'
@@ -37,15 +38,18 @@ export default async function WorkshopsListPage() {
                 <Link
                   key={ws.id}
                   href={`/user/discover/workshops/${ws.id}`}
-                  className="bg-bg-card rounded-2xl py-3 px-3.5 lg:p-4 flex gap-3 lg:gap-4 transition-colors duration-150 lg:hover:bg-white/80"
+                  className="bg-bg-card rounded-2xl py-3 px-3.5 lg:p-4 flex gap-3 lg:gap-4 transition-colors duration-150 lg:hover:bg-white/60"
                   style={{ border: '0.5px solid var(--color-border)' }}
                 >
-                  <div className="w-10 h-10 lg:w-20 lg:h-20 rounded-xl bg-accent-tint flex items-center justify-center shrink-0 overflow-hidden">
+                  <div className="relative w-10 h-10 lg:w-20 lg:h-20 rounded-xl bg-accent-tint flex items-center justify-center shrink-0 overflow-hidden">
                     {ws.coverImageUrl ? (
-                      <img
+                      <Image
+                        fill
                         src={ws.coverImageUrl}
                         alt={ws.title}
-                        className="w-full h-full object-cover"
+                        sizes="(max-width: 1024px) 40px, 80px"
+                        className="object-cover"
+                        unoptimized
                       />
                     ) : (
                       <Ticket size={18} className="text-accent" />

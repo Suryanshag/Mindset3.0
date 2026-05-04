@@ -143,7 +143,7 @@ export async function GET(req: NextRequest) {
       },
       include: {
         payment: true,
-        orderItems: { select: { productId: true, quantity: true } },
+        orderItems: { select: { productId: true, quantity: true, product: { select: { isDigital: true } } } },
       },
     })
 
@@ -155,12 +155,14 @@ export async function GET(req: NextRequest) {
 
       try {
         await prisma.$transaction(async (tx) => {
-          // Restore stock for each item
+          // Restore stock for each non-digital item
           for (const item of order.orderItems) {
-            await tx.product.update({
-              where: { id: item.productId },
-              data: { stock: { increment: item.quantity } },
-            })
+            if (!item.product.isDigital) {
+              await tx.product.update({
+                where: { id: item.productId },
+                data: { stock: { increment: item.quantity } },
+              })
+            }
           }
 
           // Delete payment first (no cascade on Order→Payment)

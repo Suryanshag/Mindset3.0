@@ -1,4 +1,10 @@
+import type { Metadata } from 'next'
 import Navbar from '@/components/Navbar'
+
+// Auth pages aren't indexable content — keep them out of search results.
+export const metadata: Metadata = {
+  robots: { index: false, follow: true },
+}
 
 export default function AuthLayout({
   children,
@@ -14,7 +20,7 @@ export default function AuthLayout({
 
       {/* ── Floating decorative shapes ── */}
       <img
-        src="/images/blog-shape-1.svg"
+        src="/images/decoration/blog-shape-1.svg"
         alt=""
         aria-hidden="true"
         className="pointer-events-none absolute select-none"
@@ -28,7 +34,7 @@ export default function AuthLayout({
         }}
       />
       <img
-        src="/images/hero-shape-1.svg"
+        src="/images/hero/hero-shape-1.svg"
         alt=""
         aria-hidden="true"
         className="pointer-events-none absolute select-none hidden sm:block"
@@ -42,7 +48,7 @@ export default function AuthLayout({
         }}
       />
       <img
-        src="/images/blog-shape-2.svg"
+        src="/images/decoration/blog-shape-2.svg"
         alt=""
         aria-hidden="true"
         className="pointer-events-none absolute select-none hidden md:block"
@@ -56,7 +62,7 @@ export default function AuthLayout({
         }}
       />
       <img
-        src="/images/blog-shape-3.svg"
+        src="/images/decoration/blog-shape-3.svg"
         alt=""
         aria-hidden="true"
         className="pointer-events-none absolute select-none"
@@ -70,7 +76,7 @@ export default function AuthLayout({
         }}
       />
       <img
-        src="/images/blog-shape-4.svg"
+        src="/images/decoration/blog-shape-4.svg"
         alt=""
         aria-hidden="true"
         className="pointer-events-none absolute select-none hidden lg:block"

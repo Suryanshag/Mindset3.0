@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 
 interface Product {
@@ -88,7 +89,7 @@ export default function AdminProductsPage() {
                 <tr key={p.id} className="border-b border-gray-50">
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-3">
-                      {p.image && <img src={p.image} alt="" className="w-10 h-10 rounded object-cover" />}
+                      {p.image && <Image width={40} height={40} src={p.image} alt="" className="rounded object-cover" />}
                       <span className="font-medium text-gray-900">{p.name}</span>
                     </div>
                   </td>

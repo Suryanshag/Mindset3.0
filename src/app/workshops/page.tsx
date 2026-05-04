@@ -49,19 +49,19 @@ const staticHTML = `
         </div>
         <div class="block-blog-hero__shapes">
           <div class="block-blog-hero__shape block-blog-hero__shape--1" data-shape-animate>
-            <img width="173" height="193" decoding="async" src="/images/blog-shape-1.svg" alt="" />
+            <img width="173" height="193" decoding="async" src="/images/decoration/blog-shape-1.svg" alt="" />
           </div>
           <div class="block-blog-hero__shape block-blog-hero__shape--2" data-shape-animate>
-            <img width="179" height="194" decoding="async" src="/images/blog-shape-2.svg" alt="" />
+            <img width="179" height="194" decoding="async" src="/images/decoration/blog-shape-2.svg" alt="" />
           </div>
           <div class="block-blog-hero__shape block-blog-hero__shape--3" data-shape-animate>
-            <img width="219" height="215" decoding="async" src="/images/blog-shape-3.svg" alt="" />
+            <img width="219" height="215" decoding="async" src="/images/decoration/blog-shape-3.svg" alt="" />
           </div>
           <div class="block-blog-hero__shape block-blog-hero__shape--4" data-shape-animate>
-            <img width="182" height="194" decoding="async" src="/images/blog-shape-4.svg" alt="" />
+            <img width="182" height="194" decoding="async" src="/images/decoration/blog-shape-4.svg" alt="" />
           </div>
           <div class="block-blog-hero__shape block-blog-hero__shape--5" data-shape-animate>
-            <img width="170" height="136" decoding="async" src="/images/blog-shape-5.svg" alt="" />
+            <img width="170" height="136" decoding="async" src="/images/decoration/blog-shape-5.svg" alt="" />
           </div>
         </div>
       </section>
@@ -92,7 +92,19 @@ const staticHTML = `
 
             <div class="block-blog-listing__main">
               <div class="block-blog-listing__posts" data-posts-container>
-                <div class="block-blog-listing__loading">Loading events...</div>
+                <div class="ms-skel-grid" aria-busy="true" aria-label="Loading events">
+                  ${Array.from({ length: 6 }).map(() => `
+                    <div class="ms-skel-card">
+                      <div class="ms-skel ms-skel-card__media ms-skel-card__media--portrait"></div>
+                      <div class="ms-skel-card__body">
+                        <div class="ms-skel ms-skel-card__chip"></div>
+                        <div class="ms-skel ms-skel-card__title"></div>
+                        <div class="ms-skel ms-skel-card__line ms-skel-card__line--short"></div>
+                        <div class="ms-skel ms-skel-card__line"></div>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
               </div>
             </div>
           </div>
@@ -107,7 +119,7 @@ const staticHTML = `
           <div class="block-footer__top">
               <div class="block-footer__brand">
                   <div class="block-footer__brand-identity">
-                      <img src="/images/Logo.jpg" alt="Mindset logo" class="block-footer__brand-logo">
+                      <img src="/images/icons/Logo.webp" alt="Mindset logo" class="block-footer__brand-logo">
                       <span class="block-footer__brand-wordmark">Mindset</span>
                   </div>
                   <p class="block-footer__brand-tagline">Making mental health support accessible, affordable, and stigma-free for everyone.</p>
@@ -150,8 +162,8 @@ const staticHTML = `
           <div class="block-footer__bottom">
               <div class="block-footer__copyright">© 2026 Mindset. All rights reserved.</div>
               <nav class="block-footer__legal-nav" aria-label="Legal">
-                  <a href="#">Privacy Policy</a>
-                  <a href="#">Terms of Use</a>
+                  <a href="/privacy-policy">Privacy Policy</a>
+                  <a href="/terms-of-use">Terms of Use</a>
               </nav>
           </div>
       </div>
@@ -326,7 +338,18 @@ function buildNgoDetail(v: NgoVisit): string {
 }
 
 function buildLoadingHTML(): string {
-  return `<div class="doctor-detail-loading"><div class="doctor-detail-loading__spinner"></div><p>Loading…</p></div>`;
+  return `
+    <div class="ms-skel-detail" aria-busy="true" aria-label="Loading">
+      <div class="ms-skel ms-skel-detail__media"></div>
+      <div class="ms-skel-detail__body">
+        <div class="ms-skel ms-skel-detail__title"></div>
+        <div class="ms-skel ms-skel-detail__sub"></div>
+        <div class="ms-skel ms-skel-detail__line"></div>
+        <div class="ms-skel ms-skel-detail__line"></div>
+        <div class="ms-skel ms-skel-detail__line" style="width: 70%"></div>
+        <div class="ms-skel ms-skel-detail__cta"></div>
+      </div>
+    </div>`;
 }
 
 // ── Page component ─────────────────────────────────────────────────────────
@@ -347,7 +370,6 @@ export default function WorkshopsPage() {
   // Set shell HTML once — React never overwrites this
   useLayoutEffect(() => {
     if (containerRef.current) {
-      containerRef.current.innerHTML = staticHTML;
       postsRef.current = containerRef.current.querySelector<HTMLElement>("[data-posts-container]");
     }
   }, []);
@@ -422,8 +444,10 @@ export default function WorkshopsPage() {
   // Render
   useLayoutEffect(() => {
     const container = containerRef.current;
-    const postsContainer = postsRef.current;
-    if (!container || !postsContainer) return;
+    if (!container) return;
+    const postsContainer = container.querySelector<HTMLElement>("[data-posts-container]");
+    if (!postsContainer) return;
+    postsRef.current = postsContainer;
 
     if (view === "detail") {
       if (!selected) { postsContainer.innerHTML = buildLoadingHTML(); return; }
@@ -574,7 +598,7 @@ export default function WorkshopsPage() {
   return (
     <>
       <Navbar light />
-      <div ref={containerRef} />
+      <div ref={containerRef} dangerouslySetInnerHTML={{ __html: staticHTML }} />
     </>
   );
 }

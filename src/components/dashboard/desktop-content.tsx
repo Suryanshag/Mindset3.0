@@ -17,6 +17,7 @@ export default function DesktopContent({ spineSessions, engagementState, childre
   // Reflection routes: /user or /user/sessions/[id]
   const isReflectionRoute =
     pathname === '/user' ||
+    pathname === '/user/reflection/today' ||
     (pathname?.startsWith('/user/sessions/') && pathname !== '/user/sessions')
 
   const showRail = isReflectionRoute

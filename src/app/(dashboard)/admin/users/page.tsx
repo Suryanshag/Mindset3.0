@@ -16,7 +16,7 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const debounceRef = useRef<NodeJS.Timeout>()
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
 
   function fetchUsers(query: string) {
     setLoading(true)
@@ -32,7 +32,7 @@ export default function AdminUsersPage() {
 
   function handleSearch(value: string) {
     setSearch(value)
-    clearTimeout(debounceRef.current)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => fetchUsers(value), 300)
   }
 

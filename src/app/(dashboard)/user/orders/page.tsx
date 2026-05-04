@@ -20,7 +20,7 @@ import RazorpayCheckout from '@/components/payments/razorpay-checkout'
 interface OrderItem {
   quantity: number
   price: string
-  product: { name: string; image: string | null }
+  product: { name: string; image: string | null; isDigital: boolean }
 }
 
 interface Order {
@@ -178,6 +178,7 @@ export default function OrdersPage() {
       ) : (
         <div className="space-y-4">
           {orders.map((order) => {
+            const isAllDigital = order.orderItems.every(oi => oi.product.isDigital)
             const ShipIcon = SHIPPING_ICONS[order.shippingStatus] ?? Clock
             const shipColor = SHIPPING_COLORS[order.shippingStatus] ?? SHIPPING_COLORS.PENDING
             const payColor = PAYMENT_COLORS[order.paymentStatus] ?? PAYMENT_COLORS.PENDING
@@ -205,16 +206,34 @@ export default function OrdersPage() {
                         >
                           {order.paymentStatus}
                         </span>
-                        <span
-                          className="text-xs font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1"
-                          style={{ background: shipColor.bg, color: shipColor.text }}
-                        >
-                          <ShipIcon size={12} />
-                          {order.shippingStatus}
-                        </span>
+                        {isAllDigital ? (
+                          <span
+                            className="text-xs font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1"
+                            style={{ background: '#D1FAE5', color: '#065F46' }}
+                          >
+                            <CheckCircle size={12} />
+                            Available in Library
+                          </span>
+                        ) : (
+                          <span
+                            className="text-xs font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1"
+                            style={{ background: shipColor.bg, color: shipColor.text }}
+                          >
+                            <ShipIcon size={12} />
+                            {order.shippingStatus}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-3 mt-2">
-                        {order.shippingStatus !== 'PENDING' && order.shippingStatus !== 'DELIVERED' && (
+                        {isAllDigital && order.paymentStatus === 'PAID' ? (
+                          <Link
+                            href="/user/library"
+                            className="text-xs font-semibold inline-block"
+                            style={{ color: 'var(--teal)' }}
+                          >
+                            Open Library &rarr;
+                          </Link>
+                        ) : !isAllDigital && order.shippingStatus !== 'PENDING' && order.shippingStatus !== 'DELIVERED' ? (
                           <button
                             onClick={() => setTrackingOrderId(order.id)}
                             className="text-xs font-semibold inline-block"
@@ -222,7 +241,7 @@ export default function OrdersPage() {
                           >
                             Track Order &rarr;
                           </button>
-                        )}
+                        ) : null}
                         {canResume && (
                           <button
                             onClick={() => handleResumeOrder(order.id)}
@@ -273,7 +292,14 @@ export default function OrdersPage() {
                           <p className="text-sm font-medium truncate" style={{ color: 'var(--navy)' }}>
                             {item.product.name}
                           </p>
-                          <p className="text-xs text-gray-400">Qty: {item.quantity}</p>
+                          <p className="text-xs text-gray-400">
+                            Qty: {item.quantity}
+                            {!isAllDigital && (
+                              <span className={`ml-2 ${item.product.isDigital ? 'text-teal-600' : ''}`}>
+                                {item.product.isDigital ? 'Available immediately' : ''}
+                              </span>
+                            )}
+                          </p>
                         </div>
                         <p className="text-sm font-semibold" style={{ color: 'var(--navy)' }}>
                           &#8377;{Number(item.price).toLocaleString('en-IN')}

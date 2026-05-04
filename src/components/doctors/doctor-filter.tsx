@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import DoctorCard from './doctor-card'
-import type { Decimal } from '@prisma/client/runtime/library'
+import type { Prisma } from '@prisma/client'
+
+type Decimal = Prisma.Decimal
 
 type Doctor = {
   id: string

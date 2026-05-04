@@ -2,14 +2,8 @@
 
 import { useState, useTransition } from 'react'
 import { logMoodCheckIn } from '@/lib/actions/mood'
-
-const moods = [
-  { value: 1, face: '·_·', label: 'Low', tint: '#FCE7E3' },
-  { value: 2, face: '.-.', label: 'Meh', tint: '#FBE9DD' },
-  { value: 3, face: '‿‿', label: 'Good', tint: '#DDE9DC' },
-  { value: 4, face: '^‿^', label: 'Great', tint: '#DDE9DC' },
-  { value: 5, face: '^◡^', label: 'Amazing', tint: '#E8E4F2' },
-] as const
+import { MOODS } from '@/lib/constants/mood'
+import MoodFace from '@/components/dashboard/mood-face'
 
 type Props = {
   todaysCheckIn: { mood: 1 | 2 | 3 | 4 | 5 } | null
@@ -31,7 +25,7 @@ export default function MoodCheckIn({ todaysCheckIn }: Props) {
   }
 
   if (collapsed && selected !== null) {
-    const mood = moods.find((m) => m.value === selected)
+    const mood = MOODS.find((m) => m.value === selected)
     return (
       <div
         className="bg-bg-card rounded-2xl px-4 py-3 flex items-center justify-between"
@@ -40,9 +34,9 @@ export default function MoodCheckIn({ todaysCheckIn }: Props) {
         <div className="flex items-center gap-2.5">
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: mood?.tint }}
+            style={{ backgroundColor: mood?.tint, color: mood?.stroke }}
           >
-            <span className="text-[11px] text-text-muted leading-none">{mood?.face}</span>
+            {mood && <MoodFace mood={mood.value} size={16} />}
           </div>
           <span className="text-[13px] text-text-muted">
             {isPending ? 'Saving...' : 'Logged today'} &middot; {mood?.label}
@@ -50,7 +44,7 @@ export default function MoodCheckIn({ todaysCheckIn }: Props) {
         </div>
         <button
           onClick={() => setCollapsed(false)}
-          className="text-[12px] text-primary font-medium"
+          className="text-[12px] text-primary font-medium bg-transparent border-0 p-0 cursor-pointer"
         >
           Change
         </button>
@@ -67,7 +61,7 @@ export default function MoodCheckIn({ todaysCheckIn }: Props) {
         How are you feeling today?
       </p>
       <div className="flex justify-between">
-        {moods.map((mood) => {
+        {MOODS.map((mood) => {
           const isSelected = selected === mood.value
           return (
             <button
@@ -79,10 +73,11 @@ export default function MoodCheckIn({ todaysCheckIn }: Props) {
                 className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
                 style={{
                   backgroundColor: mood.tint,
+                  color: mood.stroke,
                   border: isSelected ? '2px solid var(--color-primary)' : '2px solid transparent',
                 }}
               >
-                <span className="text-[12px] text-text-muted leading-none">{mood.face}</span>
+                <MoodFace mood={mood.value} size={22} />
               </div>
               <span className="text-[10px] text-text-faint">{mood.label}</span>
             </button>

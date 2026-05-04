@@ -32,9 +32,9 @@ export default function CartPage() {
         <div className="bg-white rounded-xl border border-gray-100 p-12 text-center">
           <p className="text-gray-500 mb-4">Your cart is empty</p>
           <Link
-            href="/products"
+            href="/user/shop"
             className="inline-block px-6 py-2.5 rounded-lg text-sm font-semibold text-white"
-            style={{ background: 'var(--teal)' }}
+            style={{ background: 'var(--color-primary)' }}
           >
             Browse Products
           </Link>
@@ -136,12 +136,12 @@ export default function CartPage() {
             <Link
               href="/user/orders/checkout"
               className="block text-center w-full py-2.5 rounded-lg text-sm font-semibold text-white"
-              style={{ background: 'var(--teal)' }}
+              style={{ background: 'var(--color-primary)' }}
             >
               Proceed to Checkout
             </Link>
             <Link
-              href="/products"
+              href="/user/shop"
               className="block text-center w-full py-2 mt-2 text-sm font-medium text-gray-500 hover:text-gray-700"
             >
               Continue Shopping

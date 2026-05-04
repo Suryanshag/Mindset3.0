@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { Pencil } from 'lucide-react'
 import JournalDeleteButton from '@/components/dashboard/journal/journal-delete-button'
 import PageHeader from '@/components/dashboard/page-header'
-
-const MOOD_EMOJI = ['', '😞', '😔', '😐', '🙂', '😊']
+import { MOODS } from '@/lib/constants/mood'
+import MoodFace from '@/components/dashboard/mood-face'
 
 export default async function JournalDetailPage({
   params,
@@ -49,7 +49,15 @@ export default async function JournalDetailPage({
       <div className="space-y-3.5 pt-3.5 lg:max-w-[680px] lg:mx-auto lg:pt-6">
         {entry.mood && (
           <div className="flex items-center gap-2">
-            <span className="text-[20px]">{MOOD_EMOJI[entry.mood]}</span>
+            <span
+              className="w-11 h-11 rounded-full flex items-center justify-center"
+              style={{
+                backgroundColor: MOODS[entry.mood - 1]?.tint,
+                color: MOODS[entry.mood - 1]?.stroke,
+              }}
+            >
+              <MoodFace mood={entry.mood as 1 | 2 | 3 | 4 | 5} size={22} />
+            </span>
           </div>
         )}
 

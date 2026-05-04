@@ -1,5 +1,6 @@
 @import "tailwindcss/theme";
 @import "tailwindcss/utilities";
+/* asset paths reorganized; wp/ folder removed */
 
 /* Prevent Tailwind's .container from overriding our custom .container */
 @utility container {
@@ -748,7 +749,7 @@ body .wp-site-blocks .block-hero__carousel-item {
 
 body .wp-site-blocks .block-hero__carousel-item.-shape-1 {
     animation: 10s linear infinite itemRotate;
-    background: url(/images/hero-shape-1.svg) 50%/contain no-repeat;
+    background: url(/images/hero/hero-shape-1.svg) 50%/contain no-repeat;
     height: 10.0625rem;
     margin-left: 1.25rem;
     margin-right: 2.375rem;
@@ -766,7 +767,7 @@ body .wp-site-blocks .block-hero__carousel-item.-shape-1 {
 
 body .wp-site-blocks .block-hero__carousel-item.-shape-2 {
     animation: 10s linear infinite itemRotate;
-    background: url(/images/hero-shape-2.svg) 50%/contain no-repeat;
+    background: url(/images/hero/hero-shape-2.svg) 50%/contain no-repeat;
     height: 11.125rem;
     margin-right: 3.625rem;
     width: 10.75rem;
@@ -782,7 +783,7 @@ body .wp-site-blocks .block-hero__carousel-item.-shape-2 {
 
 body .wp-site-blocks .block-hero__carousel-item.-shape-3 {
     animation: 8s linear infinite itemRotate;
-    background: url(/images/hero-shape-3.svg) 50%/contain no-repeat;
+    background: url(/images/hero/hero-shape-3.svg) 50%/contain no-repeat;
     height: 9.4375rem;
     margin-right: -2.125rem;
     width: 8.1875rem;
@@ -799,7 +800,7 @@ body .wp-site-blocks .block-hero__carousel-item.-shape-3 {
 
 body .wp-site-blocks .block-hero__carousel-item.-shape-4 {
     animation: 10s linear infinite itemRotate;
-    background: url(/images/hero-shape-2.svg) 50%/contain no-repeat;
+    background: url(/images/hero/hero-shape-2.svg) 50%/contain no-repeat;
     height: 11.125rem;
     margin-right: 0;
     width: 10.75rem;
@@ -828,8 +829,8 @@ body .wp-site-blocks .block-hero__carousel-item.-media-4 {
 body .wp-site-blocks .block-hero__carousel-item.-media-1 {
     height: 19.25rem;
     margin-right: 6.125rem;
-    -webkit-mask-image: url(/images/hero-mask-1.svg);
-    mask-image: url(/images/hero-mask-1.svg);
+    -webkit-mask-image: url(/images/hero/hero-mask-1.svg);
+    mask-image: url(/images/hero/hero-mask-1.svg);
     width: 17.5rem;
 }
 
@@ -844,8 +845,8 @@ body .wp-site-blocks .block-hero__carousel-item.-media-1 {
 body .wp-site-blocks .block-hero__carousel-item.-media-2 {
     height: 19.25rem;
     margin-right: 10.875rem;
-    -webkit-mask-image: url(/images/hero-mask-2.svg);
-    mask-image: url(/images/hero-mask-2.svg);
+    -webkit-mask-image: url(/images/hero/hero-mask-2.svg);
+    mask-image: url(/images/hero/hero-mask-2.svg);
     width: 17.1875rem;
 }
 
@@ -860,8 +861,8 @@ body .wp-site-blocks .block-hero__carousel-item.-media-2 {
 body .wp-site-blocks .block-hero__carousel-item.-media-3 {
     height: 18.9375rem;
     margin-right: 9.125rem;
-    -webkit-mask-image: url(/images/hero-mask-3.svg);
-    mask-image: url(/images/hero-mask-3.svg);
+    -webkit-mask-image: url(/images/hero/hero-mask-3.svg);
+    mask-image: url(/images/hero/hero-mask-3.svg);
     -webkit-mask-position: left center;
     mask-position: left center;
     width: 16.625rem;
@@ -880,8 +881,8 @@ body .wp-site-blocks .block-hero__carousel-item.-media-3 {
 body .wp-site-blocks .block-hero__carousel-item.-media-4 {
     height: 19.25rem;
     margin-right: 6.125rem;
-    -webkit-mask-image: url(/images/hero-mask-5.svg);
-    mask-image: url(/images/hero-mask-5.svg);
+    -webkit-mask-image: url(/images/hero/hero-mask-5.svg);
+    mask-image: url(/images/hero/hero-mask-5.svg);
     -webkit-mask-position: left center;
     mask-position: left center;
     width: 17.5rem;
@@ -1178,7 +1179,7 @@ body .wp-site-blocks .block-slogan__item-image {
 }
 
 body .wp-site-blocks .block-slogan__item-image.-image-1 {
-    background: url(/images/slogan-shape-mobile-1.svg) 50%/contain no-repeat;
+    background: url(/images/decoration/slogan-shape-mobile-1.svg) 50%/contain no-repeat;
     height: 2.875rem;
     width: 2.4375rem;
 }
@@ -1202,14 +1203,14 @@ body .wp-site-blocks .block-slogan__item-image.-image-1 {
     body .wp-site-blocks .block-slogan__item-image.-image-1 {
         background: unset;
         height: 7.56rem;
-        -webkit-mask-image: url(/images/slogan-mask-1.svg);
-        mask-image: url(/images/slogan-mask-1.svg);
+        -webkit-mask-image: url(/images/decoration/slogan-mask-1.svg);
+        mask-image: url(/images/decoration/slogan-mask-1.svg);
         width: 6.3rem;
     }
 }
 
 body .wp-site-blocks .block-slogan__item-image.-image-2 {
-    background: url(/images/slogan-shape-mobile-5.svg) 50%/contain no-repeat;
+    background: url(/images/decoration/slogan-shape-mobile-5.svg) 50%/contain no-repeat;
     height: 2.625rem;
     width: 3rem;
 }
@@ -1222,8 +1223,8 @@ body .wp-site-blocks .block-slogan__item-image img {
     body .wp-site-blocks .block-slogan__item-image.-image-2 {
         background: unset;
         height: 6.3rem;
-        -webkit-mask-image: url(/images/slogan-mask-2.svg);
-        mask-image: url(/images/slogan-mask-2.svg);
+        -webkit-mask-image: url(/images/decoration/slogan-mask-2.svg);
+        mask-image: url(/images/decoration/slogan-mask-2.svg);
         width: 7.35rem;
     }
     body .wp-site-blocks .block-slogan__item-image img {
@@ -1239,42 +1240,42 @@ body .wp-site-blocks .block-slogan__item-shape {
 }
 
 body .wp-site-blocks .block-slogan__item-shape.-shape-1 {
-    background: url(/images/slogan-shape-mobile-2.svg) 50%/contain no-repeat;
+    background: url(/images/decoration/slogan-shape-mobile-2.svg) 50%/contain no-repeat;
     height: 2.875rem;
     width: 2.4375rem;
 }
 
 @media(min-width:768px) {
     body .wp-site-blocks .block-slogan__item-shape.-shape-1 {
-        background: url(/images/slogan-shape-1.svg) 50%/contain no-repeat;
+        background: url(/images/decoration/slogan-shape-1.svg) 50%/contain no-repeat;
         height: 7.56rem;
         width: 6.3rem;
     }
 }
 
 body .wp-site-blocks .block-slogan__item-shape.-shape-2 {
-    background: url(/images/slogan-shape-mobile-3.svg) 50%/contain no-repeat;
+    background: url(/images/decoration/slogan-shape-mobile-3.svg) 50%/contain no-repeat;
     height: 3rem;
     width: 2.625rem;
 }
 
 @media(min-width:768px) {
     body .wp-site-blocks .block-slogan__item-shape.-shape-2 {
-        background: url(/images/slogan-shape-2.svg) 50%/contain no-repeat;
+        background: url(/images/decoration/slogan-shape-2.svg) 50%/contain no-repeat;
         height: 7.18rem;
         width: 6.3rem;
     }
 }
 
 body .wp-site-blocks .block-slogan__item-shape.-shape-3 {
-    background: url(/images/slogan-shape-mobile-4.svg) 50%/contain no-repeat;
+    background: url(/images/decoration/slogan-shape-mobile-4.svg) 50%/contain no-repeat;
     height: 2.5rem;
     width: 3rem;
 }
 
 @media(min-width:768px) {
     body .wp-site-blocks .block-slogan__item-shape.-shape-3 {
-        background: url(/images/slogan-shape-3.svg) 50%/contain no-repeat;
+        background: url(/images/decoration/slogan-shape-3.svg) 50%/contain no-repeat;
         height: 6.3rem;
         width: 7.56rem;
     }
@@ -1375,6 +1376,7 @@ body .wp-site-blocks .block-tiles__item {
         opacity: 1;
         transition-delay: .25s;
     }
+    /* photos-pagination & photos-navigation rules below are stale (no HTML uses these classes)
     body .wp-site-blocks .block-tiles__item.-active .block-tiles__item-photos-pagination {
         opacity: 1;
     }
@@ -1382,6 +1384,7 @@ body .wp-site-blocks .block-tiles__item {
         opacity: 1;
         visibility: visible;
     }
+    */
     body .wp-site-blocks .block-tiles__item:hover:not(.-active) {
         background-color: var(--wp--preset--color--cream-800);
         width: calc(33.333% - 1.03125rem);
@@ -1390,6 +1393,7 @@ body .wp-site-blocks .block-tiles__item {
         opacity: 1;
         transition-delay: .25s;
     }
+    /* photos-pagination & photos-navigation hover rules: stale
     body .wp-site-blocks .block-tiles__item:hover:not(.-active) .block-tiles__item-photos-pagination {
         opacity: 1;
     }
@@ -1397,6 +1401,7 @@ body .wp-site-blocks .block-tiles__item {
         opacity: 1;
         visibility: visible;
     }
+    */
     body .wp-site-blocks .block-tiles__items:has(.block-tiles__item:hover) .block-tiles__item.-active:not(:hover) {
         background-color: transparent;
         width: calc(22.222% - 1.03125rem);
@@ -1405,6 +1410,7 @@ body .wp-site-blocks .block-tiles__item {
         opacity: 0;
         transition-delay: 0s;
     }
+    /* photos-pagination & photos-navigation :has rules: stale
     body .wp-site-blocks .block-tiles__items:has(.block-tiles__item:hover) .block-tiles__item.-active:not(:hover) .block-tiles__item-photos-pagination {
         opacity: 0;
     }
@@ -1412,6 +1418,7 @@ body .wp-site-blocks .block-tiles__item {
         opacity: 0;
         visibility: hidden;
     }
+    */
     body .wp-site-blocks .block-tiles__items:has(.block-tiles__item:hover) .block-tiles__item.-active:not(:hover) .block-tiles__item-arrow {
         opacity: 0;
     }
@@ -1438,6 +1445,7 @@ body .wp-site-blocks .block-tiles__item-photos {
     width: 100%;
 }
 
+/* photos-pagination & photos-navigation base styles: stale (no HTML uses these classes)
 body .wp-site-blocks .block-tiles__item-photos-pagination {
     align-items: center;
     background-color: hsla(0, 0%, 100%, .85);
@@ -1468,11 +1476,13 @@ body .wp-site-blocks .block-tiles__item-photos-pagination .swiper-pagination-bul
 body .wp-site-blocks .block-tiles__item-photos-navigation {
     display: none;
 }
+*/
 
 @media(min-width:992px) {
     body .wp-site-blocks .block-tiles__item-photos {
         height: 14.1875rem;
     }
+    /* photos-pagination & photos-navigation desktop overrides: stale
     body .wp-site-blocks .block-tiles__item-photos-pagination {
         background-color: unset;
         gap: .5rem;
@@ -1501,11 +1511,13 @@ body .wp-site-blocks .block-tiles__item-photos-navigation {
         width: 100%;
         z-index: 2;
     }
+    */
     body .wp-site-blocks .block-tiles__item-content {
         overflow: hidden;
     }
 }
 
+/* photos-navigation-next/prev styles: stale (no HTML uses these classes)
 body .wp-site-blocks .block-tiles__item-photos-navigation-next,
 body .wp-site-blocks .block-tiles__item-photos-navigation-prev {
     align-items: center;
@@ -1549,6 +1561,7 @@ body .wp-site-blocks .block-tiles__item-photos-navigation-prev:hover {
 body .wp-site-blocks .block-tiles__item-photos-navigation-next:after {
     transform: rotate(180deg) translateY(.0625rem);
 }
+*/
 
 body .wp-site-blocks .block-tiles__item-photo {
     align-items: center;
@@ -2415,8 +2428,8 @@ body .wp-site-blocks .block-rooms__item-features-item-icon {
     align-items: center;
     display: flex;
     height: 2.375rem;
-    -webkit-mask-image: url(/images/feature-item-mask.svg);
-    mask-image: url(/images/feature-item-mask.svg);
+    -webkit-mask-image: url(/images/decoration/feature-item-mask.svg);
+    mask-image: url(/images/decoration/feature-item-mask.svg);
     -webkit-mask-position: center center;
     mask-position: center center;
     -webkit-mask-repeat: no-repeat;
@@ -2963,6 +2976,7 @@ body .wp-site-blocks .block-services__item.-active .block-services__item-toggler
 body .wp-site-blocks .block-services__item.-active .block-services__item-toggler:before {
     background-color: var(--wp--preset--color--brown-500);
 }
+/* toggler-icon CSS commented out: HTML element commented out in page.tsx
 body .wp-site-blocks .block-services__item.-active .block-services__item-toggler-icon {
     background-color: hsla(0, 0%, 100%, .102);
     transform: rotate(180deg);
@@ -2973,6 +2987,7 @@ body .wp-site-blocks .block-services__item.-active .block-services__item-toggler
 body .wp-site-blocks .block-services__item.-active .block-services__item-toggler-icon-line:last-child {
     transform: translate(-50%, -50%) rotate(0);
 }
+*/
 body .wp-site-blocks .block-services__item.-active .block-services__item-main {
     display: block;
 }
@@ -3060,8 +3075,8 @@ body .wp-site-blocks .block-services__item-toggler:after {
     background-color: var(--wp--preset--color--cream-700);
     height: 100%;
     left: unset;
-    -webkit-mask-image: url(/images/nav-shape-blue.svg);
-    mask-image: url(/images/nav-shape-blue.svg);
+    -webkit-mask-image: url(/images/nav/nav-shape-blue.svg);
+    mask-image: url(/images/nav/nav-shape-blue.svg);
     -webkit-mask-position: right center;
     mask-position: right center;
     -webkit-mask-repeat: no-repeat;
@@ -3079,6 +3094,7 @@ body .wp-site-blocks .block-services__item-toggler:hover:before {
 body .wp-site-blocks .block-services__item-toggler-inner {
     text-align: left;
 }
+/* toggler-icon base CSS commented out: HTML element commented out in page.tsx
 body .wp-site-blocks .block-services__item-toggler-icon {
     align-items: center;
     background-color: rgba(84, 57, 69, .078);
@@ -3103,6 +3119,7 @@ body .wp-site-blocks .block-services__item-toggler-icon-line {
 body .wp-site-blocks .block-services__item-toggler-icon-line:last-child {
     transform: translate(-50%, -50%) rotate(90deg);
 }
+*/
 body .wp-site-blocks .block-services__item-main {
     background-color: var(--wp--preset--color--white);
     border-radius: .75rem;
@@ -3173,8 +3190,8 @@ body .wp-site-blocks .banner {
         border-bottom-right-radius: 1.375rem;
         border-top-right-radius: 1.375rem;
         height: 23.5625rem;
-        -webkit-mask-image: url(/images/banner-mask-desktop.svg);
-        mask-image: url(/images/banner-mask-desktop.svg);
+        -webkit-mask-image: url(/images/decoration/banner-mask-desktop.svg);
+        mask-image: url(/images/decoration/banner-mask-desktop.svg);
         -webkit-mask-position: center left;
         mask-position: center left;
     }
@@ -3209,8 +3226,8 @@ body .wp-site-blocks .banner__photo {
     border-bottom-right-radius: 1.375rem;
     display: flex;
     height: 23.375rem;
-    -webkit-mask-image: url(/images/banner-mask-mobile.svg);
-    mask-image: url(/images/banner-mask-mobile.svg);
+    -webkit-mask-image: url(/images/decoration/banner-mask-mobile.svg);
+    mask-image: url(/images/decoration/banner-mask-mobile.svg);
     -webkit-mask-position: top center;
     mask-position: top center;
     -webkit-mask-repeat: no-repeat;
@@ -3235,8 +3252,8 @@ body .wp-site-blocks .banner.-background-dark {
         flex-direction: column-reverse;
     }
     body .wp-site-blocks .banner.-variant-dark .banner__photo {
-        -webkit-mask-image: url(/images/banner-mask-mobile-blog.svg);
-        mask-image: url(/images/banner-mask-mobile-blog.svg);
+        -webkit-mask-image: url(/images/decoration/banner-mask-mobile-blog.svg);
+        mask-image: url(/images/decoration/banner-mask-mobile-blog.svg);
     }
 }
 
@@ -3251,8 +3268,8 @@ body .wp-site-blocks .banner.-background-dark {
         align-items: center;
         display: flex;
         height: 20.9375rem;
-        -webkit-mask-image: url(/images/banner-mask-desktop-blog.svg);
-        mask-image: url(/images/banner-mask-desktop-blog.svg);
+        -webkit-mask-image: url(/images/decoration/banner-mask-desktop-blog.svg);
+        mask-image: url(/images/decoration/banner-mask-desktop-blog.svg);
         -webkit-mask-repeat: no-repeat;
         mask-repeat: no-repeat;
         -webkit-mask-size: 100% auto;
@@ -3300,7 +3317,7 @@ body .wp-site-blocks .block-tiles-slider__slogan-item.-shape {
 }
 
 body .wp-site-blocks .block-tiles-slider__slogan-item.-shape.-shape-1 {
-    background: url(https://allinnhomeofstudents.com/wp-content/themes/allinn/assets/build/images/tiles-slogan-shape-1.svg) 50%/contain no-repeat;
+    background: url(/images/decoration/tiles-slogan-shape-1.svg) 50%/contain no-repeat;
     height: 4.75rem;
     width: 4.1875rem;
 }
@@ -3330,7 +3347,7 @@ body .wp-site-blocks .block-tiles-slider__slogan-item.-shape.-shape-1 {
 }
 
 body .wp-site-blocks .block-tiles-slider__slogan-item.-shape.-shape-2 {
-    background: url(https://allinnhomeofstudents.com/wp-content/themes/allinn/assets/build/images/tiles-slogan-shape-2.svg) 50%/contain no-repeat;
+    background: url(/images/decoration/tiles-slogan-shape-2.svg) 50%/contain no-repeat;
     height: 4rem;
     width: 4.9375rem;
 }
@@ -3356,8 +3373,8 @@ body .wp-site-blocks .block-tiles-slider__slogan-item.-image {
 
 body .wp-site-blocks .block-tiles-slider__slogan-item.-image.-image-1 {
     height: 5rem;
-    -webkit-mask-image: url(https://allinnhomeofstudents.com/wp-content/themes/allinn/assets/build/images/slogan-mask-1.svg);
-    mask-image: url(https://allinnhomeofstudents.com/wp-content/themes/allinn/assets/build/images/slogan-mask-1.svg);
+    -webkit-mask-image: url(/images/decoration/slogan-mask-1.svg);
+    mask-image: url(/images/decoration/slogan-mask-1.svg);
     width: 4.1875rem;
 }
 
@@ -3370,8 +3387,8 @@ body .wp-site-blocks .block-tiles-slider__slogan-item.-image.-image-1 {
 
 body .wp-site-blocks .block-tiles-slider__slogan-item.-image.-image-2 {
     height: 4.125rem;
-    -webkit-mask-image: url(https://allinnhomeofstudents.com/wp-content/themes/allinn/assets/build/images/slogan-mask-2.svg);
-    mask-image: url(https://allinnhomeofstudents.com/wp-content/themes/allinn/assets/build/images/slogan-mask-2.svg);
+    -webkit-mask-image: url(/images/decoration/slogan-mask-2.svg);
+    mask-image: url(/images/decoration/slogan-mask-2.svg);
     width: 5rem;
 }
 
@@ -3476,8 +3493,8 @@ body .wp-site-blocks .block-apply__photo {
 body .wp-site-blocks .block-apply__photo img {
     background-color: var(--wp--preset--color--blue-500);
     height: 18.5625rem;
-    -webkit-mask-image: url(/images/apply-now-mask.svg);
-    mask-image: url(/images/apply-now-mask.svg);
+    -webkit-mask-image: url(/images/decoration/apply-now-mask.svg);
+    mask-image: url(/images/decoration/apply-now-mask.svg);
     -webkit-mask-position: center center;
     mask-position: center center;
     -webkit-mask-repeat: no-repeat;
@@ -3761,7 +3778,7 @@ body .wp-site-blocks .block-apply__form .wpcf7-form .form__input textarea::place
     font-weight: 400;
 }
 body .wp-site-blocks .block-apply__form .wpcf7-form .form__input select {
-    background-image: url(/images/icon-arrow-select.svg);
+    background-image: url(/images/icons/icon-arrow-select.svg);
     background-position: calc(100% - .75rem) center;
     background-repeat: no-repeat;
     background-size: 1.25rem;
@@ -3880,14 +3897,14 @@ body .wp-site-blocks .block-apply__banner-shape {
     }
 }
 body .wp-site-blocks .block-apply__banner-shape.-shape-1 {
-    background: url(/images/apply-banner-shape-1.svg) 50%/contain no-repeat;
+    background: url(/images/decoration/apply-banner-shape-1.svg) 50%/contain no-repeat;
     height: 8.375rem;
     left: 35.125rem;
     top: -4.1875rem;
     width: 7.75rem;
 }
 body .wp-site-blocks .block-apply__banner-shape.-shape-2 {
-    background: url(/images/apply-banner-shape-2.svg) 50%/contain no-repeat;
+    background: url(/images/decoration/apply-banner-shape-2.svg) 50%/contain no-repeat;
     bottom: -4.375rem;
     height: 7.625rem;
     right: 30.25rem;
@@ -3895,7 +3912,7 @@ body .wp-site-blocks .block-apply__banner-shape.-shape-2 {
     z-index: 2;
 }
 body .wp-site-blocks .block-apply__banner-shape.-shape-3 {
-    background: url(/images/apply-banner-shape-3.svg) 50%/contain no-repeat;
+    background: url(/images/decoration/apply-banner-shape-3.svg) 50%/contain no-repeat;
     bottom: -5.75rem;
     height: 7.625rem;
     right: 23.75rem;
@@ -6305,5 +6322,160 @@ body .wp-site-blocks .ws-card__img-wrap--poster {
         text-decoration: underline;
         text-underline-offset: 2px;
     }
+}
+
+/* Route transition fade */
+@keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@utility animate-fade-in {
+    animation: fade-in 150ms ease-out;
+}
+
+/* ============================================================
+   Mindset skeleton loaders — brand-aligned shimmer
+   Used by client list pages while their data is fetched.
+   ============================================================ */
+
+@keyframes mindset-shimmer {
+    0%   { background-position: -180% 0; }
+    100% { background-position: 180% 0; }
+}
+
+@keyframes mindset-breathe {
+    0%, 100% { opacity: 0.55; }
+    50%      { opacity: 1; }
+}
+
+.ms-skel {
+    background: linear-gradient(
+        90deg,
+        rgba(30, 68, 92, 0.06) 0%,
+        rgba(30, 68, 92, 0.12) 50%,
+        rgba(30, 68, 92, 0.06) 100%
+    );
+    background-size: 200% 100%;
+    animation: mindset-shimmer 1.6s ease-in-out infinite;
+    border-radius: 10px;
+    color: transparent;
+    user-select: none;
+    pointer-events: none;
+}
+
+.ms-skel--block { display: block; }
+.ms-skel--circle { border-radius: 9999px; }
+.ms-skel--text { height: 0.85em; border-radius: 6px; }
+
+.ms-skel-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    width: 100%;
+}
+@media (min-width: 640px) { .ms-skel-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .ms-skel-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.ms-skel-card {
+    background: var(--bg-card, #fff);
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid var(--color-border, rgba(0, 0, 0, 0.06));
+    animation: mindset-breathe 2.4s ease-in-out infinite;
+}
+.ms-skel-card__media {
+    aspect-ratio: 4 / 3;
+    width: 100%;
+}
+.ms-skel-card__media--portrait { aspect-ratio: 3 / 4; }
+.ms-skel-card__media--square { aspect-ratio: 1 / 1; }
+
+.ms-skel-card__body {
+    padding: 1.1rem 1.25rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+.ms-skel-card__chip {
+    width: 5.5rem;
+    height: 1.4rem;
+    border-radius: 9999px;
+}
+.ms-skel-card__title {
+    width: 80%;
+    height: 1.2rem;
+    border-radius: 6px;
+}
+.ms-skel-card__line {
+    width: 100%;
+    height: 0.7rem;
+    border-radius: 6px;
+}
+.ms-skel-card__line--short { width: 60%; }
+.ms-skel-card__price {
+    width: 4rem;
+    height: 1.1rem;
+    border-radius: 6px;
+    margin-top: 0.4rem;
+}
+
+/* Detail-pane skeleton (used by buildLoadingHTML on doctor/product/workshop detail) */
+.ms-skel-detail {
+    padding: 2rem 1rem;
+    max-width: 880px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+@media (min-width: 768px) {
+    .ms-skel-detail { grid-template-columns: 5fr 6fr; }
+}
+.ms-skel-detail__media { aspect-ratio: 4 / 5; border-radius: 18px; }
+.ms-skel-detail__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding-top: 0.5rem;
+}
+.ms-skel-detail__title { height: 2rem; width: 70%; border-radius: 8px; }
+.ms-skel-detail__sub { height: 1rem; width: 50%; border-radius: 6px; }
+.ms-skel-detail__line { height: 0.75rem; border-radius: 6px; }
+.ms-skel-detail__cta { height: 3rem; width: 12rem; border-radius: 9999px; margin-top: 1rem; }
+
+/* Reduce motion: respect user preference */
+@media (prefers-reduced-motion: reduce) {
+    .ms-skel,
+    .ms-skel-card { animation: none; opacity: 0.7; }
+}
+
+/* ============================================================
+   Defensive: hero heading must always sit ABOVE decorative shapes,
+   and shapes must always become visible (CSS fallback if GSAP
+   fails to fire on a client-side navigation).
+   ============================================================ */
+body .wp-site-blocks .block-blog-hero { isolation: isolate; }
+
+body .wp-site-blocks .block-blog-hero__container,
+body .wp-site-blocks .block-blog-hero__heading-wrapper {
+    z-index: 10;
+    position: relative;
+}
+
+body .wp-site-blocks .block-blog-hero__shapes,
+body .wp-site-blocks .block-blog-hero__shape {
+    z-index: 1;
+}
+
+@keyframes hero-shape-fallback-fade {
+    to { opacity: 1; }
+}
+
+body .wp-site-blocks .block-blog-hero__shape {
+    /* Fade in via CSS at 1.5s as a fallback. GSAP normally animates
+       these in earlier (0.2-0.95s) and overrides with inline style;
+       this kicks in only when GSAP fails. */
+    animation: hero-shape-fallback-fade 0.8s 1.5s ease forwards;
 }
 

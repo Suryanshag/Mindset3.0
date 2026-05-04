@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Clock, ArrowRight } from 'lucide-react'
-import { Decimal } from '@prisma/client/runtime/library'
+import { Prisma } from '@prisma/client'
+
+type Decimal = Prisma.Decimal
 
 type DoctorCardProps = {
   slug: string

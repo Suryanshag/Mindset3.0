@@ -40,3 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 screenshots/
+# Added by code-review-graph
+.code-review-graph/
+.claude/
+test-results/

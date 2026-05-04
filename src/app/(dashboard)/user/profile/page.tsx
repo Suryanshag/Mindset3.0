@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth'
+import Image from 'next/image'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
@@ -101,10 +102,10 @@ export default async function ProfilePage() {
           </p>
           <div className="flex items-center gap-3">
             {therapist.photo ? (
-              <img
+              <Image width={40} height={40}
                 src={therapist.photo}
                 alt={therapist.name}
-                className="w-10 h-10 rounded-full object-cover shrink-0"
+                className="rounded-full object-cover shrink-0"
               />
             ) : (
               <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center shrink-0">

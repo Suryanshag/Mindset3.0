@@ -22,7 +22,7 @@ export async function getJournalEntries(
     to?: Date
   }
 ) {
-  const where: any = { userId }
+  const where: any = { userId, isDraft: false }
 
   if (opts?.search) {
     where.OR = [
@@ -60,8 +60,34 @@ export async function getJournalEntry(userId: string, id: string) {
 
 export async function getLatestJournalEntry(userId: string) {
   return prisma.journalEntry.findFirst({
-    where: { userId },
+    where: { userId, isDraft: false },
     orderBy: { entryDate: 'desc' },
     select: { entryDate: true },
+  })
+}
+
+export async function getActiveDraft(userId: string) {
+  return prisma.journalEntry.findFirst({
+    where: { userId, isDraft: true },
+  })
+}
+
+export async function getPendingJournalPrompt(userId: string) {
+  return prisma.assignment.findFirst({
+    where: {
+      userId,
+      type: 'JOURNAL_PROMPT',
+      status: 'PENDING',
+    },
+    select: {
+      id: true,
+      title: true,
+      instructions: true,
+      dueDate: true,
+      doctor: {
+        select: { user: { select: { name: true } } },
+      },
+    },
+    orderBy: { dueDate: 'asc' },
   })
 }

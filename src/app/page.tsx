@@ -26,7 +26,7 @@ const sectionHTML = `
                     </div>
 
                     <div class="block-hero__image">
-                        <img src="/images/Hero.png" alt="Mindset" fetchpriority="high" />
+                        <img src="/images/hero/Hero.webp" alt="Mindset" fetchpriority="high" />
                     </div>
 
                     <div class="block-hero__container container">
@@ -73,9 +73,9 @@ const sectionHTML = `
 
                             <figure class="block-slogan__item-image -image-1" data-animate-item>
                                 <img decoding="async" width="605" height="605"
-                                    src="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/slogan-1.webp"
+                                    src="/images/decoration/slogan-1.webp"
                                     class="attachment-full size-full" alt="happy girl" loading="lazy"
-                                    srcset="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/slogan-1.webp 605w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/slogan-1-300x300.webp 300w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/slogan-1-150x150.webp 150w"
+                                    srcset="/images/decoration/slogan-1.webp 605w, /images/decoration/slogan-1-300x300.webp 300w, /images/decoration/slogan-1-150x150.webp 150w"
                                     sizes="auto, (max-width: 605px) 100vw, 605px" />
                             </figure>
 
@@ -115,9 +115,9 @@ const sectionHTML = `
 
                             <figure class="block-slogan__item-image -image-2" data-animate-item>
                                 <img decoding="async" width="605" height="605"
-                                    src="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/slogan-2.webp"
+                                    src="/images/decoration/slogan-2.webp"
                                     class="attachment-full size-full" alt="gdansk" loading="lazy"
-                                    srcset="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/slogan-2.webp 605w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/slogan-2-300x300.webp 300w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/slogan-2-150x150.webp 150w"
+                                    srcset="/images/decoration/slogan-2.webp 605w, /images/decoration/slogan-2-300x300.webp 300w, /images/decoration/slogan-2-150x150.webp 150w"
                                     sizes="auto, (max-width: 605px) 100vw, 605px" />
                             </figure>
                         </div>
@@ -137,17 +137,19 @@ const sectionHTML = `
                             <div class="block-services__item -active" data-services-item>
                                 <figure class="block-services__item-photo">
                                     <img loading="lazy" decoding="async"
-                                        src="/images/whatyouneed.jpg"
+                                        src="/images/sections/whatyouneed.webp"
                                         class="attachment-full size-full" alt="what you need" />
                                 </figure>
 
                                 <button class="block-services__item-toggler" data-services-toggler aria-label="Toggle service">
                                     <span class="block-services__item-toggler-inner">
                                         What you need right now </span>
+                                    <!-- toggler icon commented out: button no longer toggles (only one item, JS handler disabled)
                                     <span class="block-services__item-toggler-icon">
                                         <span class="block-services__item-toggler-icon-line"></span>
                                         <span class="block-services__item-toggler-icon-line"></span>
                                     </span>
+                                    -->
                                 </button>
 
                                 <div class="block-services__item-main" data-services-content aria-hidden="false">
@@ -173,7 +175,8 @@ const sectionHTML = `
                 <section class="block-tiles" id='welcome-home'>
                     <div class="block-tiles__container container">
                         <header class="section-header block-tiles__header" data-section-header>
-                            <span class="section-header__label" data-label>
+                            <!-- data-label removed to disable label fade-in animation; heading animation kept -->
+                            <span class="section-header__label">
                                 Discover Mindset </span>
 
                             <h2 class="section-header__heading" data-heading>
@@ -185,7 +188,7 @@ const sectionHTML = `
                                 <a href="/doctors" class="block-tiles__item-link" aria-label="Expert Care"></a>
                                 <div class="block-tiles__item-photos">
                                     <figure class="block-tiles__item-photo">
-                                        <img decoding="async" src="/images/doctor.jpeg" alt="expert care" loading="lazy">
+                                        <img decoding="async" src="/images/sections/doctor.webp" alt="expert care" loading="lazy">
                                     </figure>
                                 </div>
                                 <div class="block-tiles__item-content">
@@ -198,7 +201,7 @@ const sectionHTML = `
                                 <a href="/products" class="block-tiles__item-link" aria-label="Wellness Products"></a>
                                 <div class="block-tiles__item-photos">
                                     <figure class="block-tiles__item-photo">
-                                        <img decoding="async" src="/images/wellness product.jpg" alt="wellness products" loading="lazy">
+                                        <img decoding="async" src="/images/sections/wellness-product.webp" alt="wellness products" loading="lazy">
                                     </figure>
                                 </div>
                                 <div class="block-tiles__item-content">
@@ -211,7 +214,7 @@ const sectionHTML = `
                                 <a href="/workshops" class="block-tiles__item-link" aria-label="Guided Programs"></a>
                                 <div class="block-tiles__item-photos">
                                     <figure class="block-tiles__item-photo">
-                                        <img decoding="async" src="/images/GuidedPrograms.jpg" alt="guided programs" loading="lazy">
+                                        <img decoding="async" src="/images/sections/GuidedPrograms.webp" alt="guided programs" loading="lazy">
                                     </figure>
                                 </div>
                                 <div class="block-tiles__item-content">
@@ -224,7 +227,7 @@ const sectionHTML = `
                                 <a href="/study-materials" class="block-tiles__item-link" aria-label="Insights & Learning"></a>
                                 <div class="block-tiles__item-photos">
                                     <figure class="block-tiles__item-photo">
-                                        <img decoding="async" src="/images/Insights.png" alt="insights and learning" loading="lazy">
+                                        <img decoding="async" src="/images/sections/Insights.webp" alt="insights and learning" loading="lazy">
                                     </figure>
                                 </div>
                                 <div class="block-tiles__item-content">
@@ -327,7 +330,7 @@ const sectionHTML = `
 
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/Mindfulness.jpeg" alt="mindfulness" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/Mindfulness.webp" alt="mindfulness" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -389,7 +392,8 @@ const sectionHTML = `
                                                     </div>
                                                 </div>
 
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-0-0">
+                                                <!-- floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-0-0">
                                                     <button class="block-rooms__item-modal-close"
                                                         data-floorplan-modal-close aria-label="Close modal">
                                                         <span class="icon icon-icon-close"></span>
@@ -397,14 +401,16 @@ const sectionHTML = `
 
                                                     <figure class="block-rooms__item-modal-inner">
                                                         <img decoding="async" width="2560" height="1440"
-                                                            src="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-scaled.webp"
+                                                            src="/images/wp/Single-floor-plan_-scaled.webp"
                                                             class="attachment-full size-full" alt="single plan"
-                                                            srcset="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-scaled.webp 2560w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-300x169.webp 300w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-1024x576.webp 1024w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-768x432.webp 768w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-1536x864.webp 1536w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-2048x1152.webp 2048w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-808x454.webp 808w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-1600x900.webp 1600w"
+                                                            srcset="/images/wp/Single-floor-plan_-scaled.webp 2560w, /images/wp/Single-floor-plan_-300x169.webp 300w, /images/wp/Single-floor-plan_-1024x576.webp 1024w, /images/wp/Single-floor-plan_-768x432.webp 768w, /images/wp/Single-floor-plan_-1536x864.webp 1536w, /images/wp/Single-floor-plan_-2048x1152.webp 2048w, /images/wp/Single-floor-plan_-808x454.webp 808w, /images/wp/Single-floor-plan_-1600x900.webp 1600w"
                                                             sizes="(max-width: 2560px) 100vw, 2560px" />
                                                     </figure>
                                                 </div>
+-->
                                             </div>
-                                            <div class="block-rooms__item-subtab
+                                            <!-- duplicate variant subtab commented out (only variant 0 renders)
+<div class="block-rooms__item-subtab
 										" data-variant-tab="1">
                                                 <div class="block-rooms__item-gallery swiper" data-gallery-slider>
                                                     <button class="block-rooms__item-gallery-close" data-gallery-close
@@ -414,7 +420,7 @@ const sectionHTML = `
 
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/Mindfulness.jpeg" alt="mindfulness" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/Mindfulness.webp" alt="mindfulness" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -476,7 +482,8 @@ const sectionHTML = `
                                                     </div>
                                                 </div>
 
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-0-1">
+                                                <!- - floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-0-1">
                                                     <button class="block-rooms__item-modal-close"
                                                         data-floorplan-modal-close aria-label="Close modal">
                                                         <span class="icon icon-icon-close"></span>
@@ -484,14 +491,17 @@ const sectionHTML = `
 
                                                     <figure class="block-rooms__item-modal-inner">
                                                         <img decoding="async" width="2560" height="1440"
-                                                            src="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-scaled.webp"
+                                                            src="/images/wp/Single-floor-plan_-scaled.webp"
                                                             class="attachment-full size-full" alt="single plan"
-                                                            srcset="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-scaled.webp 2560w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-300x169.webp 300w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-1024x576.webp 1024w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-768x432.webp 768w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-1536x864.webp 1536w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-2048x1152.webp 2048w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-808x454.webp 808w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-1600x900.webp 1600w"
+                                                            srcset="/images/wp/Single-floor-plan_-scaled.webp 2560w, /images/wp/Single-floor-plan_-300x169.webp 300w, /images/wp/Single-floor-plan_-1024x576.webp 1024w, /images/wp/Single-floor-plan_-768x432.webp 768w, /images/wp/Single-floor-plan_-1536x864.webp 1536w, /images/wp/Single-floor-plan_-2048x1152.webp 2048w, /images/wp/Single-floor-plan_-808x454.webp 808w, /images/wp/Single-floor-plan_-1600x900.webp 1600w"
                                                             sizes="(max-width: 2560px) 100vw, 2560px" />
                                                     </figure>
                                                 </div>
+- ->
                                             </div>
-                                            <div class="block-rooms__item-subtab
+-->
+                                            <!-- duplicate variant subtab commented out (only variant 0 renders)
+<div class="block-rooms__item-subtab
 										" data-variant-tab="2">
                                                 <div class="block-rooms__item-gallery swiper" data-gallery-slider>
                                                     <button class="block-rooms__item-gallery-close" data-gallery-close
@@ -501,7 +511,7 @@ const sectionHTML = `
 
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/Mindfulness.jpeg" alt="mindfulness" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/Mindfulness.webp" alt="mindfulness" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -563,7 +573,8 @@ const sectionHTML = `
                                                     </div>
                                                 </div>
 
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-0-2">
+                                                <!- - floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-0-2">
                                                     <button class="block-rooms__item-modal-close"
                                                         data-floorplan-modal-close aria-label="Close modal">
                                                         <span class="icon icon-icon-close"></span>
@@ -571,14 +582,17 @@ const sectionHTML = `
 
                                                     <figure class="block-rooms__item-modal-inner">
                                                         <img decoding="async" width="2560" height="1440"
-                                                            src="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-scaled.webp"
+                                                            src="/images/wp/Single-floor-plan_-scaled.webp"
                                                             class="attachment-full size-full" alt="single plan"
-                                                            srcset="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-scaled.webp 2560w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-300x169.webp 300w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-1024x576.webp 1024w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-768x432.webp 768w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-1536x864.webp 1536w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-2048x1152.webp 2048w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-808x454.webp 808w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-floor-plan_-1600x900.webp 1600w"
+                                                            srcset="/images/wp/Single-floor-plan_-scaled.webp 2560w, /images/wp/Single-floor-plan_-300x169.webp 300w, /images/wp/Single-floor-plan_-1024x576.webp 1024w, /images/wp/Single-floor-plan_-768x432.webp 768w, /images/wp/Single-floor-plan_-1536x864.webp 1536w, /images/wp/Single-floor-plan_-2048x1152.webp 2048w, /images/wp/Single-floor-plan_-808x454.webp 808w, /images/wp/Single-floor-plan_-1600x900.webp 1600w"
                                                             sizes="(max-width: 2560px) 100vw, 2560px" />
                                                     </figure>
                                                 </div>
+- ->
                                             </div>
-                                            <div class="block-rooms__item-subtab
+-->
+                                            <!-- duplicate variant subtab commented out (only variant 0 renders)
+<div class="block-rooms__item-subtab
 										" data-variant-tab="3">
                                                 <div class="block-rooms__item-gallery swiper" data-gallery-slider>
                                                     <button class="block-rooms__item-gallery-close" data-gallery-close
@@ -588,7 +602,7 @@ const sectionHTML = `
 
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/Mindfulness.jpeg" alt="mindfulness" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/Mindfulness.webp" alt="mindfulness" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -650,7 +664,8 @@ const sectionHTML = `
                                                     </div>
                                                 </div>
 
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-0-3">
+                                                <!- - floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-0-3">
                                                     <button class="block-rooms__item-modal-close"
                                                         data-floorplan-modal-close aria-label="Close modal">
                                                         <span class="icon icon-icon-close"></span>
@@ -658,13 +673,15 @@ const sectionHTML = `
 
                                                     <figure class="block-rooms__item-modal-inner">
                                                         <img decoding="async" width="2560" height="1440"
-                                                            src="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-4th_-scaled.webp"
+                                                            src="/images/wp/Single-4th_-scaled.webp"
                                                             class="attachment-full size-full" alt="single-view"
-                                                            srcset="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-4th_-scaled.webp 2560w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-4th_-300x169.webp 300w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-4th_-1024x576.webp 1024w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-4th_-768x432.webp 768w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-4th_-1536x864.webp 1536w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-4th_-2048x1152.webp 2048w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-4th_-808x454.webp 808w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-4th_-1600x900.webp 1600w"
+                                                            srcset="/images/wp/Single-4th_-scaled.webp 2560w, /images/wp/Single-4th_-300x169.webp 300w, /images/wp/Single-4th_-1024x576.webp 1024w, /images/wp/Single-4th_-768x432.webp 768w, /images/wp/Single-4th_-1536x864.webp 1536w, /images/wp/Single-4th_-2048x1152.webp 2048w, /images/wp/Single-4th_-808x454.webp 808w, /images/wp/Single-4th_-1600x900.webp 1600w"
                                                             sizes="(max-width: 2560px) 100vw, 2560px" />
                                                     </figure>
                                                 </div>
+- ->
                                             </div>
+-->
                                         </div>
                                     </div>
                                 </div>
@@ -691,7 +708,7 @@ const sectionHTML = `
 
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/Family%20Counselling.jpeg" alt="family counselling" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/Family%20Counselling.webp" alt="family counselling" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -753,7 +770,8 @@ const sectionHTML = `
                                                     </div>
                                                 </div>
 
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-1-0">
+                                                <!-- floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-1-0">
                                                     <button class="block-rooms__item-modal-close"
                                                         data-floorplan-modal-close aria-label="Close modal">
                                                         <span class="icon icon-icon-close"></span>
@@ -761,14 +779,16 @@ const sectionHTML = `
 
                                                     <figure class="block-rooms__item-modal-inner">
                                                         <img decoding="async" width="2560" height="1440"
-                                                            src="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-scaled.webp"
+                                                            src="/images/wp/Double-floor-plan_-scaled.webp"
                                                             class="attachment-full size-full" alt="double plan"
-                                                            srcset="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-scaled.webp 2560w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-300x169.webp 300w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-1024x576.webp 1024w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-768x432.webp 768w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-1536x864.webp 1536w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-2048x1152.webp 2048w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-808x454.webp 808w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-1600x900.webp 1600w"
+                                                            srcset="/images/wp/Double-floor-plan_-scaled.webp 2560w, /images/wp/Double-floor-plan_-300x169.webp 300w, /images/wp/Double-floor-plan_-1024x576.webp 1024w, /images/wp/Double-floor-plan_-768x432.webp 768w, /images/wp/Double-floor-plan_-1536x864.webp 1536w, /images/wp/Double-floor-plan_-2048x1152.webp 2048w, /images/wp/Double-floor-plan_-808x454.webp 808w, /images/wp/Double-floor-plan_-1600x900.webp 1600w"
                                                             sizes="(max-width: 2560px) 100vw, 2560px" />
                                                     </figure>
                                                 </div>
+-->
                                             </div>
-                                            <div class="block-rooms__item-subtab
+                                            <!-- duplicate variant subtab commented out (only variant 0 renders)
+<div class="block-rooms__item-subtab
 										" data-variant-tab="1">
                                                 <div class="block-rooms__item-gallery swiper" data-gallery-slider>
                                                     <button class="block-rooms__item-gallery-close" data-gallery-close
@@ -778,7 +798,7 @@ const sectionHTML = `
 
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/Family%20Counselling.jpeg" alt="family counselling" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/Family%20Counselling.webp" alt="family counselling" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -840,7 +860,8 @@ const sectionHTML = `
                                                     </div>
                                                 </div>
 
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-1-1">
+                                                <!- - floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-1-1">
                                                     <button class="block-rooms__item-modal-close"
                                                         data-floorplan-modal-close aria-label="Close modal">
                                                         <span class="icon icon-icon-close"></span>
@@ -848,14 +869,17 @@ const sectionHTML = `
 
                                                     <figure class="block-rooms__item-modal-inner">
                                                         <img decoding="async" width="2560" height="1440"
-                                                            src="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-scaled.webp"
+                                                            src="/images/wp/Double-floor-plan_-scaled.webp"
                                                             class="attachment-full size-full" alt="double plan"
-                                                            srcset="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-scaled.webp 2560w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-300x169.webp 300w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-1024x576.webp 1024w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-768x432.webp 768w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-1536x864.webp 1536w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-2048x1152.webp 2048w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-808x454.webp 808w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-floor-plan_-1600x900.webp 1600w"
+                                                            srcset="/images/wp/Double-floor-plan_-scaled.webp 2560w, /images/wp/Double-floor-plan_-300x169.webp 300w, /images/wp/Double-floor-plan_-1024x576.webp 1024w, /images/wp/Double-floor-plan_-768x432.webp 768w, /images/wp/Double-floor-plan_-1536x864.webp 1536w, /images/wp/Double-floor-plan_-2048x1152.webp 2048w, /images/wp/Double-floor-plan_-808x454.webp 808w, /images/wp/Double-floor-plan_-1600x900.webp 1600w"
                                                             sizes="(max-width: 2560px) 100vw, 2560px" />
                                                     </figure>
                                                 </div>
+- ->
                                             </div>
-                                            <div class="block-rooms__item-subtab
+-->
+                                            <!-- duplicate variant subtab commented out (only variant 0 renders)
+<div class="block-rooms__item-subtab
 										" data-variant-tab="2">
                                                 <div class="block-rooms__item-gallery swiper" data-gallery-slider>
                                                     <button class="block-rooms__item-gallery-close" data-gallery-close
@@ -865,7 +889,7 @@ const sectionHTML = `
 
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/Family%20Counselling.jpeg" alt="family counselling" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/Family%20Counselling.webp" alt="family counselling" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -927,7 +951,8 @@ const sectionHTML = `
                                                     </div>
                                                 </div>
 
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-1-2">
+                                                <!- - floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-1-2">
                                                     <button class="block-rooms__item-modal-close"
                                                         data-floorplan-modal-close aria-label="Close modal">
                                                         <span class="icon icon-icon-close"></span>
@@ -935,13 +960,15 @@ const sectionHTML = `
 
                                                     <figure class="block-rooms__item-modal-inner">
                                                         <img loading="lazy" decoding="async" width="2560" height="1440"
-                                                            src="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-4th_-scaled.webp"
+                                                            src="/images/wp/Double-4th_-scaled.webp"
                                                             class="attachment-full size-full" alt="double-view"
-                                                            srcset="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-4th_-scaled.webp 2560w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-4th_-300x169.webp 300w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-4th_-1024x576.webp 1024w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-4th_-768x432.webp 768w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-4th_-1536x864.webp 1536w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-4th_-2048x1152.webp 2048w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-4th_-808x454.webp 808w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Double-4th_-1600x900.webp 1600w"
+                                                            srcset="/images/wp/Double-4th_-scaled.webp 2560w, /images/wp/Double-4th_-300x169.webp 300w, /images/wp/Double-4th_-1024x576.webp 1024w, /images/wp/Double-4th_-768x432.webp 768w, /images/wp/Double-4th_-1536x864.webp 1536w, /images/wp/Double-4th_-2048x1152.webp 2048w, /images/wp/Double-4th_-808x454.webp 808w, /images/wp/Double-4th_-1600x900.webp 1600w"
                                                             sizes="auto, (max-width: 2560px) 100vw, 2560px" />
                                                     </figure>
                                                 </div>
+- ->
                                             </div>
+-->
                                         </div>
                                     </div>
                                 </div>
@@ -968,7 +995,7 @@ const sectionHTML = `
 
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/Depression%20Care.jpeg" alt="depression care" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/Depression%20Care.webp" alt="depression care" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -1030,7 +1057,8 @@ const sectionHTML = `
                                                     </div>
                                                 </div>
 
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-2-0">
+                                                <!-- floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-2-0">
                                                     <button class="block-rooms__item-modal-close"
                                                         data-floorplan-modal-close aria-label="Close modal">
                                                         <span class="icon icon-icon-close"></span>
@@ -1038,14 +1066,16 @@ const sectionHTML = `
 
                                                     <figure class="block-rooms__item-modal-inner">
                                                         <img loading="lazy" decoding="async" width="2560" height="1440"
-                                                            src="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-scaled.webp"
+                                                            src="/images/wp/Twin-floor-plan_-scaled.webp"
                                                             class="attachment-full size-full" alt="floor plan"
-                                                            srcset="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-scaled.webp 2560w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-300x169.webp 300w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-1024x576.webp 1024w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-768x432.webp 768w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-1536x864.webp 1536w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-2048x1152.webp 2048w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-808x454.webp 808w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-1600x900.webp 1600w"
+                                                            srcset="/images/wp/Twin-floor-plan_-scaled.webp 2560w, /images/wp/Twin-floor-plan_-300x169.webp 300w, /images/wp/Twin-floor-plan_-1024x576.webp 1024w, /images/wp/Twin-floor-plan_-768x432.webp 768w, /images/wp/Twin-floor-plan_-1536x864.webp 1536w, /images/wp/Twin-floor-plan_-2048x1152.webp 2048w, /images/wp/Twin-floor-plan_-808x454.webp 808w, /images/wp/Twin-floor-plan_-1600x900.webp 1600w"
                                                             sizes="auto, (max-width: 2560px) 100vw, 2560px" />
                                                     </figure>
                                                 </div>
+-->
                                             </div>
-                                            <div class="block-rooms__item-subtab
+                                            <!-- duplicate variant subtab commented out (only variant 0 renders)
+<div class="block-rooms__item-subtab
 										" data-variant-tab="1">
                                                 <div class="block-rooms__item-gallery swiper" data-gallery-slider>
                                                     <button class="block-rooms__item-gallery-close" data-gallery-close
@@ -1055,7 +1085,7 @@ const sectionHTML = `
 
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/Depression%20Care.jpeg" alt="depression care" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/Depression%20Care.webp" alt="depression care" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -1117,7 +1147,8 @@ const sectionHTML = `
                                                     </div>
                                                 </div>
 
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-2-1">
+                                                <!- - floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-2-1">
                                                     <button class="block-rooms__item-modal-close"
                                                         data-floorplan-modal-close aria-label="Close modal">
                                                         <span class="icon icon-icon-close"></span>
@@ -1125,13 +1156,15 @@ const sectionHTML = `
 
                                                     <figure class="block-rooms__item-modal-inner">
                                                         <img loading="lazy" decoding="async" width="2560" height="1440"
-                                                            src="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-scaled.webp"
+                                                            src="/images/wp/Twin-floor-plan_-scaled.webp"
                                                             class="attachment-full size-full" alt="floor plan"
-                                                            srcset="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-scaled.webp 2560w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-300x169.webp 300w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-1024x576.webp 1024w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-768x432.webp 768w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-1536x864.webp 1536w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-2048x1152.webp 2048w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-808x454.webp 808w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Twin-floor-plan_-1600x900.webp 1600w"
+                                                            srcset="/images/wp/Twin-floor-plan_-scaled.webp 2560w, /images/wp/Twin-floor-plan_-300x169.webp 300w, /images/wp/Twin-floor-plan_-1024x576.webp 1024w, /images/wp/Twin-floor-plan_-768x432.webp 768w, /images/wp/Twin-floor-plan_-1536x864.webp 1536w, /images/wp/Twin-floor-plan_-2048x1152.webp 2048w, /images/wp/Twin-floor-plan_-808x454.webp 808w, /images/wp/Twin-floor-plan_-1600x900.webp 1600w"
                                                             sizes="auto, (max-width: 2560px) 100vw, 2560px" />
                                                     </figure>
                                                 </div>
+- ->
                                             </div>
+-->
                                         </div>
                                     </div>
                                 </div>
@@ -1158,7 +1191,7 @@ const sectionHTML = `
 
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/Anxiety%20Management.jpeg" alt="anxiety management" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/Anxiety%20Management.webp" alt="anxiety management" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -1220,7 +1253,8 @@ const sectionHTML = `
                                                     </div>
                                                 </div>
 
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-3-0">
+                                                <!-- floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-3-0">
                                                     <button class="block-rooms__item-modal-close"
                                                         data-floorplan-modal-close aria-label="Close modal">
                                                         <span class="icon icon-icon-close"></span>
@@ -1228,13 +1262,14 @@ const sectionHTML = `
 
                                                     <figure class="block-rooms__item-modal-inner">
                                                         <img loading="lazy" decoding="async" width="2560" height="1440"
-                                                            src="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-Accessible-floor-plan_-scaled.webp"
+                                                            src="/images/wp/Single-Accessible-floor-plan_-scaled.webp"
                                                             class="attachment-full size-full"
                                                             alt="Single Accessible plan"
-                                                            srcset="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-Accessible-floor-plan_-scaled.webp 2560w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-Accessible-floor-plan_-300x169.webp 300w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-Accessible-floor-plan_-1024x576.webp 1024w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-Accessible-floor-plan_-768x432.webp 768w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-Accessible-floor-plan_-1536x864.webp 1536w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-Accessible-floor-plan_-2048x1152.webp 2048w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-Accessible-floor-plan_-808x454.webp 808w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/Single-Accessible-floor-plan_-1600x900.webp 1600w"
+                                                            srcset="/images/wp/Single-Accessible-floor-plan_-scaled.webp 2560w, /images/wp/Single-Accessible-floor-plan_-300x169.webp 300w, /images/wp/Single-Accessible-floor-plan_-1024x576.webp 1024w, /images/wp/Single-Accessible-floor-plan_-768x432.webp 768w, /images/wp/Single-Accessible-floor-plan_-1536x864.webp 1536w, /images/wp/Single-Accessible-floor-plan_-2048x1152.webp 2048w, /images/wp/Single-Accessible-floor-plan_-808x454.webp 808w, /images/wp/Single-Accessible-floor-plan_-1600x900.webp 1600w"
                                                             sizes="auto, (max-width: 2560px) 100vw, 2560px" />
                                                     </figure>
                                                 </div>
+-->
                                             </div>
                                         </div>
                                     </div>
@@ -1254,7 +1289,7 @@ const sectionHTML = `
                                                     <button class="block-rooms__item-gallery-close" data-gallery-close aria-label="Close gallery"><span class="icon icon-icon-close"></span></button>
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/OCD%20Therapy.jpeg" alt="ocd therapy" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/OCD%20Therapy.webp" alt="ocd therapy" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -1291,10 +1326,12 @@ const sectionHTML = `
                                                         <a href="/doctors?search=OCD+Therapy" class="block-rooms__item-specialist-btn">Explore Doctors <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
                                                     </div>
                                                 </div>
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-4-0">
+                                                <!-- floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-4-0">
                                                     <button class="block-rooms__item-modal-close" data-floorplan-modal-close aria-label="Close modal"><span class="icon icon-icon-close"></span></button>
-                                                    <figure class="block-rooms__item-modal-inner"><img loading="lazy" src="/images/whatYouNeed/OCD%20Therapy.jpeg" alt="ocd therapy" /></figure>
+                                                    <figure class="block-rooms__item-modal-inner"><img loading="lazy" src="/images/whatYouNeed/OCD%20Therapy.webp" alt="ocd therapy" /></figure>
                                                 </div>
+-->
                                             </div>
                                         </div>
                                     </div>
@@ -1314,7 +1351,7 @@ const sectionHTML = `
                                                     <button class="block-rooms__item-gallery-close" data-gallery-close aria-label="Close gallery"><span class="icon icon-icon-close"></span></button>
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/Senior%20Care.jpeg" alt="senior care" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/Senior%20Care.webp" alt="senior care" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -1351,10 +1388,12 @@ const sectionHTML = `
                                                         <a href="/doctors?search=Senior+Care" class="block-rooms__item-specialist-btn">Explore Doctors <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
                                                     </div>
                                                 </div>
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-5-0">
+                                                <!-- floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-5-0">
                                                     <button class="block-rooms__item-modal-close" data-floorplan-modal-close aria-label="Close modal"><span class="icon icon-icon-close"></span></button>
-                                                    <figure class="block-rooms__item-modal-inner"><img loading="lazy" src="/images/whatYouNeed/Senior%20Care.jpeg" alt="senior care" /></figure>
+                                                    <figure class="block-rooms__item-modal-inner"><img loading="lazy" src="/images/whatYouNeed/Senior%20Care.webp" alt="senior care" /></figure>
                                                 </div>
+-->
                                             </div>
                                         </div>
                                     </div>
@@ -1374,7 +1413,7 @@ const sectionHTML = `
                                                     <button class="block-rooms__item-gallery-close" data-gallery-close aria-label="Close gallery"><span class="icon icon-icon-close"></span></button>
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/Trauma%20Therapy.jpeg" alt="trauma therapy" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/Trauma%20Therapy.webp" alt="trauma therapy" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -1411,10 +1450,12 @@ const sectionHTML = `
                                                         <a href="/doctors?search=Trauma+Therapy" class="block-rooms__item-specialist-btn">Explore Doctors <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
                                                     </div>
                                                 </div>
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-6-0">
+                                                <!-- floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-6-0">
                                                     <button class="block-rooms__item-modal-close" data-floorplan-modal-close aria-label="Close modal"><span class="icon icon-icon-close"></span></button>
-                                                    <figure class="block-rooms__item-modal-inner"><img loading="lazy" src="/images/whatYouNeed/Trauma%20Therapy.jpeg" alt="trauma therapy" /></figure>
+                                                    <figure class="block-rooms__item-modal-inner"><img loading="lazy" src="/images/whatYouNeed/Trauma%20Therapy.webp" alt="trauma therapy" /></figure>
                                                 </div>
+-->
                                             </div>
                                         </div>
                                     </div>
@@ -1434,7 +1475,7 @@ const sectionHTML = `
                                                     <button class="block-rooms__item-gallery-close" data-gallery-close aria-label="Close gallery"><span class="icon icon-icon-close"></span></button>
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/Grief%20Counselling.jpeg" alt="grief counselling" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/Grief%20Counselling.webp" alt="grief counselling" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -1471,10 +1512,12 @@ const sectionHTML = `
                                                         <a href="/doctors?search=Grief+Counselling" class="block-rooms__item-specialist-btn">Explore Doctors <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
                                                     </div>
                                                 </div>
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-7-0">
+                                                <!-- floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-7-0">
                                                     <button class="block-rooms__item-modal-close" data-floorplan-modal-close aria-label="Close modal"><span class="icon icon-icon-close"></span></button>
-                                                    <figure class="block-rooms__item-modal-inner"><img loading="lazy" src="/images/whatYouNeed/Grief%20Counselling.jpeg" alt="grief counselling" /></figure>
+                                                    <figure class="block-rooms__item-modal-inner"><img loading="lazy" src="/images/whatYouNeed/Grief%20Counselling.webp" alt="grief counselling" /></figure>
                                                 </div>
+-->
                                             </div>
                                         </div>
                                     </div>
@@ -1494,7 +1537,7 @@ const sectionHTML = `
                                                     <button class="block-rooms__item-gallery-close" data-gallery-close aria-label="Close gallery"><span class="icon icon-icon-close"></span></button>
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/Relationships.jpeg" alt="relationships" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/Relationships.webp" alt="relationships" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -1531,10 +1574,12 @@ const sectionHTML = `
                                                         <a href="/doctors?search=Relationships" class="block-rooms__item-specialist-btn">Explore Doctors <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
                                                     </div>
                                                 </div>
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-8-0">
+                                                <!-- floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-8-0">
                                                     <button class="block-rooms__item-modal-close" data-floorplan-modal-close aria-label="Close modal"><span class="icon icon-icon-close"></span></button>
-                                                    <figure class="block-rooms__item-modal-inner"><img loading="lazy" src="/images/whatYouNeed/Relationships.jpeg" alt="relationships" /></figure>
+                                                    <figure class="block-rooms__item-modal-inner"><img loading="lazy" src="/images/whatYouNeed/Relationships.webp" alt="relationships" /></figure>
                                                 </div>
+-->
                                             </div>
                                         </div>
                                     </div>
@@ -1554,7 +1599,7 @@ const sectionHTML = `
                                                     <button class="block-rooms__item-gallery-close" data-gallery-close aria-label="Close gallery"><span class="icon icon-icon-close"></span></button>
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/Addiction%20Recovery.jpeg" alt="addiction recovery" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/Addiction%20Recovery.webp" alt="addiction recovery" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -1591,10 +1636,12 @@ const sectionHTML = `
                                                         <a href="/doctors?search=Addiction+Recovery" class="block-rooms__item-specialist-btn">Explore Doctors <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
                                                     </div>
                                                 </div>
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-9-0">
+                                                <!-- floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-9-0">
                                                     <button class="block-rooms__item-modal-close" data-floorplan-modal-close aria-label="Close modal"><span class="icon icon-icon-close"></span></button>
-                                                    <figure class="block-rooms__item-modal-inner"><img loading="lazy" src="/images/whatYouNeed/Addiction%20Recovery.jpeg" alt="addiction recovery" /></figure>
+                                                    <figure class="block-rooms__item-modal-inner"><img loading="lazy" src="/images/whatYouNeed/Addiction%20Recovery.webp" alt="addiction recovery" /></figure>
                                                 </div>
+-->
                                             </div>
                                         </div>
                                     </div>
@@ -1614,7 +1661,7 @@ const sectionHTML = `
                                                     <button class="block-rooms__item-gallery-close" data-gallery-close aria-label="Close gallery"><span class="icon icon-icon-close"></span></button>
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/Career%20Guidance.jpeg" alt="career guidance" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/Career%20Guidance.webp" alt="career guidance" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -1651,10 +1698,12 @@ const sectionHTML = `
                                                         <a href="/doctors?search=Career+Guidance" class="block-rooms__item-specialist-btn">Explore Doctors <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
                                                     </div>
                                                 </div>
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-10-0">
+                                                <!-- floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-10-0">
                                                     <button class="block-rooms__item-modal-close" data-floorplan-modal-close aria-label="Close modal"><span class="icon icon-icon-close"></span></button>
-                                                    <figure class="block-rooms__item-modal-inner"><img loading="lazy" src="/images/whatYouNeed/Career%20Guidance.jpeg" alt="career guidance" /></figure>
+                                                    <figure class="block-rooms__item-modal-inner"><img loading="lazy" src="/images/whatYouNeed/Career%20Guidance.webp" alt="career guidance" /></figure>
                                                 </div>
+-->
                                             </div>
                                         </div>
                                     </div>
@@ -1674,7 +1723,7 @@ const sectionHTML = `
                                                     <button class="block-rooms__item-gallery-close" data-gallery-close aria-label="Close gallery"><span class="icon icon-icon-close"></span></button>
                                                     <div class="block-rooms__item-gallery-inner swiper-wrapper">
                                                         <figure class="block-rooms__item-gallery-item swiper-slide">
-                                                            <img src="/images/whatYouNeed/Academic%20Stress.jpeg" alt="academic stress" loading="lazy" />
+                                                            <img src="/images/whatYouNeed/Academic%20Stress.webp" alt="academic stress" loading="lazy" />
                                                         </figure>
                                                     </div>
                                                 </div>
@@ -1711,10 +1760,12 @@ const sectionHTML = `
                                                         <a href="/doctors?search=Academic+Stress" class="block-rooms__item-specialist-btn">Explore Doctors <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
                                                     </div>
                                                 </div>
-                                                <div class="block-rooms__item-modal" data-floorplan-modal="subtab-11-0">
+                                                <!-- floor-plan modal commented out (not rendered)
+<div class="block-rooms__item-modal" data-floorplan-modal="subtab-11-0">
                                                     <button class="block-rooms__item-modal-close" data-floorplan-modal-close aria-label="Close modal"><span class="icon icon-icon-close"></span></button>
-                                                    <figure class="block-rooms__item-modal-inner"><img loading="lazy" src="/images/whatYouNeed/Academic%20Stress.jpeg" alt="academic stress" /></figure>
+                                                    <figure class="block-rooms__item-modal-inner"><img loading="lazy" src="/images/whatYouNeed/Academic%20Stress.webp" alt="academic stress" /></figure>
                                                 </div>
+-->
                                             </div>
                                         </div>
                                     </div>
@@ -1743,9 +1794,9 @@ const sectionHTML = `
 
                         <div class="block-tiles-slider__slogan-item -image -image-1">
                             <img loading="lazy" decoding="async" width="300" height="300"
-                                src="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/slogan-photo-1-300x300.webp"
+                                src="/images/decoration/slogan-photo-1-300x300.webp"
                                 class="attachment-medium size-medium" alt="support"
-                                srcset="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/slogan-photo-1-300x300.webp 300w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/slogan-photo-1-150x150.webp 150w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/slogan-photo-1.webp 400w"
+                                srcset="/images/decoration/slogan-photo-1-300x300.webp 300w, /images/decoration/slogan-photo-1-150x150.webp 150w, /images/decoration/slogan-photo-1.webp 400w"
                                 sizes="auto, (max-width: 300px) 100vw, 300px" />
                         </div>
 
@@ -1756,9 +1807,9 @@ const sectionHTML = `
 
                         <div class="block-tiles-slider__slogan-item -image -image-2">
                             <img loading="lazy" decoding="async" width="300" height="200"
-                                src="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/slogan-photo-2-300x200.webp"
+                                src="/images/decoration/slogan-photo-2-300x200.webp"
                                 class="attachment-medium size-medium" alt="care"
-                                srcset="https://allinnhomeofstudents.com/wp-content/uploads/2025/09/slogan-photo-2-300x200.webp 300w, https://allinnhomeofstudents.com/wp-content/uploads/2025/09/slogan-photo-2.webp 600w"
+                                srcset="/images/decoration/slogan-photo-2-300x200.webp 300w, /images/decoration/slogan-photo-2.webp 600w"
                                 sizes="auto, (max-width: 300px) 100vw, 300px" />
                         </div>
 
@@ -1778,10 +1829,10 @@ const sectionHTML = `
                         </header>
                         <div class="block-partners__logos">
                             <div class="block-partners__logo-item">
-                                <img src="/images/Partners/Amity.webp" alt="Amity" loading="lazy" />
+                                <img src="/images/partners/Amity.webp" alt="Amity" loading="lazy" />
                             </div>
                             <div class="block-partners__logo-item">
-                                <img src="/images/Partners/Incubator.webp" alt="Incubator" loading="lazy" />
+                                <img src="/images/partners/Incubator.webp" alt="Incubator" loading="lazy" />
                             </div>
                         </div>
                     </div>
@@ -1801,7 +1852,7 @@ const sectionHTML = `
 
                                     <figure class="block-apply__photo">
                                         <img loading="lazy" decoding="async"
-                                            src="/images/joinus.jpeg"
+                                            src="/images/sections/joinus.webp"
                                             class="attachment-full size-full" alt="join us" />
                                     </figure>
                                 </div>
@@ -1813,14 +1864,18 @@ const sectionHTML = `
                                     Send us a message and our team will get back to you within 24 hours. No judgment — just genuine support.</p>
 
                                 <div class="block-apply__form" data-form>
-                                    <form class="wpcf7-form" novalidate="novalidate" data-status="init" id="contact-form">
+                                    <form class="wpcf7-form" novalidate="novalidate" data-status="init" id="contact-form" autocomplete="on">
+                                        <!-- Honeypot — visually hidden, off-screen, not focusable. Bots fill it; humans don't. -->
+                                        <div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;">
+                                            <label>Website<input type="text" name="_website" id="contact-website" tabindex="-1" autocomplete="off" /></label>
+                                        </div>
                                         <div class="form__row -two-cols">
                                             <div class="form__field">
                                                 <p><span class="form__label">Name*</span></p>
                                                 <div class="form__input">
                                                     <input maxlength="100"
                                                         class="wpcf7-form-control wpcf7-text wpcf7-validates-as-required"
-                                                        aria-required="true"
+                                                        aria-required="true" autocomplete="name"
                                                         placeholder="Your name" type="text"
                                                         name="name" id="contact-name" />
                                                 </div>
@@ -1880,7 +1935,7 @@ const sectionHTML = `
                                                 <p><span class="form__label">Preferred mode of support</span></p>
                                                 <div class="form__input">
                                                     <select class="wpcf7-form-control wpcf7-select"
-                                                        name="support_mode" id="contact-mode">
+                                                        name="support_mode" id="contact-mode" disabled>
                                                         <option value="">No preference</option>
                                                         <option value="Online session">Online session</option>
                                                         <option value="In-person">In-person</option>
@@ -1964,7 +2019,7 @@ const sectionHTML = `
                                     </div>
                                     <div class="banner__photo -mask-default -variant-default">
                                         <img loading="lazy" decoding="async"
-                                            src="/images/Stillhavequestions.png"
+                                            src="/images/sections/Stillhavequestions.webp"
                                             class="attachment-full size-full" alt="still have questions" />
                                     </div>
                                 </div>
@@ -1985,7 +2040,7 @@ const sectionHTML = `
                             <!-- Brand -->
                             <div class="block-footer__brand">
                                 <div class="block-footer__brand-identity">
-                                    <img src="/images/Logo.jpg" alt="Mindset logo" class="block-footer__brand-logo">
+                                    <img src="/images/icons/Logo.webp" alt="Mindset logo" class="block-footer__brand-logo">
                                     <span class="block-footer__brand-wordmark">Mindset</span>
                                 </div>
                                 <p class="block-footer__brand-tagline">Making mental health support accessible, affordable, and stigma-free for everyone.</p>
@@ -2049,8 +2104,8 @@ const sectionHTML = `
                         <div class="block-footer__bottom">
                             <div class="block-footer__copyright">© 2026 Mindset. All rights reserved.</div>
                             <nav class="block-footer__legal-nav" aria-label="Legal">
-                                <a href="#">Privacy Policy</a>
-                                <a href="#">Terms of Use</a>
+                                <a href="/privacy-policy">Privacy Policy</a>
+                                <a href="/terms-of-use">Terms of Use</a>
                             </nav>
                         </div>
 
@@ -2142,8 +2197,8 @@ export default function Home() {
 
       // Subnav slider
       container
-        .querySelectorAll(".block-subnav__slider[data-slider]")
-        .forEach((el: Element) => {
+        .querySelectorAll<HTMLElement>(".block-subnav__slider[data-slider]")
+        .forEach((el) => {
           new Swiper(el, {
             slidesPerView: "auto",
             freeMode: true,
@@ -2196,17 +2251,17 @@ export default function Home() {
 
       // Room gallery sliders
       container
-        .querySelectorAll(".block-rooms__item-gallery[data-gallery-slider]")
-        .forEach((el: Element) => {
+        .querySelectorAll<HTMLElement>(".block-rooms__item-gallery[data-gallery-slider]")
+        .forEach((el) => {
           new Swiper(el, {
             slidesPerView: 1,
             pagination: {
-              el: el.querySelector("[data-pagination]"),
+              el: el.querySelector<HTMLElement>("[data-pagination]"),
               clickable: true,
             },
             navigation: {
-              prevEl: el.querySelector("[data-prev]"),
-              nextEl: el.querySelector("[data-next]"),
+              prevEl: el.querySelector<HTMLElement>("[data-prev]"),
+              nextEl: el.querySelector<HTMLElement>("[data-next]"),
             },
           });
         });
@@ -2318,52 +2373,52 @@ export default function Home() {
         });
       });
 
-    // Floor plan modal
-    container
-      ?.querySelectorAll<HTMLElement>("[data-floorplan-modal-toggler]")
-      .forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const modalId = btn.getAttribute("data-floorplan-modal-toggler");
-          const modal = container.querySelector<HTMLElement>(
-            `[data-floorplan-modal="${modalId}"]`
-          );
-          modal?.classList.add("-active");
-        });
-      });
+    // Floor plan modal — commented out: modals never render (no toggler buttons in DOM)
+    // container
+    //   ?.querySelectorAll<HTMLElement>("[data-floorplan-modal-toggler]")
+    //   .forEach((btn) => {
+    //     btn.addEventListener("click", () => {
+    //       const modalId = btn.getAttribute("data-floorplan-modal-toggler");
+    //       const modal = container.querySelector<HTMLElement>(
+    //         `[data-floorplan-modal="${modalId}"]`
+    //       );
+    //       modal?.classList.add("-active");
+    //     });
+    //   });
+    //
+    // container
+    //   ?.querySelectorAll<HTMLElement>("[data-floorplan-modal-close]")
+    //   .forEach((btn) => {
+    //     btn.addEventListener("click", () => {
+    //       btn.closest<HTMLElement>(".block-rooms__item-modal")?.classList.remove("-active");
+    //     });
+    //   });
 
-    container
-      ?.querySelectorAll<HTMLElement>("[data-floorplan-modal-close]")
-      .forEach((btn) => {
-        btn.addEventListener("click", () => {
-          btn.closest<HTMLElement>(".block-rooms__item-modal")?.classList.remove("-active");
-        });
-      });
-
-    // Services accordion
-    const servicesItems = container.querySelectorAll<HTMLElement>("[data-services-item]");
-    servicesItems.forEach((item) => {
-      const toggler = item.querySelector<HTMLElement>("[data-services-toggler]");
-      const content = item.querySelector<HTMLElement>("[data-services-content]");
-      if (!toggler || !content) return;
-      toggler.addEventListener("click", () => {
-        const wasActive = item.classList.contains("-active");
-        servicesItems.forEach((el) => {
-          el.classList.remove("-active");
-          const c = el.querySelector<HTMLElement>("[data-services-content]");
-          if (c) c.setAttribute("aria-hidden", "true");
-        });
-        if (wasActive) {
-          const nextIdx = (Array.from(servicesItems).indexOf(item) + 1) % servicesItems.length;
-          const next = servicesItems[nextIdx];
-          const nextContent = next.querySelector<HTMLElement>("[data-services-content]");
-          next.classList.add("-active");
-          if (nextContent) nextContent.setAttribute("aria-hidden", "false");
-        } else {
-          item.classList.add("-active");
-          content.setAttribute("aria-hidden", "false");
-        }
-      });
-    });
+    // Services accordion — commented out per request (keep only heading animation in this section)
+    // const servicesItems = container.querySelectorAll<HTMLElement>("[data-services-item]");
+    // servicesItems.forEach((item) => {
+    //   const toggler = item.querySelector<HTMLElement>("[data-services-toggler]");
+    //   const content = item.querySelector<HTMLElement>("[data-services-content]");
+    //   if (!toggler || !content) return;
+    //   toggler.addEventListener("click", () => {
+    //     const wasActive = item.classList.contains("-active");
+    //     servicesItems.forEach((el) => {
+    //       el.classList.remove("-active");
+    //       const c = el.querySelector<HTMLElement>("[data-services-content]");
+    //       if (c) c.setAttribute("aria-hidden", "true");
+    //     });
+    //     if (wasActive) {
+    //       const nextIdx = (Array.from(servicesItems).indexOf(item) + 1) % servicesItems.length;
+    //       const next = servicesItems[nextIdx];
+    //       const nextContent = next.querySelector<HTMLElement>("[data-services-content]");
+    //       next.classList.add("-active");
+    //       if (nextContent) nextContent.setAttribute("aria-hidden", "false");
+    //     } else {
+    //       item.classList.add("-active");
+    //       content.setAttribute("aria-hidden", "false");
+    //     }
+    //   });
+    // });
 
 
       // ---- SLOGAN SCROLL ANIMATION ----
@@ -2556,25 +2611,54 @@ export default function Home() {
         const thanksMsg = container.querySelector<HTMLElement>("[data-thanks-message]");
         const responseEl = container.querySelector<HTMLElement>("#contact-response");
         const submitBtn = container.querySelector<HTMLInputElement>("#contact-submit");
+        const formMountedAt = Date.now();
+        const MIN_FILL_TIME_MS = 2500;
 
         contactForm?.addEventListener("submit", async (e) => {
           e.preventDefault();
           if (!submitBtn) return;
 
-          const name = (container.querySelector<HTMLInputElement>("#contact-name"))?.value.trim() ?? "";
-          const email = (container.querySelector<HTMLInputElement>("#contact-email"))?.value.trim() ?? "";
-          const phone = (container.querySelector<HTMLInputElement>("#contact-phone"))?.value.trim() ?? "";
-          const subject = (container.querySelector<HTMLSelectElement>("#contact-subject"))?.value ?? "";
-          const message = (container.querySelector<HTMLTextAreaElement>("#contact-message"))?.value.trim() ?? "";
-          const ageGroup = (container.querySelector<HTMLSelectElement>("#contact-age"))?.value ?? "";
-          const supportMode = (container.querySelector<HTMLSelectElement>("#contact-mode"))?.value ?? "";
-          const firstTime = (container.querySelector<HTMLSelectElement>("#contact-firsttime"))?.value ?? "";
-          const heardFrom = (container.querySelector<HTMLSelectElement>("#contact-source"))?.value ?? "";
+          // Honeypot — bots fill this, humans never see it
+          const honey = (container.querySelector<HTMLInputElement>("#contact-website"))?.value.trim() ?? "";
+          if (honey !== "") {
+            // Pretend success; do not call API
+            formWrapper?.classList.add("-hidden");
+            thanksMsg?.classList.add("-active");
+            return;
+          }
+
+          const elapsed = Date.now() - formMountedAt;
+          if (elapsed < MIN_FILL_TIME_MS) {
+            if (responseEl) { responseEl.textContent = "Please take a moment to fill in the form before submitting."; responseEl.style.display = "block"; responseEl.className = "wpcf7-response-output -error"; }
+            return;
+          }
+
+          const name = ((container.querySelector<HTMLInputElement>("#contact-name"))?.value ?? "").trim().slice(0, 100);
+          const email = ((container.querySelector<HTMLInputElement>("#contact-email"))?.value ?? "").trim().slice(0, 200);
+          const phone = ((container.querySelector<HTMLInputElement>("#contact-phone"))?.value ?? "").trim().slice(0, 20);
+          const subject = ((container.querySelector<HTMLSelectElement>("#contact-subject"))?.value ?? "").slice(0, 100);
+          const message = ((container.querySelector<HTMLTextAreaElement>("#contact-message"))?.value ?? "").trim().slice(0, 2000);
+          const ageGroup = ((container.querySelector<HTMLSelectElement>("#contact-age"))?.value ?? "").slice(0, 50);
+          const supportMode = ((container.querySelector<HTMLSelectElement>("#contact-mode"))?.value ?? "").slice(0, 50);
+          const firstTime = ((container.querySelector<HTMLSelectElement>("#contact-firsttime"))?.value ?? "").slice(0, 50);
+          const heardFrom = ((container.querySelector<HTMLSelectElement>("#contact-source"))?.value ?? "").slice(0, 50);
           const privacy = (container.querySelector<HTMLInputElement>("#contact-privacy"))?.checked ?? false;
 
           // Client-side validation
-          if (!name || !email || !subject || !message) {
-            if (responseEl) { responseEl.textContent = "Please fill in all required fields."; responseEl.style.display = "block"; responseEl.className = "wpcf7-response-output -error"; }
+          if (!name || name.length < 2) {
+            if (responseEl) { responseEl.textContent = "Please enter your name."; responseEl.style.display = "block"; responseEl.className = "wpcf7-response-output -error"; }
+            return;
+          }
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            if (responseEl) { responseEl.textContent = "Please enter a valid email."; responseEl.style.display = "block"; responseEl.className = "wpcf7-response-output -error"; }
+            return;
+          }
+          if (!subject) {
+            if (responseEl) { responseEl.textContent = "Please select a topic."; responseEl.style.display = "block"; responseEl.className = "wpcf7-response-output -error"; }
+            return;
+          }
+          if (!message || message.length < 10) {
+            if (responseEl) { responseEl.textContent = "Please share a bit more — at least 10 characters."; responseEl.style.display = "block"; responseEl.className = "wpcf7-response-output -error"; }
             return;
           }
           if (!privacy) {
@@ -2590,7 +2674,7 @@ export default function Home() {
             const res = await fetch("/api/contact", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ name, email, phone: phone || undefined, subject, message, ageGroup, supportMode, firstTime, heardFrom }),
+              body: JSON.stringify({ name, email, phone: phone || undefined, subject, message, ageGroup, supportMode, firstTime, heardFrom, elapsedMs: elapsed }),
             });
             if (res.ok) {
               formWrapper?.classList.add("-hidden");

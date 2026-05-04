@@ -3,6 +3,15 @@ import { Video, Search, PenLine, Compass } from 'lucide-react'
 import type { ReflectionLandingData } from '@/lib/queries/reflection'
 import type { EngagementState } from '@/lib/queries/dashboard'
 
+function numberWord(n: number): string {
+  const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
+  return n < 10 ? words[n] : String(n)
+}
+
+function pluralize(n: number, singular: string, plural?: string): string {
+  return n === 1 ? singular : (plural ?? `${singular}s`)
+}
+
 function getGreeting(): string {
   const h = new Date().getHours()
   if (h < 12) return 'Good morning'
@@ -89,10 +98,10 @@ export default function ReflectionLanding({
     ? lastSessionPhrase(daysSinceLastSession, data.lastSession.doctorName, isFirstSession)
     : null
   const entriesProse = data.entriesSinceLastSession > 0
-    ? `You\u2019ve written ${data.entriesSinceLastSession} ${data.entriesSinceLastSession === 1 ? 'entry' : 'entries'} since.`
+    ? `You\u2019ve written ${numberWord(data.entriesSinceLastSession)} ${pluralize(data.entriesSinceLastSession, 'entry', 'entries')} since.`
     : null
   const completedProse = data.completedSinceLastSession > 0
-    ? `You\u2019ve completed ${data.completedSinceLastSession} ${data.completedSinceLastSession === 1 ? 'exercise' : 'exercises'}.`
+    ? `You\u2019ve completed ${numberWord(data.completedSinceLastSession)} ${pluralize(data.completedSinceLastSession, 'exercise')} since.`
     : null
   const showSchedulePrompt = daysSinceLastSession !== null && daysSinceLastSession > 30
 
@@ -264,7 +273,7 @@ export default function ReflectionLanding({
               href="/user/practice"
               className="text-[13px] text-primary font-medium mt-3 inline-block hover:underline"
             >
-              and {morePending} more in Practice
+              and {numberWord(morePending)} more in Practice
             </Link>
           )}
         </div>
@@ -326,7 +335,7 @@ function EmptyState({ greeting, firstName }: { greeting: string; firstName: stri
         {/* Find a therapist — primary card with accent */}
         <Link
           href="/doctors"
-          className="block rounded-xl p-5 bg-bg-card transition-colors duration-150 hover:bg-white/80"
+          className="block rounded-xl p-5 bg-bg-card transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
           style={{ border: '0.5px solid var(--color-border)', borderLeft: '3px solid var(--color-accent)' }}
         >
           <div className="flex items-start gap-3">
@@ -346,7 +355,7 @@ function EmptyState({ greeting, firstName }: { greeting: string; firstName: stri
         {/* Write first entry */}
         <Link
           href="/user/practice/journal/new"
-          className="block rounded-xl p-5 bg-bg-card transition-colors duration-150 hover:bg-white/80"
+          className="block rounded-xl p-5 bg-bg-card transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
           style={{ border: '0.5px solid var(--color-border)' }}
         >
           <div className="flex items-start gap-3">
@@ -366,7 +375,7 @@ function EmptyState({ greeting, firstName }: { greeting: string; firstName: stri
         {/* Browse workshops */}
         <Link
           href="/user/discover/workshops"
-          className="block rounded-xl p-5 bg-bg-card transition-colors duration-150 hover:bg-white/80"
+          className="block rounded-xl p-5 bg-bg-card transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
           style={{ border: '0.5px solid var(--color-border)' }}
         >
           <div className="flex items-start gap-3">

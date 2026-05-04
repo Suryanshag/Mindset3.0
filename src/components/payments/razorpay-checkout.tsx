@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 
 interface RazorpayOptions {
   key: string
@@ -49,6 +49,7 @@ interface RazorpayCheckoutProps {
   buttonText?: string
   disabled?: boolean
   className?: string
+  autoOpen?: boolean
 }
 
 export default function RazorpayCheckout({
@@ -63,7 +64,10 @@ export default function RazorpayCheckout({
   buttonText = 'Pay Now',
   disabled = false,
   className,
+  autoOpen = false,
 }: RazorpayCheckoutProps) {
+  const autoOpened = useRef(false)
+  const handlePaymentRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     const existing = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]')
@@ -94,7 +98,7 @@ export default function RazorpayCheckout({
         contact: phone,
       },
       theme: {
-        color: '#0B9DA9',
+        color: '#2D5A4F',
       },
       handler: onSuccess,
       modal: {
@@ -106,12 +110,31 @@ export default function RazorpayCheckout({
     rzp.open()
   }, [orderId, amount, name, email, phone, description, onSuccess, onDismiss])
 
+  // Keep ref in sync so the autoOpen effect always calls the latest handlePayment
+  handlePaymentRef.current = handlePayment
+
+  useEffect(() => {
+    if (!autoOpen || autoOpened.current) return
+    autoOpened.current = true
+    let attempts = 0
+    const timer = setInterval(() => {
+      attempts++
+      if (window.Razorpay) {
+        clearInterval(timer)
+        handlePaymentRef.current?.()
+      } else if (attempts > 100) {
+        clearInterval(timer)
+      }
+    }, 100)
+    return () => clearInterval(timer)
+  }, [autoOpen])
+
   return (
     <button
       onClick={handlePayment}
       disabled={disabled}
       className={className ?? "w-full py-3 px-6 font-semibold rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"}
-      style={!className ? { background: 'var(--teal)' } : undefined}
+      style={!className ? { background: 'var(--color-primary)' } : undefined}
     >
       {buttonText}
     </button>

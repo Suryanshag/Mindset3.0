@@ -24,7 +24,7 @@ export async function GET() {
             quantity: true,
             price: true,
             product: {
-              select: { name: true, image: true },
+              select: { name: true, image: true, isDigital: true },
             },
           },
         },

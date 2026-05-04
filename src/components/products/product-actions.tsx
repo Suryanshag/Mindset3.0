@@ -4,7 +4,10 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useCart } from '@/lib/cart-context'
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { ShoppingCart, Minus, Plus, Check, ArrowRight } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
+import Toast from '@/components/ui/toast'
 
 interface ProductActionsProps {
   product: {
@@ -23,6 +26,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
   const [loading, setLoading] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [error, setError] = useState('')
+  const { toasts, addToast, removeToast } = useToast()
 
   const cartItem = items.find((i) => i.productId === product.id)
   const inCart = !!cartItem
@@ -34,9 +38,12 @@ export default function ProductActions({ product }: ProductActionsProps) {
     try {
       await addItem(product.id)
       setAdded(true)
+      addToast('Added to cart', 'success')
       setTimeout(() => setAdded(false), 1500)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add to cart')
+      const msg = err instanceof Error ? err.message : 'Failed to add to cart'
+      setError(msg)
+      addToast(msg, 'error')
     } finally {
       setLoading(false)
     }
@@ -60,7 +67,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
       <Link
         href="/login?callbackUrl=/products"
         className="mt-2 flex items-center justify-center gap-2 w-full py-2.5 px-5 rounded-xl text-sm font-semibold transition-all duration-200 hover:opacity-90"
-        style={{ background: 'var(--teal)', color: '#fff' }}
+        style={{ background: 'var(--color-primary)', color: '#fff' }}
         title="Login to purchase"
       >
         <ShoppingCart size={16} />
@@ -75,6 +82,12 @@ export default function ProductActions({ product }: ProductActionsProps) {
         <p className="text-xs font-medium px-3 py-1.5 rounded-lg" style={{ color: '#dc2626', background: 'rgba(220,38,38,0.06)' }}>
           {error}
         </p>
+      )}
+      {typeof document !== 'undefined' && toasts.length > 0 && createPortal(
+        <div className="fixed bottom-4 right-4 z-50 space-y-2">
+          {toasts.map(t => <Toast key={t.id} message={t.message} type={t.type} onClose={() => removeToast(t.id)} />)}
+        </div>,
+        document.body
       )}
       {inCart ? (
         <>
@@ -115,7 +128,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
           <Link
             href="/user/cart"
             className="flex items-center gap-1.5 text-sm font-semibold transition-opacity duration-150 hover:opacity-70 w-fit"
-            style={{ color: 'var(--teal)' }}
+            style={{ color: 'var(--color-primary)' }}
           >
             View Cart
             <ArrowRight size={14} strokeWidth={2.5} />
@@ -126,7 +139,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
           onClick={handleAdd}
           disabled={loading}
           className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-white text-sm rounded-xl transition-all duration-200 font-semibold disabled:opacity-50"
-          style={{ background: added ? '#059669' : 'var(--teal)' }}
+          style={{ background: added ? '#059669' : 'var(--color-primary)' }}
         >
           {added ? <Check size={16} strokeWidth={2.5} /> : <ShoppingCart size={16} />}
           {loading ? 'Adding...' : added ? 'Added to Cart' : 'Add to Cart'}

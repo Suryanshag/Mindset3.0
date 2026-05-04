@@ -12,6 +12,7 @@ interface CartItem {
   price: number
   image: string | null
   quantity: number
+  isDigital: boolean
 }
 
 interface CartContextType {
@@ -31,7 +32,7 @@ const CartContext = createContext<CartContextType | null>(null)
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
   const [items, setItems] = useState<CartItem[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const fetchedRef = useRef(false)
 
   const isUser = session?.user?.role === 'USER'
@@ -50,7 +51,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           data.data.items.map(
             (item: {
               productId: string
-              product: { name: string; price: number; image: string | null }
+              product: { name: string; price: number; image: string | null; isDigital: boolean }
               quantity: number
             }) => ({
               productId: item.productId,
@@ -58,6 +59,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               price: item.product.price,
               image: item.product.image,
               quantity: item.quantity,
+              isDigital: item.product.isDigital,
             })
           )
         )
@@ -77,6 +79,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
     if (!isUser) {
       setItems([])
+      setIsLoading(false)
       fetchedRef.current = false
     }
   }, [status, isUser, fetchCart])

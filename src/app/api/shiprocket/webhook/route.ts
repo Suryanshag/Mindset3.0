@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import crypto from 'crypto'
+import { sendOrderShipped, sendOrderDelivered } from '@/lib/email-service'
 
 function mapShippingStatus(
   srStatus: string
@@ -31,6 +33,22 @@ function mapShippingStatus(
 
 export async function POST(req: NextRequest) {
   console.log('[SR_WEBHOOK] Received Shiprocket webhook')
+
+  // Verify webhook token if configured
+  const webhookToken = process.env.SHIPROCKET_WEBHOOK_TOKEN
+  if (webhookToken) {
+    const received = req.headers.get('x-api-key') ?? ''
+    const recvBuf = Buffer.from(received)
+    const expBuf = Buffer.from(webhookToken)
+    let valid = false
+    if (recvBuf.length === expBuf.length) {
+      valid = crypto.timingSafeEqual(recvBuf, expBuf)
+    }
+    if (!valid) {
+      console.warn('[SR_WEBHOOK] Invalid token, rejecting')
+      return NextResponse.json({ received: true })
+    }
+  }
 
   try {
     const body = await req.json()
@@ -76,6 +94,40 @@ export async function POST(req: NextRequest) {
     console.log(
       `[SR_WEBHOOK] Order ${order.id} status: ${order.shippingStatus} → ${newStatus}`
     )
+
+    // Send shipped/delivered email notifications
+    if (newStatus === 'SHIPPED' || newStatus === 'DELIVERED') {
+      try {
+        const fullOrder = await prisma.order.findUnique({
+          where: { id: order.id },
+          select: {
+            id: true,
+            awbCode: true,
+            courierName: true,
+            trackingUrl: true,
+            user: { select: { name: true, email: true } },
+          },
+        })
+        if (fullOrder?.user) {
+          if (newStatus === 'SHIPPED') {
+            sendOrderShipped(fullOrder.user.email, {
+              userName: fullOrder.user.name ?? 'there',
+              orderId: fullOrder.id,
+              courierName: fullOrder.courierName,
+              awbCode: fullOrder.awbCode,
+              trackingUrl: fullOrder.trackingUrl,
+            })
+          } else {
+            sendOrderDelivered(fullOrder.user.email, {
+              userName: fullOrder.user.name ?? 'there',
+              orderId: fullOrder.id,
+            })
+          }
+        }
+      } catch (err) {
+        console.error('[SR_WEBHOOK] Email error:', err)
+      }
+    }
 
     return NextResponse.json({ received: true })
   } catch (error) {

@@ -18,7 +18,7 @@ export default async function ShopPage() {
     prisma.product
       .findMany({
         where: { isActive: true },
-        select: { id: true, name: true, price: true, image: true },
+        select: { id: true, name: true, price: true, image: true, isDigital: true, stock: true },
         orderBy: { createdAt: 'desc' },
       })
       .catch(() => []),
@@ -29,6 +29,8 @@ export default async function ShopPage() {
     name: p.name,
     price: Number(p.price),
     imageUrl: p.image,
+    isDigital: p.isDigital,
+    stock: p.stock,
   }))
 
   return <ShopContent cartCount={cartCount} products={serialized} />

@@ -7,6 +7,7 @@ import { MapPin, ArrowRight } from 'lucide-react'
 export const metadata = {
   title: 'NGO Visits — Mindset',
   description: 'See our community outreach visits and join upcoming drives.',
+  alternates: { canonical: '/ngo-visits' },
 }
 
 export default async function NgoVisitsPage() {

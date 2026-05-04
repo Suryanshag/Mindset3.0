@@ -3,14 +3,8 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import { Search, SlidersHorizontal } from 'lucide-react'
-
-const MOOD_DOTS = [
-  { face: '·_·', tint: '#FCE7E3' },
-  { face: '.-.', tint: '#FBE9DD' },
-  { face: '‿‿', tint: '#DDE9DC' },
-  { face: '^‿^', tint: '#DDE9DC' },
-  { face: '^◡^', tint: '#E8E4F2' },
-]
+import { MOODS } from '@/lib/constants/mood'
+import MoodFace from '@/components/dashboard/mood-face'
 
 export default function JournalFilters({
   currentSearch,
@@ -77,20 +71,20 @@ export default function JournalFilters({
       {showFilters && (
         <div className="flex items-center gap-2">
           <span className="text-[11px] text-text-faint mr-1">Mood:</span>
-          {MOOD_DOTS.map((dot, i) => {
-            const mood = i + 1
-            const active = currentMood === mood
+          {MOODS.map((mood) => {
+            const active = currentMood === mood.value
             return (
               <button
-                key={mood}
-                onClick={() => handleMoodFilter(mood)}
+                key={mood.value}
+                onClick={() => handleMoodFilter(mood.value)}
                 className="w-8 h-8 rounded-full flex items-center justify-center transition-all"
                 style={{
-                  backgroundColor: dot.tint,
+                  backgroundColor: mood.tint,
+                  color: mood.stroke,
                   border: active ? '2px solid var(--color-primary)' : '2px solid transparent',
                 }}
               >
-                <span className="text-[10px] text-text-muted leading-none">{dot.face}</span>
+                <MoodFace mood={mood.value} size={16} />
               </button>
             )
           })}

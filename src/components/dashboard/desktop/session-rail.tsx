@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import CancelSessionButton from '@/app/(dashboard)/user/sessions/[id]/cancel-button'
+import Image from 'next/image'
+import CancelTextLink from './cancel-text-link'
 
 /** Extract a short display name, skipping "Dr." / "Dr" prefix. */
 function shortName(fullName: string): string {
@@ -38,18 +39,18 @@ export default function SessionRail({
       {/* Doctor card */}
       <div className="text-center">
         {doctor.photo ? (
-          <img
+          <Image width={64} height={64}
             src={doctor.photo}
             alt={doctor.name}
-            className="w-14 h-14 rounded-full object-cover mx-auto"
+            className="rounded-full object-cover mx-auto"
           />
         ) : (
-          <div className="w-14 h-14 rounded-full bg-accent flex items-center justify-center mx-auto">
-            <span className="text-sm font-medium text-white">{initials}</span>
+          <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mx-auto">
+            <span className="text-base font-medium text-white">{initials}</span>
           </div>
         )}
-        <p className="text-[15px] font-medium text-text mt-3">{doctor.name}</p>
-        <p className="text-[13px] text-text-muted">{doctor.designation}</p>
+        <p className="text-[15px] font-medium text-text mt-2">{doctor.name}</p>
+        <p className="text-[13px] text-text-muted mt-1">{doctor.designation}</p>
       </div>
 
       {/* Book follow-up */}
@@ -59,6 +60,18 @@ export default function SessionRail({
       >
         Book follow-up with {shortName(doctor.name)}
       </Link>
+
+      {/* Cancel — text link for upcoming sessions */}
+      {canCancel && (
+        <div className="text-center">
+          <CancelTextLink sessionId={sessionId} />
+        </div>
+      )}
+
+      {/* Divider before assignments */}
+      {assignments.length > 0 && (
+        <div className="h-px" style={{ backgroundColor: 'var(--color-border)' }} />
+      )}
 
       {/* Assignments from this session */}
       {assignments.length > 0 && (
@@ -81,16 +94,6 @@ export default function SessionRail({
               </Link>
             ))}
           </div>
-        </div>
-      )}
-
-      {/* Cancel session */}
-      {canCancel && (
-        <div className="pt-2">
-          <p className="text-[13px] text-text-faint text-center mb-2">
-            Need to reschedule?
-          </p>
-          <CancelSessionButton sessionId={sessionId} />
         </div>
       )}
     </div>

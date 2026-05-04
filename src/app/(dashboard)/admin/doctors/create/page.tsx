@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { uploadToCloudinary } from '@/lib/cloudinary-upload'
 
@@ -244,7 +245,7 @@ export default function CreateDoctorPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Photo (optional)</label>
             {form.photo ? (
               <div className="flex items-center gap-2">
-                <img src={form.photo} alt="Doctor" className="w-16 h-16 rounded-full object-cover" />
+                <Image width={64} height={64} src={form.photo} alt="Doctor" className="rounded-full object-cover" />
                 <button type="button" onClick={() => setForm({ ...form, photo: '' })} className="text-xs text-red-600">
                   Remove
                 </button>

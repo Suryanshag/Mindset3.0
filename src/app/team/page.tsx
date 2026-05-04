@@ -12,42 +12,48 @@ const teamMembers = [
     name: "Muskan Ahuja",
     role: "Founder",
     bio: "Muskan channels lived experience into powerful narratives that inspire and uplift. She guides people toward self-belief and resilience through workshops, sessions, and community outreach.",
-    photo: "/images/team-1.jpeg",
+    photo: "/images/team/Muskan.webp",
+    linkedin: "https://www.linkedin.com/in/muskan-ahuja-156006245",
   },
   // 2 — top right
   {
     name: "Suryansh Agarwal",
     role: "Tech Lead & PR Head",
     bio: "Suryansh architects the digital backbone of Mindset while managing public relations. He ensures the platform is seamless, scalable, and that the brand's story is told with authenticity.",
-    photo: "/images/Suryansh.jpeg",
+    photo: "/images/team/Suryansh.webp",
+    linkedin: "https://www.linkedin.com/in/suryanshag",
   },
   // 3 — below Suryansh (right)
   {
     name: "Sachi Aggarwal",
     role: "Manager",
     bio: "Sachi keeps every part of Mindset running with clarity and purpose. She bridges teams, drives operations, and ensures that the vision behind every initiative is translated into real impact.",
-    photo: "/images/team-2.jpeg",
+    photo: "/images/team/sachi.webp",
+    linkedin: "https://www.linkedin.com/in/sachiaggarwal",
   },
   // 4 — below Muskan (left)
   {
     name: "Shruti",
     role: "Video Creator",
     bio: "Shruti conceives and creates video content that speaks directly to Mindset's audience. Her authentic on-screen presence and creative instincts make complex mental health topics feel approachable.",
-    photo: "/images/team-3.jpeg",
+    photo: "/images/team/shruti.webp",
+    linkedin: "https://www.linkedin.com/",
   },
   // 5 — bottom, Ayush
   {
     name: "Ayush Gupta",
     role: "Marketing Manager",
     bio: "Ayush shapes how Mindset shows up in the world. From campaigns to community conversations, he builds narratives that connect people to mental health support without stigma.",
-    photo: "/images/Ayush.jpeg",
+    photo: "/images/team/ayush.webp",
+    linkedin: "https://www.linkedin.com/in/ayush-gupta-b1a586192",
   },
   // 6 — bottom, Video Editor
   {
     name: "Siya Sachdeva",
     role: "Video Editor",
     bio: "Siya brings stories to life through the edit. With a sharp eye for pacing and emotion, she transforms raw footage into compelling visual content that reflects Mindset's warmth and mission.",
-    photo: "/images/team-4.jpeg",
+    photo: "/images/team/Siya.webp",
+    linkedin: "https://www.linkedin.com/in/siya-sachdeva",
   },
 ];
 
@@ -59,7 +65,7 @@ function buildMemberCard(member: (typeof teamMembers)[number]): string {
     <div class="tm-card">
       <div class="tm-card__img-wrap">
         <img src="${member.photo}" alt="${member.name}" loading="lazy" />
-        <div class="tm-card__social">${linkSVG}</div>
+        <a href="${member.linkedin}" class="tm-card__social" target="_blank" rel="noopener noreferrer" aria-label="${member.name} on LinkedIn">${linkSVG}</a>
       </div>
       <div class="tm-card__content-wrap">
         <div class="tm-card__content">
@@ -90,19 +96,19 @@ const staticHTML = `
         </div>
         <div class="block-blog-hero__shapes">
           <div class="block-blog-hero__shape block-blog-hero__shape--1" data-shape-animate>
-            <img width="173" height="193" decoding="async" src="/images/blog-shape-1.svg" alt="" />
+            <img width="173" height="193" decoding="async" src="/images/decoration/blog-shape-1.svg" alt="" />
           </div>
           <div class="block-blog-hero__shape block-blog-hero__shape--2" data-shape-animate>
-            <img width="179" height="194" decoding="async" src="/images/blog-shape-2.svg" alt="" />
+            <img width="179" height="194" decoding="async" src="/images/decoration/blog-shape-2.svg" alt="" />
           </div>
           <div class="block-blog-hero__shape block-blog-hero__shape--3" data-shape-animate>
-            <img width="219" height="215" decoding="async" src="/images/blog-shape-3.svg" alt="" />
+            <img width="219" height="215" decoding="async" src="/images/decoration/blog-shape-3.svg" alt="" />
           </div>
           <div class="block-blog-hero__shape block-blog-hero__shape--4" data-shape-animate>
-            <img width="182" height="194" decoding="async" src="/images/blog-shape-4.svg" alt="" />
+            <img width="182" height="194" decoding="async" src="/images/decoration/blog-shape-4.svg" alt="" />
           </div>
           <div class="block-blog-hero__shape block-blog-hero__shape--5" data-shape-animate>
-            <img width="170" height="136" decoding="async" src="/images/blog-shape-5.svg" alt="" />
+            <img width="170" height="136" decoding="async" src="/images/decoration/blog-shape-5.svg" alt="" />
           </div>
         </div>
       </section>
@@ -123,7 +129,7 @@ const staticHTML = `
           <div class="block-footer__top">
               <div class="block-footer__brand">
                   <div class="block-footer__brand-identity">
-                      <img src="/images/Logo.jpg" alt="Mindset logo" class="block-footer__brand-logo">
+                      <img src="/images/icons/Logo.webp" alt="Mindset logo" class="block-footer__brand-logo">
                       <span class="block-footer__brand-wordmark">Mindset</span>
                   </div>
                   <p class="block-footer__brand-tagline">Making mental health support accessible, affordable, and stigma-free for everyone.</p>
@@ -166,8 +172,8 @@ const staticHTML = `
           <div class="block-footer__bottom">
               <div class="block-footer__copyright">© 2026 Mindset. All rights reserved.</div>
               <nav class="block-footer__legal-nav" aria-label="Legal">
-                  <a href="#">Privacy Policy</a>
-                  <a href="#">Terms of Use</a>
+                  <a href="/privacy-policy">Privacy Policy</a>
+                  <a href="/terms-of-use">Terms of Use</a>
               </nav>
           </div>
       </div>
@@ -225,22 +231,25 @@ export default function TeamPage() {
       });
     });
 
-    // Staggered entrance for team items (after they've been injected)
-    setTimeout(() => {
+    // Staggered entrance for team items.
+    // Earlier this used scrollTrigger; on client-side navigation the trigger
+    // would lock to stale layout values and cards stayed at opacity 0 until
+    // a hard reload. A simple staggered cascade is more reliable and looks
+    // just as good for a small grid.
+    requestAnimationFrame(() => {
       const items = container.querySelectorAll<HTMLElement>(".tm-card");
-      items.forEach((item) => {
-        gsap.from(item, {
-          opacity: 0,
-          y: 50,
+      gsap.fromTo(
+        items,
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1,
+          y: 0,
           duration: 0.8,
           ease: "power3.out",
-          scrollTrigger: {
-            trigger: item,
-            start: "top 85%",
-          },
-        });
-      });
-    }, 50);
+          stagger: 0.08,
+        },
+      );
+    });
 
     return () => {
       ScrollTrigger.getAll().forEach((t) => t.kill());

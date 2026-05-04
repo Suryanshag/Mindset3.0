@@ -19,6 +19,7 @@ const paymentSchema = z.discriminatedUnion('type', [
       productId: z.string().cuid(),
       quantity: z.number().int().min(1).max(100),
     })).min(1),
+    digital: z.boolean().optional(),
     shippingAddress: z.object({
       name: z.string().min(2).max(100),
       phone: z.string().regex(/^[6-9]\d{9}$/, 'Invalid phone number'),
@@ -27,10 +28,10 @@ const paymentSchema = z.discriminatedUnion('type', [
       city: z.string().min(2).max(100),
       state: z.string().min(2).max(100),
       pincode: z.string().regex(/^\d{6}$/, 'Invalid PIN code'),
-    }),
-    selectedCourierId: z.coerce.number().int().positive().finite(),
-    selectedCourierName: z.string().min(1),
-    deliveryCharge: z.coerce.number().min(0).finite(),
+    }).optional(),
+    selectedCourierId: z.coerce.number().int().positive().finite().optional(),
+    selectedCourierName: z.string().min(1).optional(),
+    deliveryCharge: z.coerce.number().min(0).finite().optional(),
   }),
   z.object({
     type: z.literal('EBOOK'),
@@ -97,6 +98,7 @@ export async function POST(req: NextRequest) {
           price: true,
           stock: true,
           isActive: true,
+          isDigital: true,
           weight: true,
         },
       })
@@ -105,14 +107,21 @@ export async function POST(req: NextRequest) {
         return errorResponse('One or more products not found', 400)
       }
 
+      const allDigital = products.every(p => p.isDigital)
+      const hasPhysical = !allDigital
+
       for (const item of items) {
         const product = products.find(p => p.id === item.productId)!
         if (!product.isActive) {
           return errorResponse(`${product.name} is no longer available`, 400)
         }
-        if (product.stock < item.quantity) {
+        if (!product.isDigital && product.stock < item.quantity) {
           return errorResponse(`Insufficient stock for ${product.name}. Available: ${product.stock}`, 400)
         }
+      }
+
+      if (hasPhysical && !shippingAddress) {
+        return errorResponse('Shipping address required for physical products', 400)
       }
 
       // Calculate subtotal from DB prices (never trust client)
@@ -121,34 +130,39 @@ export async function POST(req: NextRequest) {
         return sum + Number(product.price) * item.quantity
       }, 0)
 
-      const totalWeight = items.reduce((sum, item) => {
-        const product = products.find(p => p.id === item.productId)!
-        return sum + (Number(product.weight ?? 0.5) * item.quantity)
-      }, 0)
+      let verifiedDeliveryCharge = 0
 
-      // Server-side verify courier rates
-      const pickupPostcode = getPickupPincode()
-      if (!pickupPostcode) {
-        return errorResponse('Shipping not configured. Please contact support.', 500)
-      }
+      if (hasPhysical) {
+        const totalWeight = items.reduce((sum, item) => {
+          const product = products.find(p => p.id === item.productId)!
+          if (product.isDigital) return sum
+          return sum + (Number(product.weight ?? 0.5) * item.quantity)
+        }, 0)
 
-      const couriers = await getServiceableCouriers({
-        pickupPostcode,
-        deliveryPostcode: shippingAddress.pincode,
-        weight: Math.max(totalWeight, 0.1),
-        cod: 0,
-      })
+        // Server-side verify courier rates
+        const pickupPostcode = getPickupPincode()
+        if (!pickupPostcode) {
+          return errorResponse('Shipping not configured. Please contact support.', 500)
+        }
 
-      const selectedCourier = couriers.find(c => c.courierId === selectedCourierId)
-      if (!selectedCourier) {
-        return errorResponse('Selected courier is no longer available. Please select again.', 400)
-      }
+        const couriers = await getServiceableCouriers({
+          pickupPostcode,
+          deliveryPostcode: shippingAddress!.pincode,
+          weight: Math.max(totalWeight, 0.1),
+          cod: 0,
+        })
 
-      const verifiedDeliveryCharge = selectedCourier.rate
-      const tolerance = verifiedDeliveryCharge * 0.05
-      if (Math.abs(deliveryCharge - verifiedDeliveryCharge) > Math.max(tolerance, 1)) {
-        console.warn('[PAYMENT] Delivery charge mismatch:', 'client:', deliveryCharge, 'server:', verifiedDeliveryCharge)
-        return errorResponse('Delivery charge has changed. Please refresh and try again.', 400)
+        const selectedCourier = couriers.find(c => c.courierId === selectedCourierId)
+        if (!selectedCourier) {
+          return errorResponse('Selected courier is no longer available. Please select again.', 400)
+        }
+
+        verifiedDeliveryCharge = selectedCourier.rate
+        const tolerance = verifiedDeliveryCharge * 0.05
+        if (Math.abs((deliveryCharge ?? 0) - verifiedDeliveryCharge) > Math.max(tolerance, 1)) {
+          console.warn('[PAYMENT] Delivery charge mismatch:', 'client:', deliveryCharge, 'server:', verifiedDeliveryCharge)
+          return errorResponse('Delivery charge has changed. Please refresh and try again.', 400)
+        }
       }
 
       const totalAmount = subtotal + verifiedDeliveryCharge
@@ -169,11 +183,11 @@ export async function POST(req: NextRequest) {
             userId: session.user.id,
             totalAmount,
             deliveryCharge: verifiedDeliveryCharge,
-            selectedCourierId,
-            selectedCourierName,
+            selectedCourierId: hasPhysical ? selectedCourierId : undefined,
+            selectedCourierName: hasPhysical ? selectedCourierName : undefined,
             paymentStatus: 'PENDING',
-            shippingStatus: 'PENDING',
-            shippingAddress: shippingAddress as object,
+            shippingStatus: allDigital ? 'DELIVERED' : 'PENDING',
+            shippingAddress: (hasPhysical ? shippingAddress : {}) as object,
             orderItems: {
               create: items.map(item => {
                 const product = products.find(p => p.id === item.productId)!
@@ -188,12 +202,15 @@ export async function POST(req: NextRequest) {
           select: { id: true },
         })
 
-        // Decrement stock
+        // Decrement stock for non-digital items
         for (const item of items) {
-          await tx.product.update({
-            where: { id: item.productId },
-            data: { stock: { decrement: item.quantity } },
-          })
+          const product = products.find(p => p.id === item.productId)!
+          if (!product.isDigital) {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: { stock: { decrement: item.quantity } },
+            })
+          }
         }
 
         // Create Payment record

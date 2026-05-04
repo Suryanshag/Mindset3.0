@@ -186,7 +186,7 @@ export async function getUserEngagementState(userId: string): Promise<Engagement
     prisma.session.count({
       where: { userId, date: { lt: now }, status: { in: ['COMPLETED', 'CONFIRMED'] } },
     }),
-    prisma.journalEntry.count({ where: { userId } }),
+    prisma.journalEntry.count({ where: { userId, isDraft: false } }),
     prisma.assignment.count({
       where: { userId, status: { in: ['COMPLETED', 'SUBMITTED', 'REVIEWED'] } },
     }),

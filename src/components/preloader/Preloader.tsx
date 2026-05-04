@@ -13,16 +13,6 @@ export default function Preloader({ onComplete }: { onComplete?: () => void }) {
   const [done, setDone] = useState(false)
   const [skip, setSkip] = useState(false)
 
-  // Check sessionStorage on mount — only show once per session
-  useEffect(() => {
-    if (sessionStorage.getItem('preloader-shown')) {
-      setSkip(true)
-      return
-    }
-    // Lock scroll while preloader is active
-    document.body.style.overflow = 'hidden'
-  }, [])
-
   const handleComplete = useCallback(() => {
     document.body.style.overflow = ''
     sessionStorage.setItem('preloader-shown', '1')
@@ -44,7 +34,19 @@ export default function Preloader({ onComplete }: { onComplete?: () => void }) {
   }, [onComplete])
 
   useEffect(() => {
-    if (skip) return
+    // Subsequent-visit short-circuit: if the flag is already set we hide the
+    // loader and bail out BEFORE touching the canvas / GSAP. Combining this
+    // check with the animation setup into one effect (instead of two parallel
+    // ones) eliminates the race where the second effect started a 0% wave
+    // frame that never advanced.
+    if (sessionStorage.getItem('preloader-shown')) {
+      setSkip(true)
+      return
+    }
+    // First visit — claim the flag immediately so an early navigation
+    // doesn't leave a future mount stuck.
+    sessionStorage.setItem('preloader-shown', '1')
+    document.body.style.overflow = 'hidden'
 
     const overlay = overlayRef.current
     const logo = logoRef.current
@@ -74,7 +76,7 @@ export default function Preloader({ onComplete }: { onComplete?: () => void }) {
     function drawWave() {
       if (!ctx) return
       ctx.clearRect(0, 0, w, h)
-      ctx.fillStyle = '#ffffff'
+      ctx.fillStyle = '#FFF8EB'
 
       const fillHeight = progress.value / 100
 
@@ -150,7 +152,7 @@ export default function Preloader({ onComplete }: { onComplete?: () => void }) {
       tl.kill()
       document.body.style.overflow = ''
     }
-  }, [skip, handleComplete])
+  }, [handleComplete])
 
   if (skip || done) return null
 

@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema } from '@/lib/validations/auth'
 import { z } from 'zod'
 import { useState, Suspense } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { CheckCircle, ArrowRight, Loader2 } from 'lucide-react'
 import PasswordInput from '@/components/auth/password-input'
@@ -253,10 +254,13 @@ export default function LoginPage() {
           animation: 'authSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both',
         }}
       >
-        <img
-          src="/images/compassion.png"
+        <Image
+          src="/images/sections/compassion.webp"
           alt="People showing compassion"
-          className="max-w-[900px] w-full"
+          width={900}
+          height={600}
+          priority
+          className="max-w-[900px] w-full h-auto"
           style={{ opacity: 0.85 }}
         />
       </div>

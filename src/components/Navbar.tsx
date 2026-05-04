@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
@@ -13,7 +14,7 @@ const NAV_LINKS = [
   { href: '/workshops', label: 'Workshops' },
   { href: '/products', label: 'Products' },
   { href: '/study-materials', label: 'Study Materials' },
-  { href: '/#apply-now', label: 'Contact' },
+  { href: '/contact', label: 'Contact' },
 ]
 
 const ROLE_HOME: Record<string, string> = {
@@ -81,8 +82,15 @@ export default function Navbar({ light = false }: { light?: boolean }) {
     <header className={headerClasses}>
       {/* --- Main top bar --- */}
       <div className="block-header__container container">
-        <Link href="/" className="block-header__logo">
-          <span className="block-header__logo-wordmark">Mindset</span>
+        <Link href="/" className="block-header__logo" aria-label="Mindset home">
+          <Image
+            src="/images/icons/Logo.webp"
+            alt="Mindset"
+            width={48}
+            height={48}
+            priority
+            className="block-header__logo-img"
+          />
         </Link>
 
         {/* Desktop nav */}
@@ -114,7 +122,7 @@ export default function Navbar({ light = false }: { light?: boolean }) {
                 <Link href={authHref} className="block-header__auth-btn" style={isLoggedIn ? { display: 'flex', alignItems: 'center', gap: '8px' } : undefined}>
                   {isLoggedIn && (
                     userImage ? (
-                      <img src={userImage} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
+                      <Image src={userImage} alt="" width={24} height={24} style={{ borderRadius: '50%', objectFit: 'cover' }} unoptimized />
                     ) : (
                       <span style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--teal, #2D5A4F)', color: '#fff', fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{userInitials}</span>
                     )
@@ -151,8 +159,14 @@ export default function Navbar({ light = false }: { light?: boolean }) {
       {/* --- Fixed header on scroll-back (desktop) --- */}
       <div className="block-header__fixed">
         <div className="block-header__container container">
-          <Link href="/" className="block-header__logo">
-            <span className="block-header__logo-wordmark">Mindset</span>
+          <Link href="/" className="block-header__logo" aria-label="Mindset home">
+            <Image
+              src="/images/icons/Logo.webp"
+              alt="Mindset"
+              width={48}
+              height={48}
+              className="block-header__logo-img"
+            />
           </Link>
           <nav className="block-header__nav">
             <ul className="block-header__nav-list">
@@ -195,8 +209,14 @@ export default function Navbar({ light = false }: { light?: boolean }) {
 
           {/* Top bar */}
           <div className="block-header__overlay-top">
-            <Link href="/" className="block-header__overlay-logo" onClick={closeOverlay}>
-              Mindset
+            <Link href="/" className="block-header__overlay-logo" onClick={closeOverlay} aria-label="Mindset home">
+              <Image
+                src="/images/icons/Logo.webp"
+                alt="Mindset"
+                width={40}
+                height={40}
+                className="block-header__logo-img"
+              />
             </Link>
             <button className="block-header__overlay-close" onClick={closeOverlay} aria-label="Close menu">
               <span /><span />

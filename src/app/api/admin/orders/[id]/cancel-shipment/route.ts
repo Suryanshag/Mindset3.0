@@ -21,6 +21,13 @@ export async function POST(
         id: true,
         shiprocketOrderId: true,
         shippingStatus: true,
+        orderItems: {
+          select: {
+            productId: true,
+            quantity: true,
+            product: { select: { isDigital: true } },
+          },
+        },
       },
     })
 
@@ -39,9 +46,20 @@ export async function POST(
 
     await cancelShipment([order.shiprocketOrderId])
 
-    await prisma.order.update({
-      where: { id },
-      data: { shippingStatus: 'RETURNED' },
+    await prisma.$transaction(async (tx) => {
+      // Restore stock for non-digital items
+      for (const item of order.orderItems) {
+        if (!item.product.isDigital) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: { stock: { increment: item.quantity } },
+          })
+        }
+      }
+      await tx.order.update({
+        where: { id },
+        data: { shippingStatus: 'RETURNED' },
+      })
     })
 
     console.log('[ADMIN] Shipment cancelled for order:', id)

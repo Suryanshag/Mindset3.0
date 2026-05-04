@@ -6,7 +6,6 @@ import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import { useCart } from '@/lib/cart-context'
 import RazorpayCheckout from '@/components/payments/razorpay-checkout'
-import OrderConfirmModal from '@/components/checkout/order-confirm-modal'
 import AddressForm from '@/components/address/address-form'
 import { Minus, Plus, Trash2, Check, Truck, CreditCard, MapPin, Star, Loader2 } from 'lucide-react'
 
@@ -43,8 +42,8 @@ interface SavedAddress {
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const { data: authSession } = useSession()
-  const { items, updateQuantity, removeItem, clearCart, totalAmount, totalItems } = useCart()
+  const { data: authSession, status: sessionStatus } = useSession()
+  const { items, isLoading: cartLoading, updateQuantity, removeItem, clearCart, totalAmount, totalItems } = useCart()
 
   const [step, setStep] = useState(1)
   const [address, setAddress] = useState<ShippingAddress>({
@@ -81,8 +80,26 @@ export default function CheckoutPage() {
   const [recipientName, setRecipientName] = useState('')
   const [recipientPhone, setRecipientPhone] = useState('')
 
-  // Confirmation modal
-  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  // Digital product detection
+  const allDigital = items.length > 0 && items.every(i => i.isDigital)
+  const hasPhysical = items.some(i => !i.isDigital)
+
+  // Pre-load Razorpay SDK so it's ready when user clicks Pay
+  useEffect(() => {
+    const existing = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]')
+    if (existing) return
+    const script = document.createElement('script')
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+    script.async = true
+    document.body.appendChild(script)
+  }, [])
+
+  // Jump to payment step for digital-only carts
+  useEffect(() => {
+    if (allDigital && step === 1) {
+      setStep(3)
+    }
+  }, [allDigital, step])
 
   // Fetch saved addresses on mount
   useEffect(() => {
@@ -100,11 +117,13 @@ export default function CheckoutPage() {
   }, [])
 
   // Redirect if cart is empty and no payment in progress
+  // Wait for session + cart fetch to settle before redirecting
   useEffect(() => {
+    if (sessionStatus !== 'authenticated' || cartLoading) return
     if (items.length === 0 && !paymentData && !message) {
-      router.push('/products')
+      router.push('/user/shop')
     }
-  }, [items.length, paymentData, message, router])
+  }, [sessionStatus, cartLoading, items.length, paymentData, message, router])
 
   // Handle new address form submission from AddressForm component
   async function handleNewAddressSubmit(formData: { label: string; name: string; phone: string; addressLine1: string; addressLine2: string; city: string; state: string; pincode: string; isDefault: boolean }) {
@@ -264,25 +283,31 @@ export default function CheckoutPage() {
   }
 
   async function handlePlaceOrder() {
-    if (!selectedCourier) return
+    if (!allDigital && !selectedCourier) return
 
     setPlacing(true)
     setError('')
-    setShowConfirmModal(false)
 
     try {
+      // Build request body — omit shipping fields for digital-only
+      const orderBody: Record<string, unknown> = {
+        type: 'PRODUCT',
+        items: items.map(i => ({ productId: i.productId, quantity: i.quantity })),
+      }
+      if (allDigital) {
+        orderBody.digital = true
+      } else {
+        orderBody.shippingAddress = address
+        orderBody.selectedCourierId = selectedCourier!.courierId
+        orderBody.selectedCourierName = selectedCourier!.courierName
+        orderBody.deliveryCharge = selectedCourier!.rate
+      }
+
       // Single API call creates Order + Payment + Razorpay order atomically
       const res = await fetch('/api/payments/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'PRODUCT',
-          items: items.map(i => ({ productId: i.productId, quantity: i.quantity })),
-          shippingAddress: address,
-          selectedCourierId: selectedCourier.courierId,
-          selectedCourierName: selectedCourier.courierName,
-          deliveryCharge: selectedCourier.rate,
-        }),
+        body: JSON.stringify(orderBody),
       })
       const data = await res.json()
       if (!data.success) {
@@ -296,7 +321,6 @@ export default function CheckoutPage() {
         amount: data.data.amount,
         orderId: data.data.orderId,
       })
-      setPlacing(false)
     } catch {
       setError('Something went wrong')
       setPlacing(false)
@@ -312,10 +336,11 @@ export default function CheckoutPage() {
 
   function handlePaymentDismiss() {
     setPaymentData(null)
-    setError('Payment cancelled. You can retry by clicking Place Order again.')
+    setPlacing(false)
+    setError('Payment cancelled. You can retry.')
   }
 
-  const grandTotal = totalAmount + (selectedCourier?.rate ?? 0)
+  const grandTotal = allDigital ? totalAmount : totalAmount + (selectedCourier?.rate ?? 0)
 
   if (message) {
     return (
@@ -331,11 +356,13 @@ export default function CheckoutPage() {
 
   if (items.length === 0) return null
 
-  const steps = [
-    { number: 1, label: 'Address', icon: MapPin },
-    { number: 2, label: 'Delivery', icon: Truck },
-    { number: 3, label: 'Payment', icon: CreditCard },
-  ]
+  const steps = allDigital
+    ? [{ number: 3, label: 'Payment', icon: CreditCard }]
+    : [
+        { number: 1, label: 'Address', icon: MapPin },
+        { number: 2, label: 'Delivery', icon: Truck },
+        { number: 3, label: 'Payment', icon: CreditCard },
+      ]
 
   return (
     <div>
@@ -349,23 +376,23 @@ export default function CheckoutPage() {
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
                   s.number < step
-                    ? 'bg-teal-500 text-white'
+                    ? 'bg-primary text-white'
                     : s.number === step
-                    ? 'bg-teal-500 text-white ring-4 ring-teal-100'
+                    ? 'bg-primary text-white ring-4 ring-primary/20'
                     : 'bg-gray-100 text-gray-400'
                 }`}
               >
                 {s.number < step ? <Check size={18} /> : s.number}
               </div>
               <span className={`text-xs mt-1.5 font-medium ${
-                s.number <= step ? 'text-teal-600' : 'text-gray-400'
+                s.number <= step ? 'text-primary' : 'text-gray-400'
               }`}>
                 {s.label}
               </span>
             </div>
             {i < steps.length - 1 && (
               <div className={`w-16 sm:w-24 h-0.5 mx-2 mb-5 ${
-                s.number < step ? 'bg-teal-500' : 'bg-gray-200'
+                s.number < step ? 'bg-primary' : 'bg-gray-200'
               }`} />
             )}
           </div>
@@ -431,7 +458,7 @@ export default function CheckoutPage() {
 
               {addressesLoading ? (
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8 flex items-center justify-center">
-                  <Loader2 className="w-6 h-6 text-teal-500 animate-spin" />
+                  <Loader2 className="w-6 h-6 text-primary animate-spin" />
                 </div>
               ) : savedAddresses.length > 0 && !showNewAddressForm ? (
                 <>
@@ -445,15 +472,15 @@ export default function CheckoutPage() {
                           onClick={() => setSelectedAddressId(addr.id)}
                           className={`w-full text-left rounded-xl border-2 p-4 transition-all hover:-translate-y-0.5 ${
                             isSelected
-                              ? 'border-teal-500 bg-teal-50/30'
+                              ? 'border-primary bg-primary-tint'
                               : 'border-gray-100 bg-white hover:border-gray-200'
                           }`}
                         >
                           <div className="flex items-start gap-3">
                             <div className={`w-5 h-5 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                              isSelected ? 'border-teal-500' : 'border-gray-300'
+                              isSelected ? 'border-primary' : 'border-gray-300'
                             }`}>
-                              {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-teal-500" />}
+                              {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
@@ -461,7 +488,7 @@ export default function CheckoutPage() {
                                   {addr.label}
                                 </span>
                                 {addr.isDefault && (
-                                  <span className="text-xs px-2 py-0.5 bg-teal-100 text-teal-700 rounded-full font-medium flex items-center gap-1">
+                                  <span className="text-xs px-2 py-0.5 bg-primary-tint text-primary rounded-full font-medium flex items-center gap-1">
                                     <Star className="w-3 h-3" />
                                     Default
                                   </span>
@@ -486,7 +513,7 @@ export default function CheckoutPage() {
                   {savedAddresses.length < 3 && (
                     <button
                       onClick={() => setShowNewAddressForm(true)}
-                      className="w-full text-left rounded-xl border-2 border-dashed border-gray-200 p-4 text-sm text-teal-600 font-medium hover:border-teal-300 hover:bg-teal-50/30 transition-all flex items-center gap-2"
+                      className="w-full text-left rounded-xl border-2 border-dashed border-gray-200 p-4 text-sm text-primary font-medium hover:border-primary/40 hover:bg-primary-tint transition-all flex items-center gap-2"
                     >
                       <Plus size={16} />
                       Add New Address
@@ -526,7 +553,7 @@ export default function CheckoutPage() {
                           value={recipientName}
                           onChange={e => setRecipientName(e.target.value)}
                           placeholder="Full name"
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         />
                       </div>
                       <div>
@@ -535,7 +562,7 @@ export default function CheckoutPage() {
                           value={recipientPhone}
                           onChange={e => setRecipientPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                           placeholder="10-digit mobile"
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         />
                       </div>
                     </div>
@@ -547,7 +574,7 @@ export default function CheckoutPage() {
                   {showNewAddressForm && savedAddresses.length > 0 && (
                     <button
                       onClick={() => setShowNewAddressForm(false)}
-                      className="text-sm text-teal-600 hover:text-teal-700 font-medium"
+                      className="text-sm text-primary hover:text-primary font-medium"
                     >
                       {'\u2190'} Back to saved addresses
                     </button>
@@ -569,7 +596,7 @@ export default function CheckoutPage() {
                         type="checkbox"
                         checked={saveNewAddress}
                         onChange={e => setSaveNewAddress(e.target.checked)}
-                        className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
                       />
                       Save this address for future orders
                     </label>
@@ -606,7 +633,7 @@ export default function CheckoutPage() {
                           value={recipientName}
                           onChange={e => setRecipientName(e.target.value)}
                           placeholder="Full name"
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         />
                       </div>
                       <div>
@@ -615,7 +642,7 @@ export default function CheckoutPage() {
                           value={recipientPhone}
                           onChange={e => setRecipientPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                           placeholder="10-digit mobile"
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         />
                       </div>
                     </div>
@@ -634,7 +661,7 @@ export default function CheckoutPage() {
                 </h2>
                 <button
                   onClick={() => { setStep(1); setError('') }}
-                  className="text-sm text-teal-600 hover:text-teal-700 font-medium"
+                  className="text-sm text-primary hover:text-primary font-medium"
                 >
                   &larr; Change Address
                 </button>
@@ -660,7 +687,7 @@ export default function CheckoutPage() {
                       onClick={() => setSelectedCourier(courier)}
                       className={`w-full text-left rounded-xl border-2 p-4 transition-all hover:-translate-y-0.5 ${
                         isSelected
-                          ? 'border-teal-500 bg-teal-50/30'
+                          ? 'border-primary bg-primary-tint'
                           : 'border-gray-100 bg-white hover:border-gray-200'
                       }`}
                     >
@@ -679,9 +706,9 @@ export default function CheckoutPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                            isSelected ? 'border-teal-500' : 'border-gray-300'
+                            isSelected ? 'border-primary' : 'border-gray-300'
                           }`}>
-                            {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-teal-500" />}
+                            {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
                           </div>
                           <div>
                             <p className="font-semibold text-sm" style={{ color: 'var(--navy)' }}>
@@ -704,40 +731,60 @@ export default function CheckoutPage() {
           )}
 
           {/* STEP 3: Payment */}
-          {step === 3 && selectedCourier && (
+          {step === 3 && (allDigital || selectedCourier) && (
             <>
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold" style={{ color: 'var(--navy)' }}>
                   Review & Pay
                 </h2>
-                <button
-                  onClick={() => { setStep(2); setPaymentData(null); setError('') }}
-                  className="text-sm text-teal-600 hover:text-teal-700 font-medium"
-                >
-                  &larr; Change Delivery
-                </button>
+                {!allDigital && (
+                  <button
+                    onClick={() => { setStep(2); setPaymentData(null); setError('') }}
+                    className="text-sm text-primary hover:text-primary font-medium"
+                  >
+                    &larr; Change Delivery
+                  </button>
+                )}
               </div>
 
-              {/* Address summary */}
-              <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 text-sm text-gray-600">
-                <p className="font-semibold text-gray-800">{address.name}</p>
-                <p>{address.addressLine1}{address.addressLine2 ? `, ${address.addressLine2}` : ''}</p>
-                <p>{address.city}, {address.state} — {address.pincode}</p>
-              </div>
+              {/* Digital delivery notice */}
+              {allDigital && (
+                <div className="bg-primary-tint rounded-xl border border-primary/20 p-4 text-sm text-primary">
+                  Digital delivery — available in your library immediately after payment
+                </div>
+              )}
+
+              {/* Address summary (physical orders only) */}
+              {!allDigital && (
+                <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 text-sm text-gray-600">
+                  <p className="font-semibold text-gray-800">{address.name}</p>
+                  <p>{address.addressLine1}{address.addressLine2 ? `, ${address.addressLine2}` : ''}</p>
+                  <p>{address.city}, {address.state} — {address.pincode}</p>
+                </div>
+              )}
 
               {/* Items summary */}
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
                 <h3 className="text-sm font-bold mb-3" style={{ color: 'var(--navy)' }}>Items</h3>
                 {items.map(item => (
                   <div key={item.productId} className="flex justify-between text-sm py-1.5">
-                    <span className="text-gray-600">{item.name} x{item.quantity}</span>
+                    <div>
+                      <span className="text-gray-600">{item.name} x{item.quantity}</span>
+                      {hasPhysical && (
+                        <span className={`ml-2 text-xs ${item.isDigital ? 'text-primary' : 'text-gray-400'}`}>
+                          {item.isDigital ? 'Available immediately' : 'Ships in 2-3 days'}
+                        </span>
+                      )}
+                    </div>
                     <span className="font-medium">{'\u20B9'}{(item.price * item.quantity).toLocaleString('en-IN')}</span>
                   </div>
                 ))}
-                <div className="border-t border-gray-100 mt-3 pt-3 flex justify-between text-sm">
-                  <span className="text-gray-500">Delivery ({selectedCourier.courierName})</span>
-                  <span className="font-medium">{'\u20B9'}{selectedCourier.rate.toLocaleString('en-IN')}</span>
-                </div>
+                {selectedCourier && (
+                  <div className="border-t border-gray-100 mt-3 pt-3 flex justify-between text-sm">
+                    <span className="text-gray-500">Delivery ({selectedCourier.courierName})</span>
+                    <span className="font-medium">{'\u20B9'}{selectedCourier.rate.toLocaleString('en-IN')}</span>
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -760,7 +807,7 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            {selectedCourier && (
+            {selectedCourier && !allDigital && (
               <div className="border-t border-gray-100 mt-3 pt-3 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Subtotal</span>
@@ -771,6 +818,12 @@ export default function CheckoutPage() {
                   <span className="font-medium">{'\u20B9'}{selectedCourier.rate.toLocaleString('en-IN')}</span>
                 </div>
               </div>
+            )}
+
+            {allDigital && (
+              <p className="text-xs text-primary mt-3 pt-3 border-t border-gray-100">
+                Digital delivery — no shipping needed
+              </p>
             )}
 
             <div className="border-t border-gray-100 mt-4 pt-4 flex justify-between">
@@ -786,7 +839,7 @@ export default function CheckoutPage() {
                 onClick={handleCheckDelivery}
                 disabled={loadingCouriers || !selectedAddressId}
                 className="mt-4 w-full py-3 px-6 font-semibold rounded-lg text-white disabled:opacity-50 transition-colors"
-                style={{ background: 'var(--teal)' }}
+                style={{ background: 'var(--color-primary)' }}
               >
                 {loadingCouriers ? 'Checking...' : 'Check Delivery Options'}
               </button>
@@ -798,7 +851,7 @@ export default function CheckoutPage() {
                 onClick={() => { setStep(3); setError('') }}
                 disabled={!selectedCourier}
                 className="mt-4 w-full py-3 px-6 font-semibold rounded-lg text-white disabled:opacity-50 transition-colors"
-                style={{ background: selectedCourier ? 'var(--teal)' : undefined }}
+                style={{ background: selectedCourier ? 'var(--color-primary)' : undefined }}
               >
                 Continue to Payment
               </button>
@@ -818,16 +871,24 @@ export default function CheckoutPage() {
                       onSuccess={handlePaymentSuccess}
                       onDismiss={handlePaymentDismiss}
                       buttonText={`Pay \u20B9${grandTotal.toLocaleString('en-IN')}`}
+                      autoOpen
                     />
                   </div>
                 ) : (
                   <button
-                    onClick={() => setShowConfirmModal(true)}
+                    onClick={handlePlaceOrder}
                     disabled={placing}
-                    className="mt-4 w-full py-3 px-6 font-semibold rounded-lg text-white disabled:opacity-50 transition-colors"
-                    style={{ background: 'var(--teal)' }}
+                    className="mt-4 w-full py-3 px-6 font-semibold rounded-lg text-white disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                    style={{ background: 'var(--color-primary)' }}
                   >
-                    {placing ? 'Processing...' : 'Confirm & Pay'}
+                    {placing ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      `Pay \u20B9${grandTotal.toLocaleString('en-IN')}`
+                    )}
                   </button>
                 )}
               </>
@@ -836,20 +897,6 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      {/* Order Confirmation Modal */}
-      {showConfirmModal && selectedCourier && (
-        <OrderConfirmModal
-          items={items.map(i => ({ name: i.name, quantity: i.quantity, price: i.price }))}
-          address={address}
-          courierName={selectedCourier.courierName}
-          deliveryCharge={selectedCourier.rate}
-          subtotal={totalAmount}
-          total={grandTotal}
-          onConfirm={handlePlaceOrder}
-          onCancel={() => setShowConfirmModal(false)}
-          isLoading={placing}
-        />
-      )}
     </div>
   )
 }

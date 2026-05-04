@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { Mail, MessageCircle, ExternalLink } from 'lucide-react'
 import PageHeader from '@/components/dashboard/page-header'
@@ -11,10 +12,12 @@ export default function AboutPage() {
       <div className="space-y-5 pt-5">
         {/* Logo + wordmark */}
         <div className="flex flex-col items-center">
-          <img
-            src="/images/Logo.jpg"
+          <Image
+            src="/images/icons/Logo.webp"
             alt="Mindset"
-            className="w-16 h-16 rounded-2xl object-cover"
+            width={64}
+            height={64}
+            className="rounded-2xl object-cover"
           />
           <p className="text-[20px] font-medium text-text mt-3">Mindset</p>
         </div>

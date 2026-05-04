@@ -4,6 +4,7 @@ import { FadeInSection, SlideInSection, StaggerChild } from '@/components/about/
 export const metadata = {
   title: 'About Us — Mindset',
   description: 'Learn about Mindset and our mission to make mental health accessible.',
+  alternates: { canonical: '/about' },
 }
 
 export default function AboutPage() {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useRouter, useParams } from 'next/navigation'
 import { uploadToCloudinary } from '@/lib/cloudinary-upload'
 import RichTextEditor from '@/components/ui/rich-text-editor'
@@ -113,7 +114,7 @@ export default function EditWorkshopPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
             {form.image ? (
               <div className="flex items-center gap-2">
-                <img src={form.image} alt="Workshop" className="w-20 rounded object-cover" style={{ aspectRatio: '1/1.414' }} />
+                <Image src={form.image} alt="Workshop" width={80} height={113} className="rounded object-cover" unoptimized />
                 <button type="button" onClick={() => setForm({ ...form, image: '' })} className="text-xs text-red-600">Remove</button>
               </div>
             ) : (

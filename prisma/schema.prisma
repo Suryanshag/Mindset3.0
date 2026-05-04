@@ -264,6 +264,7 @@ model Product {
   sku         String?
   weight      Float?   @default(0.5)
   isActive    Boolean  @default(true)
+  isDigital   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -449,18 +450,22 @@ enum NotificationKind {
 }
 
 model JournalEntry {
-  id        String   @id @default(cuid())
-  userId    String   @map("user_id")
-  title     String?
-  body      String   @db.Text
-  mood      Int?
-  entryDate DateTime @default(now()) @map("entry_date")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt       @map("updated_at")
+  id             String    @id @default(cuid())
+  userId         String    @map("user_id")
+  title          String?
+  body           String    @db.Text
+  mood           Int?
+  isDraft        Boolean   @default(false) @map("is_draft")
+  draftUpdatedAt DateTime? @map("draft_updated_at")
+  assignmentId   String?   @map("assignment_id")
+  entryDate      DateTime  @default(now()) @map("entry_date")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt       @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, entryDate(sort: Desc)])
+  @@index([userId, isDraft])
   @@map("journal_entries")
 }
 

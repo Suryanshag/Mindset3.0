@@ -2,8 +2,8 @@
     position: fixed;
     inset: 0;
     z-index: 999;
-    background: #000;
-    color: #fff;
+    background: #1E445C;
+    color: #FFF8EB;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -42,9 +42,9 @@
     position: relative;
     width: 100%;
     aspect-ratio: 720 / 140;
-    background: rgba(170, 170, 170, 0.3);
-    -webkit-mask-image: url('/images/mindset-mask.svg');
-    mask-image: url('/images/mindset-mask.svg');
+    background: rgba(255, 248, 235, 0.25);
+    -webkit-mask-image: url('/images/decoration/mindset-mask.svg');
+    mask-image: url('/images/decoration/mindset-mask.svg');
     -webkit-mask-size: contain;
     mask-size: contain;
     -webkit-mask-repeat: no-repeat;
@@ -68,7 +68,7 @@
     font-size: 0.875rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 248, 235, 0.6);
 }
 
 .hidden {

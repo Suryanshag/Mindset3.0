@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { uploadToCloudinary } from '@/lib/cloudinary-upload'
 
@@ -94,7 +95,7 @@ export default function CreateNgoVisitPage() {
               <div className="flex flex-wrap gap-2 mb-2">
                 {form.photos.map((url, i) => (
                   <div key={i} className="relative">
-                    <img src={url} alt="" className="w-20 h-20 rounded object-cover" />
+                    <Image width={80} height={80} src={url} alt="" className="rounded object-cover" />
                     <button
                       type="button"
                       onClick={() => setForm({ ...form, photos: form.photos.filter((_, j) => j !== i) })}

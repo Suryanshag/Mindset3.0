@@ -24,7 +24,7 @@ export default function HomeRail({ engagementState }: { engagementState: Engagem
         Quick actions
       </p>
       <div className="space-y-2">
-        <RailAction href="/user/practice/journal/new" icon={PenLine} label="Write something" />
+        <RailAction href="/user/reflection/today" icon={PenLine} label="Write something" />
         <RailAction href="/user/discover/workshops" icon={Compass} label="Browse workshops" />
         <RailAction href="/user/sessions" icon={Calendar} label="View all sessions" />
       </div>

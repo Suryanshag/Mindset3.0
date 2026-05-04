@@ -28,7 +28,7 @@ export default function CartSummaryBar() {
         <Link
           href="/user/cart"
           className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
-          style={{ background: 'var(--teal)' }}
+          style={{ background: 'var(--color-primary)' }}
         >
           View Cart
           <ArrowRight size={16} />

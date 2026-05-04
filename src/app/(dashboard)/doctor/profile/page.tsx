@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { uploadToCloudinary } from '@/lib/cloudinary-upload'
 
 interface DoctorProfile {
@@ -111,10 +112,10 @@ export default function DoctorProfilePage() {
         <div className="flex items-center gap-4 mb-6">
           <div className="relative">
             {profile.photo ? (
-              <img
+              <Image width={80} height={80}
                 src={profile.photo}
                 alt="Profile"
-                className="w-20 h-20 rounded-full object-cover"
+                className="rounded-full object-cover"
               />
             ) : (
               <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-bold text-gray-400">

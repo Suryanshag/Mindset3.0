@@ -1,14 +1,19 @@
 'use client'
 
+import { useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
-import { ShoppingCart, ShoppingBag, Plus } from 'lucide-react'
+import { ShoppingCart, ShoppingBag, Plus, Check, Loader2 } from 'lucide-react'
 import PageHeader from '@/components/dashboard/page-header'
+import { useCart } from '@/lib/cart-context'
 
 type Product = {
   id: string
   name: string
   price: number
   imageUrl: string | null
+  isDigital: boolean
+  stock: number
 }
 
 export default function ShopContent({
@@ -19,6 +24,8 @@ export default function ShopContent({
   products: Product[]
 }) {
   const featured = products[0] ?? null
+  const { totalItems } = useCart()
+  const liveCount = totalItems || cartCount
 
   return (
     <div>
@@ -28,16 +35,16 @@ export default function ShopContent({
         rightAction={
           <div className="flex items-center gap-3">
             <Link
-              href="/user/shop/orders"
+              href="/user/orders"
               className="text-[12px] font-medium text-primary"
             >
               My orders
             </Link>
-            <Link href="/user/shop/cart" className="relative p-1">
+            <Link href="/user/cart" className="relative p-1">
               <ShoppingCart size={20} className="text-text-muted" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent text-[9px] font-medium text-white flex items-center justify-center">
-                  {cartCount}
+              {liveCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-[9px] font-medium text-white flex items-center justify-center">
+                  {liveCount}
                 </span>
               )}
             </Link>
@@ -48,14 +55,17 @@ export default function ShopContent({
       <div className="space-y-3.5 pt-3.5">
       {/* Featured product banner */}
       {featured && (
-        <div className="rounded-2xl bg-primary-tint p-4">
+        <Link href={`/user/shop/${featured.id}`} className="block rounded-2xl bg-primary-tint p-4">
           <div className="flex items-center gap-3">
-            <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
+            <div className="relative w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
               {featured.imageUrl ? (
-                <img
+                <Image
+                  fill
                   src={featured.imageUrl}
                   alt={featured.name}
-                  className="w-full h-full object-cover"
+                  sizes="64px"
+                  className="object-cover"
+                  unoptimized
                 />
               ) : (
                 <ShoppingBag size={24} className="text-primary/40" />
@@ -73,7 +83,7 @@ export default function ShopContent({
               </p>
             </div>
           </div>
-        </div>
+        </Link>
       )}
 
       {/* Product grid */}
@@ -95,18 +105,43 @@ export default function ShopContent({
 }
 
 function ProductCard({ product }: { product: Product }) {
+  const { addItem, items } = useCart()
+  const [loading, setLoading] = useState(false)
+  const [added, setAdded] = useState(false)
+
+  const inCart = items.some(i => i.productId === product.id)
+
+  async function handleAdd(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (loading || inCart) return
+    setLoading(true)
+    try {
+      await addItem(product.id)
+      setAdded(true)
+      setTimeout(() => setAdded(false), 1500)
+    } catch {
+      // Error handled by cart context
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div
       className="bg-bg-card rounded-2xl p-2.5 lg:p-3 transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
       style={{ border: '0.5px solid var(--color-border)' }}
     >
-      <Link href={`/products/${product.id}`}>
-        <div className="w-full h-28 rounded-xl bg-bg-app flex items-center justify-center mb-2 overflow-hidden">
+      <Link href={`/user/shop/${product.id}`}>
+        <div className="relative w-full h-28 rounded-xl bg-bg-app flex items-center justify-center mb-2 overflow-hidden">
           {product.imageUrl ? (
-            <img
+            <Image
+              fill
               src={product.imageUrl}
               alt={product.name}
-              className="w-full h-full object-cover rounded-xl"
+              sizes="(max-width: 768px) 50vw, 200px"
+              className="object-cover rounded-xl"
+              unoptimized
             />
           ) : (
             <ShoppingBag size={24} className="text-text-faint/30" />
@@ -119,10 +154,24 @@ function ProductCard({ product }: { product: Product }) {
           {'\u20B9'}{product.price}
         </p>
       </Link>
-      <button className="mt-1.5 w-full flex items-center justify-center gap-1 py-1.5 rounded-full bg-primary-tint text-primary text-[11px] font-medium">
-        <Plus size={12} />
-        Add to cart
-      </button>
+      {inCart || added ? (
+        <Link
+          href="/user/cart"
+          className="mt-1.5 w-full flex items-center justify-center gap-1 py-1.5 rounded-full bg-primary-tint text-primary text-[11px] font-medium"
+        >
+          <Check size={12} />
+          In cart
+        </Link>
+      ) : (
+        <button
+          onClick={handleAdd}
+          disabled={loading || (!product.isDigital && product.stock < 1)}
+          className="mt-1.5 w-full flex items-center justify-center gap-1 py-1.5 rounded-full bg-primary-tint text-primary text-[11px] font-medium disabled:opacity-40"
+        >
+          {loading ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
+          {loading ? 'Adding...' : 'Add to cart'}
+        </button>
+      )}
     </div>
   )
 }

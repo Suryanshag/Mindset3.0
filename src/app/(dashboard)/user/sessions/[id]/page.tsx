@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth'
+import Image from 'next/image'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
@@ -100,10 +101,10 @@ export default async function SessionDetailPage({
           >
             <div className="flex items-center gap-3">
               {session.doctor.photo ? (
-                <img
+                <Image width={56} height={56}
                   src={session.doctor.photo}
                   alt={doctorName}
-                  className="w-14 h-14 rounded-full object-cover shrink-0"
+                  className="rounded-full object-cover shrink-0"
                 />
               ) : (
                 <div className="w-14 h-14 rounded-full bg-accent flex items-center justify-center shrink-0">

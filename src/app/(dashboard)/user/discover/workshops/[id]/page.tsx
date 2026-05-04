@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth'
+import Image from 'next/image'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { Ticket } from 'lucide-react'
@@ -45,11 +46,16 @@ export default async function WorkshopDetailPage({
       <div className="space-y-3.5 pt-5 pb-24">
         {/* Cover image — natural aspect ratio, no cropping */}
         {workshop.coverImageUrl ? (
-          <img
-            src={workshop.coverImageUrl}
-            alt={workshop.title}
-            className="w-full h-auto rounded-2xl"
-          />
+          <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden">
+            <Image
+              fill
+              src={workshop.coverImageUrl}
+              alt={workshop.title}
+              sizes="(max-width: 768px) 100vw, 600px"
+              className="object-cover"
+              unoptimized
+            />
+          </div>
         ) : (
           <div className="rounded-2xl bg-accent-tint flex items-center justify-center aspect-[3/4]">
             <Ticket size={48} className="text-accent" />

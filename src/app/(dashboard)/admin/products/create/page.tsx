@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { uploadToCloudinary } from '@/lib/cloudinary-upload'
 
@@ -19,6 +20,7 @@ export default function CreateProductPage() {
     sku: '',
     weight: 0.5,
     isActive: true,
+    isDigital: false,
   })
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -47,6 +49,7 @@ export default function CreateProductPage() {
         price: form.price,
         stock: form.stock,
         isActive: form.isActive,
+        isDigital: form.isDigital,
       }
       if (form.image) body.image = form.image
       if (form.sku) body.sku = form.sku
@@ -108,7 +111,7 @@ export default function CreateProductPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Image (optional)</label>
             {form.image ? (
               <div className="flex items-center gap-2">
-                <img src={form.image} alt="Product" className="w-20 h-20 rounded object-cover" />
+                <Image width={80} height={80} src={form.image} alt="Product" className="rounded object-cover" />
                 <button type="button" onClick={() => setForm({ ...form, image: '' })} className="text-xs text-red-600">Remove</button>
               </div>
             ) : (
@@ -119,6 +122,15 @@ export default function CreateProductPage() {
           <div className="flex items-center gap-2">
             <input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} id="isActive" />
             <label htmlFor="isActive" className="text-sm font-medium text-gray-700">Active</label>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" checked={form.isDigital} onChange={(e) => setForm({ ...form, isDigital: e.target.checked })} id="isDigital" />
+              <label htmlFor="isDigital" className="text-sm font-medium text-gray-700">Digital Product</label>
+            </div>
+            {form.isDigital && (
+              <p className="text-xs text-gray-400 mt-1 ml-5">Stock and weight are ignored for digital products</p>
+            )}
           </div>
         </div>
 

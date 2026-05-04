@@ -1,5 +1,7 @@
 import { Bell, Sprout } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
+import CartHeaderIcon from '@/components/dashboard/cart-header-icon'
 
 type Props = {
   name: string
@@ -31,10 +33,13 @@ export default function Header({
       {/* Avatar */}
       <Link href="/user/profile" className="shrink-0">
         {avatarUrl ? (
-          <img
+          <Image
             src={avatarUrl}
             alt={name}
-            className="w-[42px] h-[42px] rounded-full object-cover"
+            width={42}
+            height={42}
+            className="rounded-full object-cover"
+            unoptimized
           />
         ) : (
           <div className="w-[42px] h-[42px] rounded-full bg-primary flex items-center justify-center">
@@ -56,6 +61,9 @@ export default function Header({
           <span className="text-[11px] font-medium text-accent-deep">{streak}</span>
         </div>
       )}
+
+      {/* Cart icon */}
+      <CartHeaderIcon />
 
       {/* Notification bell */}
       <Link href="/user/notifications" className="relative shrink-0 p-1.5">

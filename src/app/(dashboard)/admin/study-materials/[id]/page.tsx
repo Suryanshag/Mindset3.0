@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useRouter, useParams } from 'next/navigation'
 import { uploadToCloudinary } from '@/lib/cloudinary-upload'
 
@@ -144,7 +145,7 @@ export default function EditStudyMaterialPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image</label>
             {form.coverImage ? (
               <div className="flex items-center gap-2">
-                <img src={form.coverImage} alt="Cover" className="w-20 h-28 rounded object-cover" />
+                <Image width={80} height={112} src={form.coverImage} alt="Cover" className="rounded object-cover" />
                 <button type="button" onClick={() => setForm({ ...form, coverImage: '' })} className="text-xs text-red-600">Remove</button>
               </div>
             ) : (

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import {
@@ -8,6 +9,7 @@ import {
   NotebookPen,
   Compass,
   ShoppingBag,
+  ShoppingCart,
   UserCircle,
   PenLine,
 } from 'lucide-react'
@@ -19,6 +21,7 @@ const SPACES = [
   { href: '/user/practice', label: 'Practice', Icon: NotebookPen },
   { href: '/user/discover', label: 'Discover', Icon: Compass },
   { href: '/user/shop', label: 'Shop', Icon: ShoppingBag },
+  { href: '/user/cart', label: 'Cart', Icon: ShoppingCart },
   { href: '/user/profile', label: 'Profile', Icon: UserCircle },
 ]
 
@@ -56,6 +59,8 @@ export default function Spine({ sessions = [], engagementState = 'engaged' }: Pr
 
   function isSpaceActive(href: string) {
     if (href === '/user') return pathname === '/user'
+    if (href === '/user/cart') return pathname.startsWith('/user/cart')
+    if (href === '/user/shop') return pathname.startsWith('/user/shop')
     return pathname.startsWith(href)
   }
 
@@ -79,14 +84,14 @@ export default function Spine({ sessions = [], engagementState = 'engaged' }: Pr
       {/* Today — pinned top item */}
       <div className="px-3 shrink-0">
         <Link
-          href="/user"
+          href="/user/reflection/today"
           className={`spine-item flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150 ${
-            pathname === '/user'
+            pathname === '/user/reflection/today'
               ? 'spine-item--active bg-primary-tint text-primary'
               : 'text-text hover:bg-white/60'
           }`}
         >
-          <PenLine size={18} className={pathname === '/user' ? 'text-primary' : 'text-text-muted'} />
+          <PenLine size={18} className={pathname === '/user/reflection/today' ? 'text-primary' : 'text-text-muted'} />
           <div className="min-w-0">
             <p className="text-[14px] font-medium leading-tight">Today</p>
             <p className="text-[11px] text-text-faint leading-tight mt-0.5">{todayStr}</p>
@@ -96,59 +101,53 @@ export default function Spine({ sessions = [], engagementState = 'engaged' }: Pr
 
       {/* Reflection section — scrollable, hidden for empty users */}
       <div className="px-4 mt-4 overflow-y-auto min-h-0 scrollbar-hide">
-        {engagementState !== 'empty' && (
+        {engagementState !== 'empty' && sessions.length > 0 && (
           <>
             <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px] mb-2">
               Reflection
             </p>
-            {sessions.length === 0 ? (
-              <p className="text-[12px] text-text-faint px-3 py-2 leading-relaxed">
-                Your past sessions will appear here
-              </p>
-            ) : (
-          <div className="space-y-3">
-            {Array.from(grouped.entries()).map(([month, items]) => (
-              <div key={month}>
-                <p className="text-[11px] text-text-faint font-medium mb-1 px-1">
-                  {month}
-                </p>
-                <div className="space-y-0.5">
-                  {items.map((s) => {
-                    const active = pathname === `/user/sessions/${s.id}`
-                    const dateLabel = s.date.toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                    })
-                    const timeLabel = s.date.toLocaleTimeString('en-US', {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                      hour12: true,
-                    }).toLowerCase()
-                    const doctorFirst = s.doctorName.split(' ')[0]
-                    return (
-                      <Link
-                        key={s.id}
-                        href={`/user/sessions/${s.id}`}
-                        className={`spine-item flex items-center gap-2.5 px-3 py-1.5 rounded-lg transition-colors duration-150 group ${
-                          active
-                            ? 'spine-item--active bg-primary-tint text-primary'
-                            : 'text-text hover:bg-white/60'
-                        }`}
-                      >
-                        <span className="text-[13px] font-medium leading-tight truncate">
-                          {dateLabel} · {timeLabel}
-                        </span>
-                        <span className="text-[11px] text-text-faint opacity-0 group-hover:opacity-100 transition-opacity truncate">
-                          {doctorFirst}
-                        </span>
-                      </Link>
-                    )
-                  })}
+            <div className="space-y-3">
+              {Array.from(grouped.entries()).map(([month, items]) => (
+                <div key={month}>
+                  <p className="text-[11px] text-text-faint font-medium mb-1 px-1">
+                    {month}
+                  </p>
+                  <div className="space-y-0.5">
+                    {items.map((s) => {
+                      const active = pathname === `/user/sessions/${s.id}`
+                      const dateLabel = s.date.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                      })
+                      const timeLabel = s.date.toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                      }).toLowerCase()
+                      const doctorFirst = s.doctorName.split(' ')[0]
+                      return (
+                        <Link
+                          key={s.id}
+                          href={`/user/sessions/${s.id}`}
+                          className={`spine-item flex items-center gap-2.5 px-3 py-1.5 rounded-lg transition-colors duration-150 group ${
+                            active
+                              ? 'spine-item--active bg-primary-tint text-primary'
+                              : 'text-text hover:bg-white/60'
+                          }`}
+                        >
+                          <span className="text-[13px] font-medium leading-tight truncate">
+                            {dateLabel} · {timeLabel}
+                          </span>
+                          <span className="text-[11px] text-text-faint opacity-0 group-hover:opacity-100 transition-opacity truncate">
+                            {doctorFirst}
+                          </span>
+                        </Link>
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
           </>
         )}
       </div>
@@ -186,10 +185,10 @@ export default function Spine({ sessions = [], engagementState = 'engaged' }: Pr
           className="spine-item flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150 hover:bg-white/60"
         >
           {userImage ? (
-            <img
+            <Image width={32} height={32}
               src={userImage}
               alt=""
-              className="w-8 h-8 rounded-full object-cover shrink-0"
+              className="rounded-full object-cover shrink-0"
             />
           ) : (
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useTransition } from 'react'
+import Image from 'next/image'
 import { Pencil, Loader2 } from 'lucide-react'
 import imageCompression from 'browser-image-compression'
 import { uploadAvatar } from '@/lib/actions/upload-avatar'
@@ -64,10 +65,13 @@ export default function AvatarUpload({ currentUrl, initials, size = 96 }: Props)
         disabled={busy}
       >
         {preview ? (
-          <img
+          <Image
             src={preview}
             alt="Avatar"
-            className="w-full h-full object-cover"
+            fill
+            sizes="(max-width: 768px) 96px, 128px"
+            className="object-cover"
+            unoptimized
           />
         ) : (
           <div className="w-full h-full bg-primary flex items-center justify-center">

@@ -41,12 +41,8 @@ export default function WorkshopRegisterButton({
     startTransition(async () => {
       const result = await registerForWorkshop(workshopId)
       if (result.error) {
-        if (result.error === 'full') {
-          setError('Sorry, all spots have been filled')
-        } else {
-          setError(result.error)
-        }
-      } else if (result.success) {
+        setError(result.error === 'full' ? 'Sorry, all spots have been filled' : result.error)
+      } else if ('success' in result && result.success) {
         setModalWhatsapp(result.whatsappUrl ?? null)
         setShowModal(true)
         router.refresh()

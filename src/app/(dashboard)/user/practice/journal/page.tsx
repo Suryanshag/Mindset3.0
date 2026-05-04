@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { Plus, BookOpen } from 'lucide-react'
 import JournalFilters from '@/components/dashboard/journal/journal-filters'
 import PageHeader from '@/components/dashboard/page-header'
-
-const MOOD_EMOJI = ['', '😞', '😔', '😐', '🙂', '😊']
+import { MOODS } from '@/lib/constants/mood'
+import MoodFace from '@/components/dashboard/mood-face'
 
 export default async function JournalListPage({
   searchParams,
@@ -110,8 +110,14 @@ export default async function JournalListPage({
                       </p>
                     </div>
                     {entry.mood && (
-                      <span className="text-[16px] shrink-0">
-                        {MOOD_EMOJI[entry.mood]}
+                      <span
+                        className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                        style={{
+                          backgroundColor: MOODS[entry.mood - 1]?.tint,
+                          color: MOODS[entry.mood - 1]?.stroke,
+                        }}
+                      >
+                        <MoodFace mood={entry.mood as 1 | 2 | 3 | 4 | 5} size={16} />
                       </span>
                     )}
                   </Link>

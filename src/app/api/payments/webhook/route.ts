@@ -158,9 +158,20 @@ export async function POST(req: NextRequest) {
 
       // Post-transaction: Auto-create Shiprocket shipment + send order email (non-blocking)
       if (payment.type === 'PRODUCT' && payment.orderId) {
-        createShipmentForOrder(payment.orderId).catch((err) => {
-          console.error('[WEBHOOK] Shipment creation failed:', err)
+        // Only create shipment if order has physical items
+        const orderWithItems = await prisma.order.findUnique({
+          where: { id: payment.orderId },
+          include: { orderItems: { include: { product: { select: { isDigital: true } } } } },
         })
+        const hasPhysicalItems = orderWithItems?.orderItems.some(oi => !oi.product.isDigital)
+
+        if (hasPhysicalItems) {
+          createShipmentForOrder(payment.orderId).catch((err) => {
+            console.error('[WEBHOOK] Shipment creation failed:', err)
+          })
+        } else {
+          console.log('[WEBHOOK] Digital-only order, skipping shipment')
+        }
 
         // Send order confirmation email
         try {
@@ -269,14 +280,45 @@ export async function POST(req: NextRequest) {
       })
       console.log('[WEBHOOK] ✓ Payment marked as FAILED')
 
+      // Fetch failed payment for stock restore + email
+      const failedPayment = await prisma.payment.findUnique({
+        where: { razorpayOrderId },
+        include: {
+          user: { select: { name: true, email: true } },
+        },
+      })
+
+      // Restore stock for failed product orders
+      if (failedPayment?.type === 'PRODUCT' && failedPayment.orderId) {
+        try {
+          const failedOrder = await prisma.order.findUnique({
+            where: { id: failedPayment.orderId },
+            include: { orderItems: { include: { product: { select: { isDigital: true } } } } },
+          })
+          if (failedOrder) {
+            await prisma.$transaction(async (tx) => {
+              for (const item of failedOrder.orderItems) {
+                if (!item.product.isDigital) {
+                  await tx.product.update({
+                    where: { id: item.productId },
+                    data: { stock: { increment: item.quantity } },
+                  })
+                }
+              }
+              await tx.order.update({
+                where: { id: failedOrder.id },
+                data: { paymentStatus: 'FAILED' },
+              })
+            })
+            console.log('[WEBHOOK] ✓ Stock restored for failed order:', failedPayment.orderId)
+          }
+        } catch (err) {
+          console.error('[WEBHOOK] Stock restoration failed:', err)
+        }
+      }
+
       // Send payment failed email (non-blocking)
       try {
-        const failedPayment = await prisma.payment.findUnique({
-          where: { razorpayOrderId },
-          include: {
-            user: { select: { name: true, email: true } },
-          },
-        })
         if (failedPayment?.user) {
           const retryUrls: Record<string, string> = {
             SESSION: `${process.env.NEXT_PUBLIC_APP_URL}/user/sessions/book`,

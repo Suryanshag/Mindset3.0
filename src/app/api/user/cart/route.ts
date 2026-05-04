@@ -23,6 +23,7 @@ export async function GET() {
             image: true,
             stock: true,
             isActive: true,
+            isDigital: true,
           },
         },
       },
@@ -49,6 +50,7 @@ export async function GET() {
         price: Number(item.product.price),
         image: item.product.image,
         stock: item.product.stock,
+        isDigital: item.product.isDigital,
       },
       quantity: item.quantity,
     }))
@@ -88,14 +90,14 @@ export async function POST(req: Request) {
 
     const product = await prisma.product.findUnique({
       where: { id: productId },
-      select: { id: true, isActive: true, stock: true },
+      select: { id: true, isActive: true, stock: true, isDigital: true },
     })
 
     if (!product || !product.isActive) {
       return errorResponse('Product not found or unavailable', 404)
     }
 
-    if (product.stock < 1) {
+    if (!product.isDigital && product.stock < 1) {
       return errorResponse('Product is out of stock', 400)
     }
 
@@ -110,7 +112,7 @@ export async function POST(req: Request) {
     })
 
     const newQuantity = existing ? existing.quantity + quantity : quantity
-    if (newQuantity > product.stock) {
+    if (!product.isDigital && newQuantity > product.stock) {
       return errorResponse(`Only ${product.stock} items available in stock`, 400)
     }
 

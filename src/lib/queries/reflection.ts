@@ -124,7 +124,7 @@ export async function getReflectionLandingData(userId: string) {
   if (lastSession) {
     const [ec, ac] = await Promise.all([
       prisma.journalEntry.count({
-        where: { userId, entryDate: { gte: lastSession.date } },
+        where: { userId, isDraft: false, entryDate: { gte: lastSession.date } },
       }),
       prisma.assignment.count({
         where: {
@@ -210,6 +210,7 @@ export async function getChapterData(userId: string, sessionId: string) {
       prisma.journalEntry.findMany({
         where: {
           userId,
+          isDraft: false,
           entryDate: { gte: session.date, lt: windowEnd },
         },
         select: {
@@ -277,6 +278,28 @@ export async function getChapterData(userId: string, sessionId: string) {
     ),
   ].sort((a, b) => a.date.getTime() - b.date.getTime())
 
+  // For upcoming sessions, fetch pending assignments due before this session
+  const isUpcoming =
+    session.date > now &&
+    (session.status === 'PENDING' || session.status === 'CONFIRMED')
+
+  const preSessionAssignments = isUpcoming
+    ? await prisma.assignment.findMany({
+        where: {
+          userId,
+          status: 'PENDING',
+          dueDate: { not: null, lt: session.date },
+        },
+        select: {
+          id: true,
+          title: true,
+          type: true,
+          dueDate: true,
+        },
+        orderBy: { dueDate: 'asc' },
+      })
+    : []
+
   return {
     session: {
       id: session.id,
@@ -290,8 +313,10 @@ export async function getChapterData(userId: string, sessionId: string) {
       doctorPhoto: session.doctor.photo,
     },
     timeline,
+    preSessionAssignments,
   }
 }
 
 export type ChapterData = NonNullable<Awaited<ReturnType<typeof getChapterData>>>
 export type TimelineItem = ChapterData['timeline'][number]
+export type PreSessionAssignment = ChapterData['preSessionAssignments'][number]
