@@ -63,6 +63,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Submission too fast.' }, { status: 400 })
     }
 
+    // reCAPTCHA v3 verification (only enforced when RECAPTCHA_SECRET_KEY is set).
+    const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY
+    if (recaptchaSecret) {
+      const token = typeof body.recaptchaToken === 'string' ? body.recaptchaToken : ''
+      if (!token) {
+        return NextResponse.json({ error: 'Verification failed. Please reload and try again.' }, { status: 400 })
+      }
+      try {
+        const verifyRes = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `secret=${encodeURIComponent(recaptchaSecret)}&response=${encodeURIComponent(token)}&remoteip=${encodeURIComponent(ip)}`,
+        })
+        const verify = (await verifyRes.json()) as { success: boolean; score?: number; action?: string; 'error-codes'?: string[] }
+        // For v3: require success + score >= 0.5 + matching action
+        if (!verify.success || (verify.score ?? 0) < 0.5 || (verify.action && verify.action !== 'contact_form')) {
+          console.warn('[recaptcha] failed', { score: verify.score, action: verify.action, errors: verify['error-codes'] })
+          return NextResponse.json({ error: 'Verification failed. Please reload and try again.' }, { status: 400 })
+        }
+      } catch (err) {
+        console.error('[recaptcha verify]', err)
+        return NextResponse.json({ error: 'Verification service unavailable. Please try again.' }, { status: 502 })
+      }
+    }
+
     const name = clip(body.name, MAX.name).trim()
     const email = clip(body.email, MAX.email).trim()
     const phone = clip(body.phone, MAX.phone).trim()

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3'
 
 const SUBJECTS = [
   'Book a session',
@@ -22,6 +23,7 @@ export function ContactForm() {
   const [status, setStatus] = useState<Status>('idle')
   const [errorMsg, setErrorMsg] = useState('')
   const mountedAtRef = useRef<number>(0)
+  const { executeRecaptcha } = useGoogleReCaptcha()
 
   useEffect(() => {
     mountedAtRef.current = Date.now()
@@ -49,6 +51,17 @@ export function ContactForm() {
       return
     }
 
+    // reCAPTCHA v3 token (silent). If executeRecaptcha is undefined (no site key
+    // in env), token stays empty and the server falls back to honeypot + timing.
+    let recaptchaToken = ''
+    if (executeRecaptcha) {
+      try {
+        recaptchaToken = await executeRecaptcha('contact_form')
+      } catch (err) {
+        console.error('[recaptcha]', err)
+      }
+    }
+
     const payload = {
       name: String(data.get('name') ?? '').trim().slice(0, 100),
       email: String(data.get('email') ?? '').trim().slice(0, 200),
@@ -60,6 +73,7 @@ export function ContactForm() {
       firstTime: String(data.get('first_time') ?? '').slice(0, 50),
       heardFrom: String(data.get('heard_from') ?? '').slice(0, 50),
       elapsedMs: elapsed,
+      recaptchaToken,
     }
 
     if (!payload.name || payload.name.length < 2) {
@@ -246,6 +260,14 @@ export function ContactForm() {
       >
         {status === 'sending' ? 'Sending…' : 'Send message'}
       </button>
+
+      <p className="text-xs" style={{ color: 'var(--navy)', opacity: 0.55 }}>
+        This site is protected by reCAPTCHA and the Google{' '}
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline' }}>Privacy Policy</a>
+        {' '}and{' '}
+        <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline' }}>Terms of Service</a>
+        {' '}apply.
+      </p>
 
       <style>{`
         .contact-form input[type="text"],

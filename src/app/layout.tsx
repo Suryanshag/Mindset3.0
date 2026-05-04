@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Nunito, Barlow_Condensed, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import AuthSessionProvider from "@/components/providers/session-provider";
+import RecaptchaProvider from "@/components/providers/recaptcha-provider";
 import { CartProvider } from "@/lib/cart-context";
 import { auth } from "@/lib/auth";
 import { JsonLd, organizationLd, websiteLd } from "@/components/seo/json-ld";
@@ -109,9 +110,11 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <AuthSessionProvider session={session}>
-          <CartProvider>
-            <div className="wp-site-blocks">{children}</div>
-          </CartProvider>
+          <RecaptchaProvider>
+            <CartProvider>
+              <div className="wp-site-blocks">{children}</div>
+            </CartProvider>
+          </RecaptchaProvider>
         </AuthSessionProvider>
       </body>
     </html>

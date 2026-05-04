@@ -6,6 +6,7 @@ import "swiper/css/bundle";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import Navbar from "@/components/Navbar";
 import Preloader from "@/components/preloader/Preloader";
 
@@ -1997,6 +1998,13 @@ const sectionHTML = `
                                             <input class="wpcf7-form-control wpcf7-submit has-spinner"
                                                 type="submit" value="Send Message" id="contact-submit" />
                                         </div>
+                                        <p style="font-size:0.75rem;opacity:0.55;margin-top:0.75rem;">
+                                            This site is protected by reCAPTCHA and the Google
+                                            <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" style="text-decoration:underline;">Privacy Policy</a>
+                                            and
+                                            <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" style="text-decoration:underline;">Terms of Service</a>
+                                            apply.
+                                        </p>
                                     </form>
                                 </div>
 
@@ -2115,6 +2123,9 @@ const sectionHTML = `
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { executeRecaptcha } = useGoogleReCaptcha();
+  const executeRecaptchaRef = useRef(executeRecaptcha);
+  executeRecaptchaRef.current = executeRecaptcha;
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -2670,11 +2681,19 @@ export default function Home() {
           submitBtn.disabled = true;
           if (responseEl) responseEl.style.display = "none";
 
+          // reCAPTCHA v3 token (silent). If executeRecaptcha is undefined, server falls back to honeypot+timing.
+          let recaptchaToken = "";
+          const exec = executeRecaptchaRef.current;
+          if (exec) {
+            try { recaptchaToken = await exec("contact_form"); }
+            catch (err) { console.error("[recaptcha]", err); }
+          }
+
           try {
             const res = await fetch("/api/contact", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ name, email, phone: phone || undefined, subject, message, ageGroup, supportMode, firstTime, heardFrom, elapsedMs: elapsed }),
+              body: JSON.stringify({ name, email, phone: phone || undefined, subject, message, ageGroup, supportMode, firstTime, heardFrom, elapsedMs: elapsed, recaptchaToken }),
             });
             if (res.ok) {
               formWrapper?.classList.add("-hidden");
