@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import Navbar from "@/components/Navbar";
+import StaticShell from "@/components/static-shell";
 import EbookActions from "@/components/study-materials/ebook-actions";
 
 type StudyMaterial = {
@@ -461,7 +462,7 @@ export default function StudyMaterialsPage() {
   return (
     <>
       <Navbar light />
-      <div ref={containerRef} dangerouslySetInnerHTML={{ __html: staticHTML }} />
+      <StaticShell ref={containerRef} html={staticHTML} />
       {actionsMount && selected?.type === "PAID" && selected.price && createPortal(
         <EbookActions
           studyMaterialId={selected.id}

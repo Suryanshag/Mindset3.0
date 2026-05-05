@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import Navbar from "@/components/Navbar";
+import StaticShell from "@/components/static-shell";
 import ProductActions from "@/components/products/product-actions";
 
 type Product = {
@@ -502,7 +503,7 @@ export default function ProductsPage() {
   return (
     <>
       <Navbar light />
-      <div ref={containerRef} dangerouslySetInnerHTML={{ __html: staticHTML }} />
+      <StaticShell ref={containerRef} html={staticHTML} />
       {actionsMount && selectedProduct && createPortal(
         <ProductActions product={{
           id: selectedProduct.id,

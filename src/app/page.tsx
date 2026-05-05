@@ -8,6 +8,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import Navbar from "@/components/Navbar";
+import StaticShell from "@/components/static-shell";
 import Preloader from "@/components/preloader/Preloader";
 
 const sectionHTML = `
@@ -2864,10 +2865,7 @@ export default function Home() {
     <>
       <Preloader />
       <Navbar />
-      <div
-        ref={containerRef}
-        dangerouslySetInnerHTML={{ __html: sectionHTML }}
-      />
+      <StaticShell ref={containerRef} html={sectionHTML} />
     </>
   );
 }

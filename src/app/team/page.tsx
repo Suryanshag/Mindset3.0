@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import Navbar from "@/components/Navbar";
+import StaticShell from "@/components/static-shell";
 
 const teamMembers = [
   // 1 — top left
@@ -261,7 +262,7 @@ export default function TeamPage() {
   return (
     <>
       <Navbar light />
-      <div ref={containerRef} dangerouslySetInnerHTML={{ __html: staticHTML }} />
+      <StaticShell ref={containerRef} html={staticHTML} />
     </>
   );
 }

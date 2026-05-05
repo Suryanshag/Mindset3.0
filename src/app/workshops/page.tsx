@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import Navbar from "@/components/Navbar";
+import StaticShell from "@/components/static-shell";
 
 type Workshop = {
   id: string;
@@ -598,7 +599,7 @@ export default function WorkshopsPage() {
   return (
     <>
       <Navbar light />
-      <div ref={containerRef} dangerouslySetInnerHTML={{ __html: staticHTML }} />
+      <StaticShell ref={containerRef} html={staticHTML} />
     </>
   );
 }
