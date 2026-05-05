@@ -582,7 +582,7 @@ body .wp-site-blocks .block-hero__heading {
 }
 @media(max-width:767.98px) {
     body .wp-site-blocks .block-hero__meet-row {
-        margin-top: 1.5rem;
+        margin-top: 2.5rem;
     }
     body .wp-site-blocks .block-hero__heading-line {
         display: block;
@@ -658,7 +658,7 @@ body .wp-site-blocks .block-hero__description {
 body .wp-site-blocks .block-hero__image {
     flex: 1;
     min-height: 0;
-    padding: 0.5rem 1.25rem 1.5rem;
+    padding: 0.5rem 1.25rem 3rem;
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -666,7 +666,8 @@ body .wp-site-blocks .block-hero__image {
 
 body .wp-site-blocks .block-hero__image img {
     width: 100%;
-    height: 100%;
+    height: auto;
+    max-height: 100%;
     object-fit: contain;
     object-position: center bottom;
     display: block;
