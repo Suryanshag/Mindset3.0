@@ -2731,11 +2731,21 @@ export default function Home() {
             nextBtn.disabled = page === TOTAL_PAGES - 1;
           };
 
+          // After paging, auto-activate the first nav button on the new page
+          // so its content opens (instead of staying on the previous page's selection).
+          const activateFirstOnPage = () => {
+            const firstIdx = page * PER_PAGE;
+            const firstBtn = container.querySelector<HTMLButtonElement>(
+              `[data-main-tab-toggler="${firstIdx}"]`
+            );
+            firstBtn?.click();
+          };
+
           prevBtn.addEventListener("click", () => {
-            if (page > 0) { page--; updateCarousel(); }
+            if (page > 0) { page--; updateCarousel(); activateFirstOnPage(); }
           });
           nextBtn.addEventListener("click", () => {
-            if (page < TOTAL_PAGES - 1) { page++; updateCarousel(); }
+            if (page < TOTAL_PAGES - 1) { page++; updateCarousel(); activateFirstOnPage(); }
           });
 
           // When a nav button outside current page is activated (e.g. via search), scroll to its page
@@ -2783,11 +2793,21 @@ export default function Home() {
           if (nextBtn) nextBtn.disabled = mobilePage === totalPages - 1;
         };
 
+        // After paging, auto-open the first item on the new page.
+        const openFirstOfPage = () => {
+          if (window.innerWidth >= 768) return;
+          const firstItem = allItems[mobilePage * PER_PAGE];
+          if (!firstItem) return;
+          // Use the existing toggler's click handler so all the proper -active toggling runs.
+          const toggler = firstItem.querySelector<HTMLButtonElement>("[data-mobile-toggler]");
+          if (!firstItem.classList.contains("-active")) toggler?.click();
+        };
+
         prevBtn?.addEventListener("click", () => {
-          if (mobilePage > 0) { mobilePage--; updateMobilePagination(); }
+          if (mobilePage > 0) { mobilePage--; updateMobilePagination(); openFirstOfPage(); }
         });
         nextBtn?.addEventListener("click", () => {
-          if (mobilePage < totalPages - 1) { mobilePage++; updateMobilePagination(); }
+          if (mobilePage < totalPages - 1) { mobilePage++; updateMobilePagination(); openFirstOfPage(); }
         });
 
         resizeHandler = updateMobilePagination;
