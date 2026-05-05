@@ -222,9 +222,9 @@ export default function TeamPage() {
         ease: "back.out(1.7)",
       });
       gsap.to(shape, {
-        y: i % 2 === 0 ? -15 : 15,
+        y: i % 2 === 0 ? -28 : 28,
         rotation: `+=${i % 2 === 0 ? 3 : -3}`,
-        duration: 3 + i * 0.5,
+        duration: 2.4 + i * 0.4,
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",

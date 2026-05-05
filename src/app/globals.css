@@ -4811,6 +4811,8 @@ body .wp-site-blocks .block-blog-hero {
     overflow: hidden;
     padding: 9.25rem 0 7.5rem;
     position: relative;
+    /* Isolate so mix-blend-mode on the heading-wrapper reliably blends with the shapes layer below it. */
+    isolation: isolate;
 }
 
 body .wp-site-blocks .block-blog-hero__container {
@@ -4889,6 +4891,11 @@ body .wp-site-blocks .block-blog-hero__shape {
     opacity: 0;
     position: absolute;
     transform-origin: center;
+}
+
+/* Tone shapes back so the heading reads cleanly even where they sit behind. */
+body .wp-site-blocks .block-blog-hero__shape img {
+    opacity: 0.55;
 }
 
 body .wp-site-blocks .block-blog-hero__shape img {
