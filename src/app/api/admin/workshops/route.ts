@@ -13,9 +13,12 @@ export async function GET() {
 
     const workshops = await prisma.workshop.findMany({
       orderBy: { startsAt: 'desc' },
+      include: {
+        presenter: { select: { id: true, name: true, title: true, tier: true } },
+        _count: { select: { registrations: true } },
+      },
     })
 
-    // Return both new and legacy field names for admin UI compat
     const mapped = workshops.map((w) => ({
       ...w,
       date: w.startsAt,
@@ -43,8 +46,19 @@ export async function POST(req: NextRequest) {
       return errorResponse(parsed.error.issues[0].message, 400)
     }
 
-    const workshop = await prisma.workshop.create({
-      data: resolveWorkshopFields(parsed.data),
+    const workshop = await prisma.$transaction(async (tx) => {
+      let presenterId = parsed.data.presenterId
+      if (!presenterId && parsed.data.newPresenter) {
+        const created = await tx.presenter.create({ data: parsed.data.newPresenter })
+        presenterId = created.id
+      }
+
+      return tx.workshop.create({
+        data: {
+          ...resolveWorkshopFields(parsed.data),
+          presenterId,
+        },
+      })
     })
 
     return successResponse(workshop, 201)

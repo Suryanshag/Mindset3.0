@@ -45,6 +45,23 @@ enum Role {
   ADMIN
 }
 
+enum PresenterTier {
+  PROFESSIONAL
+  ASSOCIATE
+}
+
+enum WorkshopType {
+  WORKSHOP
+  CIRCLE
+}
+
+enum WorkshopStatus {
+  SCHEDULED
+  LIVE
+  COMPLETED
+  CANCELLED
+}
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -177,6 +194,26 @@ enum AssignmentStatus {
   REVIEWED
 }
 
+model Presenter {
+  id           String         @id @default(cuid())
+  name         String
+  title        String
+  bio          String?        @db.Text
+  linkedinUrl  String?        @map("linkedin_url")
+  tier         PresenterTier
+  upi          String?
+  pan          String?
+  bankAccount  String?        @map("bank_account")
+  ifsc         String?
+  isActive     Boolean        @default(true) @map("is_active")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt      @map("updated_at")
+
+  workshops    Workshop[]
+
+  @@map("presenters")
+}
+
 model Workshop {
   id                String   @id @default(cuid())
   title             String
@@ -193,18 +230,37 @@ model Workshop {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
+  type              WorkshopType   @default(WORKSHOP)
+  status            WorkshopStatus @default(SCHEDULED)
+  presenterId       String?        @map("presenter_id")
+  meetLink          String?        @map("meet_link")
+  minCapacity       Int            @default(5) @map("min_capacity")
+  presenterSplitPct Int            @default(70) @map("presenter_split_pct")
+  cancelledAt       DateTime?      @map("cancelled_at")
+  cancelReason      String?        @map("cancel_reason")
+
+  presenter     Presenter?             @relation(fields: [presenterId], references: [id], onDelete: Restrict)
   registrations WorkshopRegistration[]
+
+  @@index([presenterId])
+  @@index([startsAt, status])
 }
 
 model WorkshopRegistration {
   userId       String
   workshopId   String
-  registeredAt DateTime @default(now())
+  registeredAt DateTime  @default(now())
+
+  paymentId    String?   @unique @map("payment_id")
+  refundedAt   DateTime? @map("refunded_at")
+  attendedAt   DateTime? @map("attended_at")
 
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   workshop Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  payment  Payment? @relation(fields: [paymentId], references: [id])
 
   @@id([userId, workshopId])
+  @@index([workshopId, refundedAt])
 }
 
 model NgoVisit {
@@ -343,16 +399,18 @@ model Payment {
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
 
-  user    User           @relation(fields: [userId], references: [id])
-  session Session?       @relation(fields: [sessionId], references: [id])
-  order   Order?         @relation(fields: [orderId], references: [id])
-  earning DoctorEarning?
+  user                 User                  @relation(fields: [userId], references: [id])
+  session              Session?              @relation(fields: [sessionId], references: [id])
+  order                Order?                @relation(fields: [orderId], references: [id])
+  earning              DoctorEarning?
+  workshopRegistration WorkshopRegistration?
 }
 
 enum PaymentType {
   SESSION
   PRODUCT
   EBOOK
+  WORKSHOP
 }
 
 model Address {

@@ -1,0 +1,51 @@
+import { NextRequest } from 'next/server'
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
+import { createPresenterSchema } from '@/lib/validations/presenter'
+
+export async function GET() {
+  try {
+    const session = await auth()
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return errorResponse('Forbidden', 403)
+    }
+
+    const presenters = await prisma.presenter.findMany({
+      where: { isActive: true },
+      orderBy: { name: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        title: true,
+        tier: true,
+      },
+    })
+
+    return successResponse(presenters)
+  } catch (error) {
+    console.error('[ADMIN_PRESENTERS_GET]', error)
+    return serverErrorResponse()
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const session = await auth()
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return errorResponse('Forbidden', 403)
+    }
+
+    const body = await req.json()
+    const parsed = createPresenterSchema.safeParse(body)
+    if (!parsed.success) {
+      return errorResponse(parsed.error.issues[0].message, 400)
+    }
+
+    const presenter = await prisma.presenter.create({ data: parsed.data })
+    return successResponse(presenter, 201)
+  } catch (error) {
+    console.error('[ADMIN_PRESENTERS_POST]', error)
+    return serverErrorResponse()
+  }
+}
