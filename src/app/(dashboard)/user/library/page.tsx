@@ -129,7 +129,7 @@ export default async function LibraryPage() {
               {libraryEbooks.map((item) => (
                 <Link
                   key={item.id}
-                  href="/user/ebooks"
+                  href={`/user/library/${item.id}`}
                   className="bg-bg-card rounded-2xl p-2.5 lg:p-3 transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
                   style={{ border: '0.5px solid var(--color-border)' }}
                 >
@@ -184,7 +184,7 @@ export default async function LibraryPage() {
               {recommended.map((item) => (
                 <Link
                   key={item.id}
-                  href="/study-materials"
+                  href={`/user/library/${item.id}`}
                   className="bg-bg-card rounded-2xl p-2.5 lg:p-3 transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
                   style={{ border: '0.5px solid var(--color-border)' }}
                 >
