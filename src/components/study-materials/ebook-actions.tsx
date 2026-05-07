@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Lock } from 'lucide-react'
-import '@/components/payments/razorpay-checkout' // import for Window.Razorpay type
+import { type RazorpayResponse } from '@/components/payments/razorpay-checkout'
 
 interface EbookActionsProps {
   studyMaterialId: string
@@ -14,11 +15,10 @@ interface EbookActionsProps {
 
 export default function EbookActions({ studyMaterialId, price, title }: EbookActionsProps) {
   const { data: session } = useSession()
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
 
-  // Load Razorpay script on mount
   useEffect(() => {
     const existing = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]')
     if (existing) return
@@ -58,7 +58,6 @@ export default function EbookActions({ studyMaterialId, price, title }: EbookAct
         return
       }
 
-      // Open Razorpay popup immediately
       if (!window.Razorpay) {
         setError('Payment system is loading. Please try again.')
         setLoading(false)
@@ -76,14 +75,33 @@ export default function EbookActions({ studyMaterialId, price, title }: EbookAct
           name: session!.user.name ?? '',
           email: session!.user.email ?? '',
         },
-        theme: { color: '#0B9DA9' },
-        handler: () => {
-          setMessage('Purchase successful!')
+        method: { upi: true, card: true, netbanking: true, wallet: true, emi: false },
+        theme: { color: '#2D5A4F' },
+        handler: async (response: RazorpayResponse) => {
+          try {
+            const verifyRes = await fetch('/api/payments/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpayOrderId: data.data.razorpayOrderId,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              }),
+            })
+            const verifyData = await verifyRes.json()
+            if (verifyData.success) {
+              router.push(`/user/library/${studyMaterialId}`)
+            } else {
+              setError('Payment verified but entitlement failed. Please contact support.')
+              setLoading(false)
+            }
+          } catch {
+            setError('Payment recorded. Your library will update shortly.')
+            setLoading(false)
+          }
         },
         modal: {
-          ondismiss: () => {
-            setLoading(false)
-          },
+          ondismiss: () => setLoading(false),
         },
       })
       rzp.open()
@@ -92,21 +110,6 @@ export default function EbookActions({ studyMaterialId, price, title }: EbookAct
       setError('Something went wrong')
       setLoading(false)
     }
-  }
-
-  if (message) {
-    return (
-      <div className="space-y-2">
-        <p className="text-sm text-green-700 bg-green-50 px-3 py-2 rounded-xl font-medium">{message}</p>
-        <Link
-          href="/user/ebooks"
-          className="block text-center w-full py-2 px-4 text-sm rounded-xl font-semibold"
-          style={{ color: 'var(--teal)' }}
-        >
-          View in My Library
-        </Link>
-      </div>
-    )
   }
 
   return (
