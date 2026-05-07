@@ -21,8 +21,8 @@ const ACTIONS = [
     bgLight: 'rgba(249,101,83,0.08)',
   },
   {
-    label: 'Study Materials',
-    href: '/study-materials',
+    label: 'Library',
+    href: '/user/library',
     icon: BookOpen,
     bg: 'var(--amber)',
     bgLight: 'rgba(255,170,17,0.08)',

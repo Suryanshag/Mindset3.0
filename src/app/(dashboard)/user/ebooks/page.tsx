@@ -138,7 +138,7 @@ export default function EbooksPage() {
         <div className="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-500">
           <p>No purchased materials yet.</p>
           <Link
-            href="/study-materials"
+            href="/user/library"
             className="text-sm font-semibold mt-2 inline-block"
             style={{ color: 'var(--coral)' }}
           >
