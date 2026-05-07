@@ -29,7 +29,7 @@ const NAV_ITEMS = [
   { href: '/user/sessions', label: 'My Sessions', icon: Calendar },
   { href: '/user/assignments', label: 'Assignments', icon: ClipboardList },
   { href: '/user/payments', label: 'Payments', icon: CreditCard },
-  { href: '/user/ebooks', label: 'E-Books', icon: BookOpen },
+  { href: '/user/library', label: 'Library', icon: BookOpen },
   { href: '/user/orders', label: 'My Orders', icon: Package },
   { href: '/user/cart', label: 'Cart', icon: ShoppingCart },
   { href: '/user/profile', label: 'Profile', icon: UserCircle },
@@ -74,7 +74,7 @@ export default function UserSidebar({ userName }: { userName: string }) {
     { href: '/user', label: 'Home', icon: LayoutDashboard, exact: true },
     { href: '/user/sessions', label: 'Sessions', icon: Calendar },
     { href: '/user/orders', label: 'Orders', icon: Package },
-    { href: '/user/ebooks', label: 'Library', icon: BookOpen },
+    { href: '/user/library', label: 'Library', icon: BookOpen },
     { href: '/user/profile', label: 'Profile', icon: UserCircle },
   ]
 
