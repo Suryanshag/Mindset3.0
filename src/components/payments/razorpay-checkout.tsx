@@ -17,6 +17,13 @@ interface RazorpayOptions {
   theme?: {
     color?: string
   }
+  method?: {
+    upi?: boolean
+    card?: boolean
+    netbanking?: boolean
+    wallet?: boolean
+    emi?: boolean
+  }
   handler: (response: RazorpayResponse) => void
   modal?: {
     ondismiss?: () => void
@@ -99,6 +106,13 @@ export default function RazorpayCheckout({
       },
       theme: {
         color: '#2D5A4F',
+      },
+      method: {
+        upi: true,
+        card: true,
+        netbanking: true,
+        wallet: true,
+        emi: false,
       },
       handler: onSuccess,
       modal: {
