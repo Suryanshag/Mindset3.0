@@ -6,32 +6,51 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema } from '@/lib/validations/auth'
 import { z } from 'zod'
-import { useState, Suspense } from 'react'
-import Image from 'next/image'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { CheckCircle, ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowRight, CheckCircle, Loader2 } from 'lucide-react'
 import PasswordInput from '@/components/auth/password-input'
+import AuthShell from '@/components/auth/auth-shell'
+import GoogleButton from '@/components/auth/google-button'
 
 type LoginFormData = z.infer<typeof loginSchema>
 
 const inputClass =
   'w-full px-4 py-3 rounded-xl text-sm transition-all duration-200 outline-none border-2'
 
+const OAUTH_ERROR_COPY: Record<string, string> = {
+  email_exists:
+    'An account with this email already exists. Sign in with your password below, or use "Forgot password" to reset it.',
+  OAuthSignin: 'Google sign-in failed. Try again or use email.',
+  OAuthCallback: 'Google sign-in failed. Try again or use email.',
+  OAuthAccountNotLinked: 'Google sign-in failed. Try again or use email.',
+  Callback: 'Google sign-in failed. Try again or use email.',
+  AccessDenied: 'You cancelled the Google sign-in.',
+}
+
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl')
   const message = searchParams.get('message')
+  const oauthError = searchParams.get('error')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+
+  const initialError = useMemo(() => {
+    if (!oauthError) return null
+    return OAUTH_ERROR_COPY[oauthError] ?? 'Sign-in failed. Try again.'
+  }, [oauthError])
+
+  useEffect(() => {
+    if (initialError) setError(initialError)
+  }, [initialError])
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-  })
+  } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) })
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
@@ -69,23 +88,15 @@ function LoginForm() {
   }
 
   return (
-    <div
-      className="rounded-3xl p-7 sm:p-9 w-full max-w-[420px] relative z-20"
-      style={{
-        background: 'transparent',
-      }}
-    >
+    <div>
       <h2
-        className="text-2xl font-bold mb-1"
-        style={{
-          color: 'var(--navy)',
-          fontFamily: 'var(--font-heading)',
-        }}
+        className="text-2xl sm:text-3xl font-bold mb-1"
+        style={{ color: 'var(--navy)', fontFamily: 'var(--font-heading)' }}
       >
         Welcome back
       </h2>
-      <p className="text-sm mb-5" style={{ color: 'rgba(30,68,92,0.5)' }}>
-        Sign in to continue your journey
+      <p className="text-sm mb-6" style={{ color: 'rgba(30,68,92,0.55)' }}>
+        Sign in to continue your journey.
       </p>
 
       {message === 'password-reset' && (
@@ -100,12 +111,23 @@ function LoginForm() {
 
       {error && (
         <div
+          role="alert"
           className="mb-5 p-3.5 rounded-xl text-sm font-medium"
           style={{ background: 'rgba(249,101,83,0.08)', color: '#991B1B' }}
         >
           {error}
         </div>
       )}
+
+      <GoogleButton callbackUrl={callbackUrl ?? '/user'} />
+
+      <div className="flex items-center gap-3 my-5" aria-hidden="true">
+        <div className="flex-1 h-px" style={{ background: 'rgba(30,68,92,0.12)' }} />
+        <span className="text-xs uppercase tracking-wide" style={{ color: 'rgba(30,68,92,0.4)' }}>
+          or continue with email
+        </span>
+        <div className="flex-1 h-px" style={{ background: 'rgba(30,68,92,0.12)' }} />
+      </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
@@ -156,7 +178,7 @@ function LoginForm() {
               className="text-xs font-semibold transition-opacity duration-150 hover:opacity-70"
               style={{ color: 'var(--teal)' }}
             >
-              Forgot?
+              Forgot password?
             </Link>
           </div>
           <PasswordInput
@@ -193,6 +215,7 @@ function LoginForm() {
             boxShadow: '0 4px 16px rgba(11,157,169,0.25)',
           }}
           onMouseEnter={(e) => {
+            if (isLoading) return
             e.currentTarget.style.transform = 'translateY(-1px)'
             e.currentTarget.style.boxShadow = '0 6px 24px rgba(11,157,169,0.3)'
           }}
@@ -208,21 +231,21 @@ function LoginForm() {
             </>
           ) : (
             <>
-              Sign In
+              Sign in
               <ArrowRight size={16} />
             </>
           )}
         </button>
       </form>
 
-      <p className="text-center text-sm mt-3" style={{ color: 'rgba(30,68,92,0.5)' }}>
-        Don&apos;t have an account?{' '}
+      <p className="text-center text-sm mt-5" style={{ color: 'rgba(30,68,92,0.55)' }}>
+        New here?{' '}
         <Link
           href="/register"
           className="font-bold transition-opacity duration-150 hover:opacity-70"
           style={{ color: 'var(--coral)' }}
         >
-          Create one
+          Create account
         </Link>
       </p>
     </div>
@@ -231,39 +254,14 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <>
+    <AuthShell>
       <Suspense
         fallback={
-          <div
-            className="rounded-3xl p-9 animate-pulse w-full max-w-[420px]"
-            style={{
-              background: '#fff',
-              boxShadow: '0 4px 32px rgba(30,68,92,0.08)',
-              height: 420,
-            }}
-          />
+          <div className="animate-pulse" style={{ minHeight: 420 }} aria-hidden="true" />
         }
       >
         <LoginForm />
       </Suspense>
-
-      {/* Compassion illustration — absolute at bottom, slides up on mount */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-0 flex justify-center pointer-events-none select-none"
-        style={{
-          animation: 'authSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both',
-        }}
-      >
-        <Image
-          src="/images/sections/compassion.webp"
-          alt="People showing compassion"
-          width={900}
-          height={600}
-          priority
-          className="max-w-[900px] w-full h-auto"
-          style={{ opacity: 0.85 }}
-        />
-      </div>
-    </>
+    </AuthShell>
   )
 }

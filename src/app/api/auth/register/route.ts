@@ -6,6 +6,13 @@ import bcrypt from 'bcryptjs'
 import { sendWelcomeEmail } from '@/lib/email-service'
 import { authLimiter } from '@/lib/arcjet'
 import { handleArcjetDenial } from '@/lib/arcjet-protect'
+import { logAuthEvent } from '@/lib/auth-events'
+
+function normalisePhone(raw: string | undefined): string | undefined {
+  if (!raw) return undefined
+  const digits = raw.replace(/\s|-/g, '').replace(/^\+?91/, '')
+  return digits.length === 10 ? digits : undefined
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,8 +22,24 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json()
 
+    // Honeypot: a non-empty website_url means a bot filled the hidden field.
+    // Return a fake success without creating anything.
+    if (typeof body?.website_url === 'string' && body.website_url.trim().length > 0) {
+      await logAuthEvent({
+        kind: 'REGISTER_FAILED',
+        request: req,
+        metadata: { reason: 'honeypot' },
+      })
+      return successResponse({ id: 'honeypot', email: '', name: '', phone: null, role: 'USER', createdAt: new Date() }, 201)
+    }
+
     const parsed = registerApiSchema.safeParse(body)
     if (!parsed.success) {
+      await logAuthEvent({
+        kind: 'REGISTER_FAILED',
+        request: req,
+        metadata: { reason: 'validation' },
+      })
       return errorResponse(parsed.error.issues[0].message, 400)
     }
 
@@ -28,6 +51,11 @@ export async function POST(req: NextRequest) {
     })
 
     if (existing) {
+      await logAuthEvent({
+        kind: 'REGISTER_FAILED',
+        request: req,
+        metadata: { reason: 'email_exists' },
+      })
       return errorResponse('An account with this email already exists', 409)
     }
 
@@ -37,7 +65,7 @@ export async function POST(req: NextRequest) {
       data: {
         name: name.trim(),
         email: email.toLowerCase().trim(),
-        phone,
+        phone: normalisePhone(phone),
         password: hashedPassword,
         role: 'USER',
       },
@@ -57,6 +85,12 @@ export async function POST(req: NextRequest) {
     } catch (err) {
       console.error('[REGISTER] Welcome email failed:', err)
     }
+
+    await logAuthEvent({
+      userId: user.id,
+      kind: 'REGISTER_SUCCESS',
+      request: req,
+    })
 
     return successResponse(user, 201)
   } catch (error) {
