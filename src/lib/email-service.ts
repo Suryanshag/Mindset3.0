@@ -19,6 +19,15 @@ import OrderDeliveredEmail from '@/emails/order-delivered'
 const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = process.env.RESEND_FROM_EMAIL ?? 'Mindset <onboarding@resend.dev>'
 
+// Mask emails in console output: j***@example.com
+function maskEmail(value: string): string {
+  const at = value.indexOf('@')
+  if (at <= 0) return '***'
+  const local = value.slice(0, at)
+  const domain = value.slice(at + 1)
+  return `${local.charAt(0)}${'*'.repeat(Math.max(2, local.length - 1))}@${domain}`
+}
+
 // Helper: fire and forget with logging
 function sendEmail(
   to: string,
@@ -26,15 +35,16 @@ function sendEmail(
   htmlPromise: Promise<string>,
   tag: string
 ): void {
+  const masked = maskEmail(to)
   htmlPromise
     .then((html) =>
       resend.emails.send({ from: FROM, to, subject, html })
     )
     .then(() => {
-      console.log(`[EMAIL] ✓ ${tag} sent to ${to}`)
+      console.log(`[EMAIL] ✓ ${tag} sent to ${masked}`)
     })
     .catch((err) => {
-      console.error(`[EMAIL] ✗ ${tag} failed for ${to}:`, err)
+      console.error(`[EMAIL] ✗ ${tag} failed for ${masked}:`, err)
     })
 }
 

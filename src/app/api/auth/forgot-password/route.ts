@@ -5,6 +5,8 @@ import crypto from 'crypto'
 import { z } from 'zod'
 import { authLimiter } from '@/lib/arcjet'
 import { handleArcjetDenial } from '@/lib/arcjet-protect'
+import { logAuthEvent } from '@/lib/auth-events'
+import { rejectIfBadOrigin } from '@/lib/origin-check'
 
 const schema = z.object({
   email: z.string().email(),
@@ -12,6 +14,9 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const originBlock = rejectIfBadOrigin(req)
+    if (originBlock) return originBlock
+
     const decision = await authLimiter.protect(req)
     const denied = handleArcjetDenial(decision)
     if (denied) return denied
@@ -69,9 +74,17 @@ export async function POST(req: NextRequest) {
         resetUrl,
         expiresInMinutes: 15,
       })
-
-      console.log('[FORGOT_PASSWORD] Reset link sent to:', user.email)
     }
+
+    // Log the request regardless of whether a user existed (enumeration-safe).
+    await logAuthEvent({
+      userId: user?.id ?? null,
+      kind: 'PASSWORD_RESET_REQUESTED',
+      request: req,
+      metadata: user
+        ? { userExisted: true }
+        : { userExisted: false, email: email },
+    })
 
     // Always return same response
     return NextResponse.json({

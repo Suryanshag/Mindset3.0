@@ -4,6 +4,8 @@ import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { sensitiveActionLimiter, authLimiter } from '@/lib/arcjet'
 import { handleArcjetDenial } from '@/lib/arcjet-protect'
+import { logAuthEvent } from '@/lib/auth-events'
+import { rejectIfBadOrigin } from '@/lib/origin-check'
 
 const schema = z.object({
   token: z.string().min(1),
@@ -18,6 +20,9 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const originBlock = rejectIfBadOrigin(req)
+    if (originBlock) return originBlock
+
     const decision = await sensitiveActionLimiter.protect(req)
     const denied = handleArcjetDenial(decision)
     if (denied) return denied
@@ -67,11 +72,15 @@ export async function POST(req: NextRequest) {
     // Hash new password
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Update password + mark token as used in transaction
+    // Update password + reset lockout state + mark token used in one transaction
     await prisma.$transaction([
       prisma.user.update({
         where: { id: resetToken.userId },
-        data: { password: hashedPassword },
+        data: {
+          password: hashedPassword,
+          failedLoginAttempts: 0,
+          lockedUntil: null,
+        },
       }),
       prisma.passwordResetToken.update({
         where: { id: resetToken.id },
@@ -79,7 +88,11 @@ export async function POST(req: NextRequest) {
       }),
     ])
 
-    console.log('[RESET_PASSWORD] Password reset for:', resetToken.user.email)
+    await logAuthEvent({
+      userId: resetToken.userId,
+      kind: 'PASSWORD_RESET_COMPLETED',
+      request: req,
+    })
 
     return NextResponse.json({
       success: true,
