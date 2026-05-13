@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { registerSchema } from '@/lib/validations/auth'
 import { z } from 'zod'
-import { Suspense, useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, Loader2 } from 'lucide-react'
 import PasswordInput from '@/components/auth/password-input'
@@ -33,6 +33,7 @@ function RegisterForm() {
   const oauthError = searchParams.get('error')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const honeypotRef = useRef<HTMLInputElement>(null)
 
   const initialError = useMemo(() => {
     if (!oauthError) return null
@@ -65,7 +66,7 @@ function RegisterForm() {
           email: data.email,
           phone: data.phone || undefined,
           password: data.password,
-          website_url: data.website_url ?? '',
+          website_url: honeypotRef.current?.value ?? '',
         }),
       })
 
@@ -150,15 +151,30 @@ function RegisterForm() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-        {/* Honeypot — not visible, not focusable, not announced */}
-        <input
-          {...register('website_url')}
-          type="text"
-          tabIndex={-1}
-          autoComplete="off"
+        {/* Honeypot — out of RHF so password managers / autofill can't break
+            form validation. `inert` blocks focus AND removes from a11y tree. */}
+        <div
+          inert
           aria-hidden="true"
-          style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
-        />
+          style={{
+            position: 'absolute',
+            left: '-9999px',
+            width: 1,
+            height: 1,
+            overflow: 'hidden',
+          }}
+        >
+          <label htmlFor="contact_via_url">Leave this field blank</label>
+          <input
+            ref={honeypotRef}
+            id="contact_via_url"
+            name="website_url"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            defaultValue=""
+          />
+        </div>
 
         <div>
           <label

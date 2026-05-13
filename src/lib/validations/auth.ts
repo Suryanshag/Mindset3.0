@@ -21,10 +21,11 @@ export const registerApiSchema = z.object({
       const classes = [/[a-z]/, /[A-Z]/, /[0-9]/, /[^A-Za-z0-9]/]
       return classes.filter((re) => re.test(p)).length >= 3
     }, 'Password must include 3 of: uppercase, lowercase, number, special character'),
-  // Honeypot — must be empty or absent. We accept the payload either way; the
-  // route handler treats non-empty as a bot and skips user creation.
-  website_url: z.string().max(0).optional().or(z.literal('')),
 })
+
+// Honeypot is checked at the route boundary, not in the schema, so password
+// managers / autofill can't break the form by stuffing a value into the
+// hidden input. The route handler reads body.website_url directly.
 
 export const registerSchema = registerApiSchema.extend({
   confirmPassword: z.string(),

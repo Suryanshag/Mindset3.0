@@ -15,15 +15,20 @@ This is the manual test matrix Suryansh runs against the Vercel preview deployme
 
 ## Cases
 
-### 1. Google new-user signup
+### 1. Google new-user signup — ✅
+
+User: `cmp427ei7000004l5d8orxfjf` (choudharysuryansh1111@gmail.com), tested 2026-05-13 07:22 UTC.
+
 | Step | Expectation | Result |
 |---|---|---|
-| Click "Continue with Google" on /login or /register | Redirected to Google consent | |
-| Approve consent | Lands on `/user` dashboard | |
-| Postgres: `SELECT id,"emailVerified" FROM "User" WHERE email=...` | row exists, `emailVerified` non-null | |
-| Postgres: `SELECT * FROM "Account" WHERE provider='google' AND ...` | Account row exists | |
-| Dashboard UI | No verify banner | |
-| Postgres: `SELECT kind FROM auth_events WHERE user_id=... ORDER BY created_at` | includes `REGISTER_GOOGLE` and `LOGIN_GOOGLE_SUCCESS` | |
+| Click "Continue with Google" on /login or /register | Redirected to Google consent | ✅ |
+| Approve consent | Lands on `/user` dashboard | ✅ |
+| `SELECT id,"emailVerified" FROM "User" WHERE id=...` | row exists, `emailVerified` non-null | ✅ `emailVerified=2026-05-13T07:22:18.370Z` |
+| `SELECT * FROM "Account" WHERE "userId"=...` | one row, `provider='google'` | ✅ `provider=google, type=oidc, providerAccountId=104051979114446713420` |
+| Dashboard UI | No verify banner | ✅ Suryansh confirmed visually |
+| `SELECT kind FROM auth_events WHERE user_id=... ORDER BY created_at` | `REGISTER_GOOGLE` then `LOGIN_GOOGLE_SUCCESS` | ✅ both present, REGISTER_GOOGLE at 07:22:18.593 → LOGIN_GOOGLE_SUCCESS at 07:22:19.034 |
+| `lastLoginAt` bumped on signIn event | recent | ✅ `last_login_at=2026-05-13T07:22:18.820Z` |
+| `locked_until` / `failed_login_attempts` | null / 0 | ✅ |
 
 ### 2. Google returning login
 | Step | Expectation | Result |
