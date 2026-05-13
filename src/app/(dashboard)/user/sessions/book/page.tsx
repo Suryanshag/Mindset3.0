@@ -82,7 +82,13 @@ export default function BookSessionPage() {
       })
       const data = await res.json()
       if (!data.success) {
-        setError(data.error ?? 'Failed to book session')
+        if (res.status === 403 && /verify your email/i.test(data.error ?? '')) {
+          setError(
+            'Please verify your email to book sessions. Check your inbox for the link — or open your dashboard and tap "Send link" in the verify banner.'
+          )
+        } else {
+          setError(data.error ?? 'Failed to book session')
+        }
         setBooking(false)
         return
       }

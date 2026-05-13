@@ -14,6 +14,17 @@ export async function POST(req: Request) {
     const denied = handleArcjetDenial(decision)
     if (denied) return denied
 
+    // Require verified email before booking. Google users have emailVerified
+    // set by the linkAccount event, so they're fine; credentials users must
+    // click the verification link first.
+    const userRow = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { emailVerified: true },
+    })
+    if (!userRow?.emailVerified) {
+      return errorResponse('Please verify your email to book sessions', 403)
+    }
+
     const body = await req.json()
     const parsed = bookSessionSchema.safeParse(body)
     if (!parsed.success) {

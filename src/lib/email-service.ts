@@ -12,6 +12,7 @@ import SessionCancelledEmail from '@/emails/session-cancelled'
 import EbookPurchasedEmail from '@/emails/ebook-purchased'
 import SessionFollowupEmail from '@/emails/session-followup'
 import PasswordResetEmail from '@/emails/password-reset'
+import EmailVerificationEmail from '@/emails/email-verification'
 import OrderShippedEmail from '@/emails/order-shipped'
 import OrderDeliveredEmail from '@/emails/order-delivered'
 
@@ -238,6 +239,23 @@ export function sendPasswordResetEmail(
     'Reset your Mindset password',
     render(PasswordResetEmail(props)),
     'password-reset'
+  )
+}
+
+// 12b. Email verification
+export function sendEmailVerificationEmail(
+  to: string,
+  props: {
+    userName: string
+    verifyUrl: string
+    expiresInHours: number
+  }
+): void {
+  sendEmail(
+    to,
+    'Verify your Mindset email',
+    render(EmailVerificationEmail(props)),
+    'email-verification'
   )
 }
 

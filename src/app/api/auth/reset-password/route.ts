@@ -9,11 +9,11 @@ const schema = z.object({
   token: z.string().min(1),
   password: z
     .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      'Password must contain uppercase, lowercase, and a number'
-    ),
+    .min(10, 'Password must be at least 10 characters')
+    .refine((p) => {
+      const classes = [/[a-z]/, /[A-Z]/, /[0-9]/, /[^A-Za-z0-9]/]
+      return classes.filter((re) => re.test(p)).length >= 3
+    }, 'Password must include 3 of: uppercase, lowercase, number, special character'),
 })
 
 export async function POST(req: NextRequest) {

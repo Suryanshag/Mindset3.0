@@ -3,10 +3,11 @@ import { prisma } from '@/lib/prisma'
 import { registerApiSchema } from '@/lib/validations/auth'
 import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
 import bcrypt from 'bcryptjs'
-import { sendWelcomeEmail } from '@/lib/email-service'
+import { sendWelcomeEmail, sendEmailVerificationEmail } from '@/lib/email-service'
 import { authLimiter } from '@/lib/arcjet'
 import { handleArcjetDenial } from '@/lib/arcjet-protect'
 import { logAuthEvent } from '@/lib/auth-events'
+import crypto from 'crypto'
 
 function normalisePhone(raw: string | undefined): string | undefined {
   if (!raw) return undefined
@@ -84,6 +85,23 @@ export async function POST(req: NextRequest) {
       sendWelcomeEmail(user.email, { userName: user.name })
     } catch (err) {
       console.error('[REGISTER] Welcome email failed:', err)
+    }
+
+    // Fire-and-forget: create verification token + send email
+    try {
+      const token = crypto.randomBytes(32).toString('hex')
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
+      await prisma.emailVerificationToken.create({
+        data: { userId: user.id, token, expiresAt },
+      })
+      sendEmailVerificationEmail(user.email, {
+        userName: user.name,
+        verifyUrl: `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`,
+        expiresInHours: 24,
+      })
+      await logAuthEvent({ userId: user.id, kind: 'EMAIL_VERIFICATION_SENT', request: req })
+    } catch (err) {
+      console.error('[REGISTER] verification email setup failed:', err)
     }
 
     await logAuthEvent({
