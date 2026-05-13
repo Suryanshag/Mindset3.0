@@ -64,6 +64,34 @@ function LoginForm() {
       })
 
       if (result?.error) {
+        // Check whether the account is locked so we can show a clear message.
+        try {
+          const lockRes = await fetch('/api/auth/check-lock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: data.email }),
+          })
+          if (lockRes.ok) {
+            const lockData = (await lockRes.json()) as {
+              locked: boolean
+              until?: string
+            }
+            if (lockData.locked && lockData.until) {
+              const mins = Math.max(
+                1,
+                Math.ceil(
+                  (new Date(lockData.until).getTime() - Date.now()) / 60000
+                )
+              )
+              setError(
+                `Too many failed attempts. Try again in ${mins} minute${mins === 1 ? '' : 's'}.`
+              )
+              return
+            }
+          }
+        } catch {
+          // Fall through to generic message
+        }
         setError('Invalid email or password')
         return
       }

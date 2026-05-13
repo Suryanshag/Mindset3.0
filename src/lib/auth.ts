@@ -62,13 +62,56 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             name: true,
             role: true,
             password: true,
+            failedLoginAttempts: true,
+            lockedUntil: true,
           },
         })
 
+        // No user OR no password (Google-only account). Same response so no enumeration.
         if (!user || !user.password) return null
 
+        // Currently locked? Refuse even if password is correct.
+        if (user.lockedUntil && user.lockedUntil > new Date()) {
+          await logAuthEvent({
+            userId: user.id,
+            kind: 'LOGIN_FAILED',
+            metadata: { reason: 'locked' },
+          })
+          return null
+        }
+
         const passwordMatch = await bcrypt.compare(password, user.password)
-        if (!passwordMatch) return null
+        if (!passwordMatch) {
+          const newAttempts = user.failedLoginAttempts + 1
+          if (newAttempts >= 5) {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: {
+                failedLoginAttempts: 0,
+                lockedUntil: new Date(Date.now() + 15 * 60 * 1000),
+              },
+            })
+            await logAuthEvent({ userId: user.id, kind: 'ACCOUNT_LOCKED' })
+          } else {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { failedLoginAttempts: newAttempts },
+            })
+            await logAuthEvent({
+              userId: user.id,
+              kind: 'LOGIN_FAILED',
+              metadata: { attempts: newAttempts },
+            })
+          }
+          return null
+        }
+
+        // Success — reset counter, bump lastLoginAt
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { failedLoginAttempts: 0, lastLoginAt: new Date() },
+        })
+        await logAuthEvent({ userId: user.id, kind: 'LOGIN_SUCCESS' })
 
         return {
           id: user.id,
