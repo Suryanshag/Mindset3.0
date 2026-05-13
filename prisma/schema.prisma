@@ -11,7 +11,7 @@ model User {
   name          String
   email         String    @unique
   phone         String?
-  password      String
+  password      String?
   role          Role      @default(USER)
   address       String?
   emailVerified DateTime?
@@ -19,6 +19,9 @@ model User {
   dateOfBirth        DateTime?  @map("date_of_birth")
   preferredLanguage  String?    @map("preferred_language")
   emergencyContact   String?    @map("emergency_contact")
+  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime? @map("locked_until")
+  lastLoginAt         DateTime? @map("last_login_at")
   createdAt          DateTime   @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -37,6 +40,8 @@ model User {
   assignmentResponses    AssignmentResponse[]
   moodCheckIns           MoodCheckIn[]
   engagementEvents       EngagementEvent[]
+  authEvents             AuthEvent[]
+  emailVerificationTokens EmailVerificationToken[]
 }
 
 enum Role {
@@ -518,4 +523,50 @@ model AssignmentResponse {
 
   @@index([assignmentId])
   @@map("assignment_responses")
+}
+
+model AuthEvent {
+  id        String        @id @default(cuid())
+  userId    String?       @map("user_id")
+  kind      AuthEventKind
+  ip        String?
+  userAgent String?       @map("user_agent")
+  metadata  Json?
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("auth_events")
+}
+
+enum AuthEventKind {
+  LOGIN_SUCCESS
+  LOGIN_FAILED
+  LOGIN_GOOGLE_SUCCESS
+  LOGIN_GOOGLE_BLOCKED
+  REGISTER_SUCCESS
+  REGISTER_FAILED
+  REGISTER_GOOGLE
+  PASSWORD_RESET_REQUESTED
+  PASSWORD_RESET_COMPLETED
+  EMAIL_VERIFICATION_SENT
+  EMAIL_VERIFIED
+  ACCOUNT_LOCKED
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  token     String    @unique
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("email_verification_tokens")
 }
