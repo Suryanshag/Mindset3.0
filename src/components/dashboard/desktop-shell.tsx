@@ -4,7 +4,12 @@ import { getUserEngagementState } from '@/lib/queries/dashboard'
 import { getUpcomingItems } from '@/lib/queries/upcoming'
 import DesktopContent from '@/components/dashboard/desktop-content'
 
-export default async function DesktopShell({ children }: { children: React.ReactNode }) {
+type Props = {
+  children: React.ReactNode
+  showVerifyBanner?: boolean
+}
+
+export default async function DesktopShell({ children, showVerifyBanner = false }: Props) {
   const session = await auth()
   const userId = session?.user?.id
 
@@ -21,6 +26,7 @@ export default async function DesktopShell({ children }: { children: React.React
       spineSessions={spineSessions}
       engagementState={engagementState}
       upcomingItems={upcomingItems}
+      showVerifyBanner={showVerifyBanner}
     >
       {children}
     </DesktopContent>

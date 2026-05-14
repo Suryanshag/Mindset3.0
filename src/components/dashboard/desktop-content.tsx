@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import Spine from '@/components/dashboard/spine'
 import ComingUpRail from '@/components/dashboard/desktop/coming-up-rail'
+import VerifyEmailBanner from '@/components/auth/verify-email-banner'
 import type { SpineSession } from '@/lib/queries/reflection'
 import type { EngagementState } from '@/lib/queries/dashboard'
 import type { UpcomingItem } from '@/lib/queries/upcoming'
@@ -11,6 +12,7 @@ type Props = {
   spineSessions: SpineSession[]
   engagementState: EngagementState
   upcomingItems: UpcomingItem[]
+  showVerifyBanner?: boolean
   children: React.ReactNode
 }
 
@@ -25,6 +27,7 @@ export default function DesktopContent({
   spineSessions,
   engagementState,
   upcomingItems,
+  showVerifyBanner = false,
   children,
 }: Props) {
   const pathname = usePathname() ?? ''
@@ -45,6 +48,11 @@ export default function DesktopContent({
       <Spine sessions={spineSessions} engagementState={engagementState} />
 
       <main className="bg-bg-app overflow-y-auto">
+        {showVerifyBanner && (
+          <div className="sticky top-0 z-20">
+            <VerifyEmailBanner />
+          </div>
+        )}
         <div className="mx-auto max-w-[720px] px-8 py-8">{children}</div>
       </main>
 

@@ -35,15 +35,15 @@ export default async function UserDashboardLayout({
 
   return (
     <>
-      {showVerifyBanner && <VerifyEmailBanner />}
-      {/* Mobile: below lg breakpoint */}
+      {/* Mobile: below lg breakpoint — banner above shell */}
       <div className="lg:hidden">
+        {showVerifyBanner && <VerifyEmailBanner />}
         <MobileShell>{children}</MobileShell>
       </div>
 
-      {/* Desktop: lg and above */}
+      {/* Desktop: lg and above — banner sits inside main column (handled by DesktopShell) */}
       <div className="hidden lg:block">
-        <DesktopShell>{children}</DesktopShell>
+        <DesktopShell showVerifyBanner={showVerifyBanner}>{children}</DesktopShell>
       </div>
     </>
   )
