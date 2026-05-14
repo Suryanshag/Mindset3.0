@@ -8,7 +8,6 @@ import { WritingProvider } from '@/components/dashboard/desktop/writing-context'
 import WritingSurface from '@/components/dashboard/desktop/writing-surface'
 import WritingRail from '@/components/dashboard/desktop/writing-rail'
 import RailPortal from '@/components/dashboard/desktop/rail-portal'
-import HideRail from '@/components/dashboard/desktop/hide-rail'
 import MobileRedirect from './mobile-redirect'
 
 export default async function TodayWritingPage() {
@@ -47,8 +46,6 @@ export default async function TodayWritingPage() {
     <>
       {/* Client-side mobile redirect (suspenders) */}
       <MobileRedirect />
-
-      {isEmptyUser && <HideRail />}
 
       <WritingProvider
         initialDraft={initialDraft}
