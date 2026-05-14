@@ -25,24 +25,17 @@ export default function ForgotPasswordPage() {
     return () => clearInterval(t)
   }, [cooldown])
 
-  // Cross-tab signal: if another tab completes the reset, switch this tab
-  // out of the "Check your email / Resend link" state into a "done" state.
+  // Cross-tab signal: if another *live* tab completes the reset while this
+  // page is open, switch this tab out of the "Check your email / Resend link"
+  // state. We deliberately do NOT inspect localStorage on initial mount —
+  // a stale key from a previous reset shouldn't pre-empt a fresh visit here.
   useEffect(() => {
-    const check = () => {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY)
-        if (!raw) return
-        const ts = Number(raw)
-        if (Number.isFinite(ts) && Date.now() - ts < COMPLETION_FRESHNESS_MS) {
-          setCompletedElsewhere(true)
-        }
-      } catch {
-        // ignore
-      }
-    }
-    check()
     const onStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY) check()
+      if (e.key !== STORAGE_KEY || !e.newValue) return
+      const ts = Number(e.newValue)
+      if (Number.isFinite(ts) && Date.now() - ts < COMPLETION_FRESHNESS_MS) {
+        setCompletedElsewhere(true)
+      }
     }
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)
