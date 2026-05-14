@@ -7,6 +7,7 @@ import { authLimiter } from '@/lib/arcjet'
 import { handleArcjetDenial } from '@/lib/arcjet-protect'
 import { logAuthEvent } from '@/lib/auth-events'
 import { rejectIfBadOrigin } from '@/lib/origin-check'
+import { getAppBaseUrl } from '@/lib/app-url'
 
 const schema = z.object({
   email: z.string().email(),
@@ -66,7 +67,7 @@ export async function POST(req: NextRequest) {
         },
       })
 
-      const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`
+      const resetUrl = `${getAppBaseUrl(req)}/reset-password?token=${token}`
 
       // Non-blocking email send
       sendPasswordResetEmail(user.email, {

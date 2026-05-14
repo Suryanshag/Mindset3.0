@@ -7,6 +7,7 @@ import { sendWelcomeEmail, sendEmailVerificationEmail } from '@/lib/email-servic
 import { authLimiter } from '@/lib/arcjet'
 import { handleArcjetDenial } from '@/lib/arcjet-protect'
 import { logAuthEvent } from '@/lib/auth-events'
+import { getAppBaseUrl } from '@/lib/app-url'
 import crypto from 'crypto'
 
 function normalisePhone(raw: string | undefined): string | undefined {
@@ -96,7 +97,7 @@ export async function POST(req: NextRequest) {
       })
       sendEmailVerificationEmail(user.email, {
         userName: user.name,
-        verifyUrl: `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`,
+        verifyUrl: `${getAppBaseUrl(req)}/verify-email?token=${token}`,
         expiresInHours: 24,
       })
       await logAuthEvent({ userId: user.id, kind: 'EMAIL_VERIFICATION_SENT', request: req })

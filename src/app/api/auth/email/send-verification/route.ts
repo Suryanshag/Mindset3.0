@@ -7,6 +7,7 @@ import { sensitiveActionLimiter } from '@/lib/arcjet'
 import { handleArcjetDenial } from '@/lib/arcjet-protect'
 import { logAuthEvent } from '@/lib/auth-events'
 import { rejectIfBadOrigin } from '@/lib/origin-check'
+import { getAppBaseUrl } from '@/lib/app-url'
 
 const EXPIRES_HOURS = 24
 
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
     data: { userId: user.id, token, expiresAt },
   })
 
-  const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`
+  const verifyUrl = `${getAppBaseUrl(req)}/verify-email?token=${token}`
 
   sendEmailVerificationEmail(user.email, {
     userName: user.name ?? 'there',
