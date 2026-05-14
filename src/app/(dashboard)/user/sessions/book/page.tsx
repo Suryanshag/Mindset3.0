@@ -171,32 +171,32 @@ export default function BookSessionPage() {
               <Link
                 key={doc.id}
                 href={`/user/sessions/book?doctorId=${doc.id}`}
-                className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow"
+                className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 lg:p-6 transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 relative flex-shrink-0">
+                  <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-full overflow-hidden bg-gray-100 relative flex-shrink-0">
                     {doc.photo ? (
                       <Image
                         src={doc.photo}
                         alt={doc.user.name}
                         fill
                         className="object-cover"
-                        sizes="48px"
+                        sizes="(min-width: 1024px) 64px, 56px"
                       />
                     ) : (
                       <div
-                        className="w-full h-full flex items-center justify-center text-sm font-bold text-white"
+                        className="w-full h-full flex items-center justify-center text-base lg:text-lg font-bold text-white"
                         style={{ background: 'var(--teal)' }}
                       >
                         {doc.user.name.charAt(0)}
                       </div>
                     )}
                   </div>
-                  <div>
-                    <p className="font-semibold text-sm" style={{ color: 'var(--navy)' }}>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-[15px] truncate" style={{ color: 'var(--navy)' }}>
                       {doc.user.name}
                     </p>
-                    <p className="text-xs text-gray-500">{doc.designation}</p>
+                    <p className="text-xs text-gray-500 truncate">{doc.designation}</p>
                   </div>
                 </div>
                 <p className="text-sm font-semibold" style={{ color: 'var(--teal)' }}>
@@ -229,34 +229,34 @@ export default function BookSessionPage() {
       {selectedDoctor && (
         <>
           {/* Doctor card */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100 relative flex-shrink-0">
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 lg:p-8 mb-6">
+            <div className="flex items-center gap-4 lg:gap-6">
+              <div className="w-20 h-20 lg:w-28 lg:h-28 rounded-full overflow-hidden bg-gray-100 relative flex-shrink-0">
                 {selectedDoctor.photo ? (
                   <Image
                     src={selectedDoctor.photo}
                     alt={selectedDoctor.user.name}
                     fill
                     className="object-cover"
-                    sizes="64px"
+                    sizes="(min-width: 1024px) 112px, 80px"
                   />
                 ) : (
                   <div
-                    className="w-full h-full flex items-center justify-center text-lg font-bold text-white"
+                    className="w-full h-full flex items-center justify-center text-xl lg:text-3xl font-bold text-white"
                     style={{ background: 'var(--teal)' }}
                   >
                     {selectedDoctor.user.name.charAt(0)}
                   </div>
                 )}
               </div>
-              <div className="flex-1">
-                <p className="font-bold" style={{ color: 'var(--navy)' }}>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-base lg:text-lg truncate" style={{ color: 'var(--navy)' }}>
                   {selectedDoctor.user.name}
                 </p>
-                <p className="text-sm text-gray-500">{selectedDoctor.designation}</p>
+                <p className="text-sm text-gray-500 truncate">{selectedDoctor.designation}</p>
               </div>
               <div className="text-right flex-shrink-0">
-                <p className="text-2xl font-bold" style={{ color: 'var(--navy)' }}>
+                <p className="text-2xl lg:text-3xl font-bold" style={{ color: 'var(--navy)' }}>
                   &#8377;{Number(selectedDoctor.sessionPrice).toLocaleString('en-IN')}
                 </p>
                 <p className="text-xs text-gray-500">per session</p>
@@ -312,7 +312,7 @@ export default function BookSessionPage() {
                       className="p-5 rounded-2xl border"
                       style={{ background: 'var(--teal)10', borderColor: 'var(--teal)30' }}
                     >
-                      <div className="flex items-center justify-between gap-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
                           <p className="text-sm font-medium" style={{ color: 'var(--teal)' }}>
                             Selected slot
@@ -325,7 +325,7 @@ export default function BookSessionPage() {
                         <button
                           onClick={handleBook}
                           disabled={booking}
-                          className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold hover:opacity-90 transition-all disabled:opacity-50 flex-shrink-0"
+                          className="w-full sm:w-auto sm:max-w-sm flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white font-semibold hover:opacity-90 transition-all disabled:opacity-50 sm:flex-shrink-0"
                           style={{ background: 'var(--teal)' }}
                         >
                           {booking
