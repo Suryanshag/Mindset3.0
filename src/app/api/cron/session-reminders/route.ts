@@ -172,7 +172,7 @@ export async function GET(req: NextRequest) {
 
           // Delete order (OrderItems cascade-delete automatically)
           await tx.order.delete({ where: { id: order.id } })
-        })
+        }, { maxWait: 8000, timeout: 15000 })
 
         abandonedCleaned++
       } catch (err) {

@@ -132,7 +132,7 @@ export async function POST(req: Request) {
       }
 
       return newOrder
-    })
+    }, { maxWait: 8000, timeout: 15000 })
 
     return successResponse({
       orderId: order.id,

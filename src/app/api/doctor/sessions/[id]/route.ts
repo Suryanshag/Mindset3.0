@@ -108,7 +108,7 @@ export async function PATCH(
         }
 
         return updatedSession
-      })
+      }, { maxWait: 8000, timeout: 15000 })
 
       return successResponse({ ...updated, earningCreated: !!payment })
     }

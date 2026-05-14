@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
           presenterId,
         },
       })
-    })
+    }, { maxWait: 8000, timeout: 15000 })
 
     return successResponse(workshop, 201)
   } catch (error) {

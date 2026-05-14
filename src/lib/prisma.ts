@@ -1,3 +1,6 @@
+// TODO(follow-up): introduce txn() helper to make maxWait/timeout default
+// — until then, every prisma.$transaction call must pass { maxWait: 8000, timeout: 15000 }
+
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { Pool } from 'pg'

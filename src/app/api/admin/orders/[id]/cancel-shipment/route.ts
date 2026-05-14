@@ -60,7 +60,7 @@ export async function POST(
         where: { id },
         data: { shippingStatus: 'RETURNED' },
       })
-    })
+    }, { maxWait: 8000, timeout: 15000 })
 
     console.log('[ADMIN] Shipment cancelled for order:', id)
 

@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
         if (payment.type === 'EBOOK') {
           console.log('[WEBHOOK] ✓ Ebook payment recorded')
         }
-      })
+      }, { maxWait: 8000, timeout: 15000 })
 
       console.log('[WEBHOOK] ✓ Transaction complete')
 
@@ -309,7 +309,7 @@ export async function POST(req: NextRequest) {
                 where: { id: failedOrder.id },
                 data: { paymentStatus: 'FAILED' },
               })
-            })
+            }, { maxWait: 8000, timeout: 15000 })
             console.log('[WEBHOOK] ✓ Stock restored for failed order:', failedPayment.orderId)
           }
         } catch (err) {

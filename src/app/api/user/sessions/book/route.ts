@@ -73,7 +73,7 @@ export async function POST(req: Request) {
           paymentStatus: true,
         },
       })
-    })
+    }, { maxWait: 8000, timeout: 15000 })
 
     return successResponse(newSession, 201)
   } catch (error) {

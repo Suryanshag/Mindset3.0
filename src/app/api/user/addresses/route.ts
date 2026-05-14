@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
           isDefault: shouldBeDefault,
         },
       })
-    })
+    }, { maxWait: 8000, timeout: 15000 })
 
     return successResponse({ address })
   } catch (error) {

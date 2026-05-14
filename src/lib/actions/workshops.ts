@@ -48,7 +48,7 @@ export async function registerForWorkshop(workshopId: string) {
       whatsappUrl: workshop.whatsappGroupUrl ?? null,
       title: workshop.title,
     }
-  })
+  }, { maxWait: 8000, timeout: 15000 })
 
   if ('error' in result) return result
 

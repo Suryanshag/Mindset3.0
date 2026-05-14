@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
       })
 
       return { user, doctor }
-    })
+    }, { maxWait: 8000, timeout: 15000 })
 
     return successResponse(result, 201)
   } catch (error) {

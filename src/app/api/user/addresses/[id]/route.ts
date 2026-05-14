@@ -63,7 +63,7 @@ export async function PATCH(
         where: { id },
         data: parsed.data,
       })
-    })
+    }, { maxWait: 8000, timeout: 15000 })
 
     return successResponse({ address })
   } catch (error) {
@@ -103,7 +103,7 @@ export async function DELETE(
           })
         }
       }
-    })
+    }, { maxWait: 8000, timeout: 15000 })
 
     return successResponse({ message: 'Address deleted' })
   } catch (error) {

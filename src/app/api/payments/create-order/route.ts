@@ -226,7 +226,7 @@ export async function POST(req: NextRequest) {
         })
 
         return { orderId: newOrder.id, paymentId: payment.id, razorpayOrderId: razorpayOrder.id }
-      })
+      }, { maxWait: 8000, timeout: 15000 })
 
       return successResponse({
         razorpayOrderId: result.razorpayOrderId,

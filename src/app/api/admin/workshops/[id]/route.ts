@@ -88,7 +88,7 @@ export async function PATCH(
       if (presenterId) data.presenterId = presenterId
 
       return tx.workshop.update({ where: { id }, data })
-    })
+    }, { maxWait: 8000, timeout: 15000 })
 
     return successResponse(updated)
   } catch (error) {
