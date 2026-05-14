@@ -6,6 +6,8 @@ import { ArrowLeft, ArrowRight, CheckCircle, Loader2, Mail } from 'lucide-react'
 import AuthShell from '@/components/auth/auth-shell'
 
 const RESEND_COOLDOWN_SECONDS = 60
+const COMPLETION_FRESHNESS_MS = 30 * 60 * 1000
+const STORAGE_KEY = 'mindset:password-reset-complete'
 const inputClass =
   'w-full px-4 py-3 rounded-xl text-sm transition-all duration-200 outline-none border-2'
 
@@ -15,12 +17,36 @@ export default function ForgotPasswordPage() {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [cooldown, setCooldown] = useState(0)
+  const [completedElsewhere, setCompletedElsewhere] = useState(false)
 
   useEffect(() => {
     if (cooldown <= 0) return
     const t = setInterval(() => setCooldown((s) => Math.max(0, s - 1)), 1000)
     return () => clearInterval(t)
   }, [cooldown])
+
+  // Cross-tab signal: if another tab completes the reset, switch this tab
+  // out of the "Check your email / Resend link" state into a "done" state.
+  useEffect(() => {
+    const check = () => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY)
+        if (!raw) return
+        const ts = Number(raw)
+        if (Number.isFinite(ts) && Date.now() - ts < COMPLETION_FRESHNESS_MS) {
+          setCompletedElsewhere(true)
+        }
+      } catch {
+        // ignore
+      }
+    }
+    check()
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) check()
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
 
   const handleSubmit = async () => {
     if (cooldown > 0) return
@@ -51,6 +77,39 @@ export default function ForgotPasswordPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (completedElsewhere) {
+    return (
+      <AuthShell headline="All set — your password has been updated.">
+        <div>
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
+            style={{ background: 'rgba(11,157,169,0.1)' }}
+          >
+            <CheckCircle className="w-7 h-7" style={{ color: 'var(--teal)' }} />
+          </div>
+          <h2
+            className="text-2xl sm:text-3xl font-bold mb-2"
+            style={{ color: 'var(--navy)', fontFamily: 'var(--font-heading)' }}
+          >
+            Password reset in another tab
+          </h2>
+          <p className="text-sm mb-6 leading-relaxed" style={{ color: 'rgba(30,68,92,0.6)' }}>
+            You&apos;ve already completed the password reset in another tab. Sign in with your new
+            password to continue.
+          </p>
+          <Link
+            href="/login?message=password-reset"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm text-white transition-all duration-200"
+            style={{ background: 'var(--teal)', boxShadow: '0 4px 16px rgba(11,157,169,0.25)' }}
+          >
+            Go to login
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </AuthShell>
+    )
   }
 
   return (

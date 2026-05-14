@@ -64,6 +64,13 @@ function ResetPasswordForm() {
       })
       const data = await res.json()
       if (data.success) {
+        // Cross-tab signal: tell any open /forgot-password tabs that the
+        // reset is done so they can flip out of the resend-link UI.
+        try {
+          localStorage.setItem('mindset:password-reset-complete', String(Date.now()))
+        } catch {
+          // localStorage may be disabled in private mode; not critical.
+        }
         setSuccess(true)
         setTimeout(() => router.push('/login?message=password-reset'), 2500)
       } else {
