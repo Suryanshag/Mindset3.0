@@ -108,6 +108,16 @@ Annotations:
 
 ---
 
+## Pre-case fixes discovered during smoke
+
+### `/doctors` "Book a Session" button → redirected to homepage instead of booking flow
+- **Reported:** 2026-05-16, before case 1
+- **Root cause:** `src/app/doctors/page.tsx:296` — the doctor-detail "Book a Session" CTA had `href="/#apply-now"` (the homepage contact-form anchor), pre-existing miswiring from before Sprint A. Task 1's `/api/doctors/lookup` built the destination endpoint but the entry point was never updated.
+- **Fix:** changed href to `/user/sessions/book?doctorId=${doctor.id}` (template interpolation inside `buildDoctorDetail`).
+- **Status:** ✅ fixed. Build + typecheck green.
+
+---
+
 ## End-to-end booking smoke test (Task 5)
 
 Live-data smoke against the Vercel preview:

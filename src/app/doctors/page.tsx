@@ -293,7 +293,7 @@ function buildDoctorDetail(doctor: DoctorDetail): string {
             </div>
           </div>
 
-          <a href="/#apply-now" class="doctor-detail__book-btn">
+          <a href="/user/sessions/book?doctorId=${doctor.id}" class="doctor-detail__book-btn">
             Book a Session
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M5 12h14M12 5l7 7-7 7"/>
