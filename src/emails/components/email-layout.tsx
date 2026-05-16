@@ -3,6 +3,7 @@ import {
   Section, Text, Link,
 } from '@react-email/components'
 import { CSSProperties } from 'react'
+import { SUPPORT_EMAIL } from '@/lib/email-config'
 
 interface EmailLayoutProps {
   preview: string
@@ -94,10 +95,10 @@ export default function EmailLayout({
             <Text style={styles.footerText}>
               If you have questions, contact us at{' '}
               <Link
-                href="mailto:support@mindset.com"
+                href={`mailto:${SUPPORT_EMAIL}`}
                 style={styles.footerLink}
               >
-                support@mindset.com
+                {SUPPORT_EMAIL}
               </Link>
             </Text>
             <Text style={styles.footerText}>

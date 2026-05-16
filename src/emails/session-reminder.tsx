@@ -2,8 +2,7 @@ import { Text, Section } from '@react-email/components'
 import EmailLayout from './components/email-layout'
 import EmailButton from './components/email-button'
 import EmailInfoCard from './components/email-info-card'
-import { format } from 'date-fns'
-import { toZonedTime } from 'date-fns-tz'
+import { formatSessionDateLong } from '@/lib/format-date'
 
 interface SessionReminderProps {
   userName: string
@@ -13,8 +12,6 @@ interface SessionReminderProps {
   hoursUntil: number
 }
 
-const IST = 'Asia/Kolkata'
-
 export default function SessionReminderEmail({
   userName,
   doctorName,
@@ -22,9 +19,7 @@ export default function SessionReminderEmail({
   meetLink,
   hoursUntil,
 }: SessionReminderProps) {
-  const istDate = toZonedTime(sessionDate, IST)
-  const formattedDate = format(istDate, 'EEEE, MMMM d')
-  const formattedTime = format(istDate, 'h:mm a') + ' IST'
+  const formattedWhen = formatSessionDateLong(sessionDate)
 
   return (
     <EmailLayout preview={`Reminder: Your session with ${doctorName} is in ${hoursUntil} hours`}>
@@ -48,8 +43,7 @@ export default function SessionReminderEmail({
 
       <EmailInfoCard items={[
         { label: 'Doctor', value: doctorName },
-        { label: 'Date', value: formattedDate },
-        { label: 'Time', value: formattedTime },
+        { label: 'When', value: formattedWhen },
       ]} accentColor="#f59e0b" />
 
       {meetLink && (

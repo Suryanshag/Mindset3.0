@@ -1,6 +1,7 @@
 import { Text, Section, Row, Column, Hr } from '@react-email/components'
 import EmailLayout from './components/email-layout'
 import EmailButton from './components/email-button'
+import { APP_BASE_URL } from '@/lib/email-config'
 
 interface OrderItem {
   name: string
@@ -200,7 +201,7 @@ export default function OrderConfirmationEmail({
 
       <Section style={{ textAlign: 'center' as const }}>
         <EmailButton
-          href={`${process.env.NEXT_PUBLIC_APP_URL}/user/orders`}
+          href={`${APP_BASE_URL}/user/orders`}
         >
           Track Your Order
         </EmailButton>

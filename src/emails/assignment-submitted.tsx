@@ -2,10 +2,8 @@ import { Text, Section } from '@react-email/components'
 import EmailLayout from './components/email-layout'
 import EmailButton from './components/email-button'
 import EmailInfoCard from './components/email-info-card'
-import { format } from 'date-fns'
-import { toZonedTime } from 'date-fns-tz'
-
-const IST = 'Asia/Kolkata'
+import { formatSessionDateLong } from '@/lib/format-date'
+import { APP_BASE_URL } from '@/lib/email-config'
 
 interface AssignmentSubmittedProps {
   doctorName: string
@@ -20,10 +18,7 @@ export default function AssignmentSubmittedEmail({
   assignmentTitle,
   submittedAt,
 }: AssignmentSubmittedProps) {
-  const formattedDate = format(
-    toZonedTime(submittedAt, IST),
-    'MMMM d, yyyy h:mm a'
-  ) + ' IST'
+  const formattedDate = formatSessionDateLong(submittedAt)
 
   return (
     <EmailLayout preview={`${userName} submitted: ${assignmentTitle}`}>
@@ -53,7 +48,7 @@ export default function AssignmentSubmittedEmail({
 
       <Section style={{ textAlign: 'center' as const, margin: '32px 0' }}>
         <EmailButton
-          href={`${process.env.NEXT_PUBLIC_APP_URL}/doctor/assignments`}
+          href={`${APP_BASE_URL}/doctor/assignments`}
         >
           Review Assignment
         </EmailButton>

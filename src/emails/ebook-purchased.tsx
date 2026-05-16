@@ -1,6 +1,7 @@
 import { Text, Section } from '@react-email/components'
 import EmailLayout from './components/email-layout'
 import EmailButton from './components/email-button'
+import { APP_BASE_URL } from '@/lib/email-config'
 
 interface EbookPurchasedProps {
   userName: string
@@ -91,7 +92,7 @@ export default function EbookPurchasedEmail({
 
       <Section style={{ textAlign: 'center' as const, margin: '0 0 24px' }}>
         <EmailButton
-          href={`${process.env.NEXT_PUBLIC_APP_URL}/user/ebooks`}
+          href={`${APP_BASE_URL}/user/ebooks`}
         >
           Read Now
         </EmailButton>

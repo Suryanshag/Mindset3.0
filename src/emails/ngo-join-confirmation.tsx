@@ -2,10 +2,7 @@ import { Text, Section } from '@react-email/components'
 import EmailLayout from './components/email-layout'
 import EmailButton from './components/email-button'
 import EmailInfoCard from './components/email-info-card'
-import { format } from 'date-fns'
-import { toZonedTime } from 'date-fns-tz'
-
-const IST = 'Asia/Kolkata'
+import { formatSessionDateLong } from '@/lib/format-date'
 
 interface NgoJoinConfirmationProps {
   userName: string
@@ -22,10 +19,7 @@ export default function NgoJoinConfirmationEmail({
   location,
   whatsappLink,
 }: NgoJoinConfirmationProps) {
-  const formattedDate = format(
-    toZonedTime(visitDate, IST),
-    'EEEE, MMMM d, yyyy'
-  )
+  const formattedDate = formatSessionDateLong(visitDate)
 
   return (
     <EmailLayout preview={`You're registered for the ${ngoName} visit!`}>

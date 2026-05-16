@@ -1,6 +1,7 @@
 import { Text, Section } from '@react-email/components'
 import EmailLayout from './components/email-layout'
 import EmailButton from './components/email-button'
+import { SUPPORT_EMAIL } from '@/lib/email-config'
 
 interface PaymentFailedProps {
   userName: string
@@ -88,7 +89,7 @@ export default function PaymentFailedEmail({
         textAlign: 'center' as const,
       }}>
         If the issue persists, please contact us at{' '}
-        support@mindset.com and we will help you complete
+        {SUPPORT_EMAIL} and we will help you complete
         your booking.
       </Text>
     </EmailLayout>

@@ -24,3 +24,10 @@ export const FROM_EMAIL: string = (() => {
 })()
 
 export const SUPPORT_EMAIL = 'hello@mindset.org.in'
+
+/**
+ * Canonical app base URL used inside server-rendered email bodies.
+ * Falls back to production so we never render `undefined/...` links.
+ */
+export const APP_BASE_URL: string =
+  process.env.NEXT_PUBLIC_APP_URL || 'https://mindset.org.in'

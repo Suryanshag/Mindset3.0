@@ -2,8 +2,7 @@ import { Text, Section, Hr } from '@react-email/components'
 import EmailLayout from './components/email-layout'
 import EmailButton from './components/email-button'
 import EmailInfoCard from './components/email-info-card'
-import { format } from 'date-fns'
-import { toZonedTime } from 'date-fns-tz'
+import { formatSessionDateLong } from '@/lib/format-date'
 
 interface SessionConfirmationProps {
   userName: string
@@ -12,8 +11,6 @@ interface SessionConfirmationProps {
   sessionDate: Date
   meetLink: string | null
 }
-
-const IST = 'Asia/Kolkata'
 
 const h1Style = {
   fontSize: '26px',
@@ -45,9 +42,7 @@ export default function SessionConfirmationEmail({
   sessionDate,
   meetLink,
 }: SessionConfirmationProps) {
-  const istDate = toZonedTime(sessionDate, IST)
-  const formattedDate = format(istDate, 'EEEE, MMMM d, yyyy')
-  const formattedTime = format(istDate, 'h:mm a') + ' IST'
+  const formattedWhen = formatSessionDateLong(sessionDate)
 
   return (
     <EmailLayout preview={`Your session with ${doctorName} is confirmed`}>
@@ -61,8 +56,7 @@ export default function SessionConfirmationEmail({
 
       <EmailInfoCard items={[
         { label: 'Doctor', value: `${doctorName} — ${doctorDesignation}` },
-        { label: 'Date', value: formattedDate },
-        { label: 'Time', value: formattedTime },
+        { label: 'When', value: formattedWhen },
         { label: 'Session Type', value: 'Online via Google Meet' },
       ]} />
 

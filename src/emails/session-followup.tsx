@@ -2,8 +2,8 @@ import { Text, Section } from '@react-email/components'
 import EmailLayout from './components/email-layout'
 import EmailButton from './components/email-button'
 import EmailInfoCard from './components/email-info-card'
-import { format } from 'date-fns'
-import { toZonedTime } from 'date-fns-tz'
+import { formatSessionDateLong } from '@/lib/format-date'
+import { APP_BASE_URL } from '@/lib/email-config'
 
 interface SessionFollowupProps {
   userName: string
@@ -11,16 +11,12 @@ interface SessionFollowupProps {
   sessionDate: Date
 }
 
-const IST = 'Asia/Kolkata'
-
 export default function SessionFollowupEmail({
   userName,
   doctorName,
   sessionDate,
 }: SessionFollowupProps) {
-  const istDate = toZonedTime(sessionDate, IST)
-  const formattedDate = format(istDate, 'EEEE, MMMM d')
-  const formattedTime = format(istDate, 'h:mm a') + ' IST'
+  const formattedWhen = formatSessionDateLong(sessionDate)
 
   return (
     <EmailLayout preview={`How did your session with ${doctorName} go?`}>
@@ -45,7 +41,7 @@ export default function SessionFollowupEmail({
 
       <EmailInfoCard items={[
         { label: 'Doctor', value: doctorName },
-        { label: 'Scheduled', value: `${formattedDate} at ${formattedTime}` },
+        { label: 'Scheduled', value: formattedWhen },
       ]} accentColor="#8b5cf6" />
 
       <Section style={{
@@ -85,7 +81,7 @@ export default function SessionFollowupEmail({
         margin: '0 0 16px',
       }}>
         <EmailButton
-          href={`${process.env.NEXT_PUBLIC_APP_URL}/user/sessions/book`}
+          href={`${APP_BASE_URL}/user/sessions/book`}
         >
           Book Your Next Session
         </EmailButton>

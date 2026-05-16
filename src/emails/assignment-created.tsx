@@ -2,10 +2,8 @@ import { Text, Section } from '@react-email/components'
 import EmailLayout from './components/email-layout'
 import EmailButton from './components/email-button'
 import EmailInfoCard from './components/email-info-card'
-import { format } from 'date-fns'
-import { toZonedTime } from 'date-fns-tz'
-
-const IST = 'Asia/Kolkata'
+import { formatSessionDate } from '@/lib/format-date'
+import { APP_BASE_URL } from '@/lib/email-config'
 
 interface AssignmentCreatedProps {
   userName: string
@@ -23,7 +21,7 @@ export default function AssignmentCreatedEmail({
   description,
 }: AssignmentCreatedProps) {
   const formattedDue = dueDate
-    ? format(toZonedTime(dueDate, IST), 'MMMM d, yyyy')
+    ? formatSessionDate(dueDate)
     : 'No due date set'
 
   return (
@@ -83,7 +81,7 @@ export default function AssignmentCreatedEmail({
 
       <Section style={{ textAlign: 'center' as const }}>
         <EmailButton
-          href={`${process.env.NEXT_PUBLIC_APP_URL}/user/assignments`}
+          href={`${APP_BASE_URL}/user/assignments`}
         >
           View Assignment
         </EmailButton>

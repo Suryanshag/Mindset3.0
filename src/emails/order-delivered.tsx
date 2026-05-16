@@ -1,6 +1,7 @@
 import { Text, Section } from '@react-email/components'
 import EmailLayout from './components/email-layout'
 import EmailButton from './components/email-button'
+import { APP_BASE_URL } from '@/lib/email-config'
 
 interface OrderDeliveredProps {
   userName: string
@@ -62,7 +63,7 @@ export default function OrderDeliveredEmail({
 
       <Section style={{ textAlign: 'center' as const }}>
         <EmailButton
-          href={`${process.env.NEXT_PUBLIC_APP_URL}/user/orders`}
+          href={`${APP_BASE_URL}/user/orders`}
         >
           View Your Orders
         </EmailButton>

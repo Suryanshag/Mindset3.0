@@ -3,6 +3,7 @@ import EmailLayout from './components/email-layout'
 import EmailButton from './components/email-button'
 import EmailInfoCard from './components/email-info-card'
 import { formatSessionDateLong } from '@/lib/format-date'
+import { APP_BASE_URL, SUPPORT_EMAIL } from '@/lib/email-config'
 
 interface SessionBookingConfirmationProps {
   userName: string
@@ -12,8 +13,6 @@ interface SessionBookingConfirmationProps {
   meetLink: string | null
   sessionId: string
 }
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://mindset.org.in'
 
 const h1Style = {
   fontSize: '26px',
@@ -61,7 +60,7 @@ export default function SessionBookingConfirmationEmail({
   meetLink,
   sessionId,
 }: SessionBookingConfirmationProps) {
-  const dashboardUrl = `${APP_URL}/user/sessions/${sessionId}`
+  const dashboardUrl = `${APP_BASE_URL}/user/sessions/${sessionId}`
   const dateLong = formatSessionDateLong(sessionDate)
 
   return (
@@ -107,8 +106,7 @@ export default function SessionBookingConfirmationEmail({
       </Text>
 
       <Text style={footerStyle}>
-        Questions? Reply to this email or contact us at{' '}
-        mindset.org.connect@gmail.com.
+        Questions? Reply to this email or contact us at {SUPPORT_EMAIL}.
       </Text>
     </EmailLayout>
   )

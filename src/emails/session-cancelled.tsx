@@ -2,8 +2,8 @@ import { Text, Section } from '@react-email/components'
 import EmailLayout from './components/email-layout'
 import EmailButton from './components/email-button'
 import EmailInfoCard from './components/email-info-card'
-import { format } from 'date-fns'
-import { toZonedTime } from 'date-fns-tz'
+import { formatSessionDateLong } from '@/lib/format-date'
+import { APP_BASE_URL } from '@/lib/email-config'
 
 interface SessionCancelledProps {
   userName: string
@@ -13,8 +13,6 @@ interface SessionCancelledProps {
   refundNote?: string
 }
 
-const IST = 'Asia/Kolkata'
-
 export default function SessionCancelledEmail({
   userName,
   doctorName,
@@ -22,9 +20,7 @@ export default function SessionCancelledEmail({
   cancelledBy,
   refundNote,
 }: SessionCancelledProps) {
-  const istDate = toZonedTime(sessionDate, IST)
-  const formattedDate = format(istDate, 'EEEE, MMMM d, yyyy')
-  const formattedTime = format(istDate, 'h:mm a') + ' IST'
+  const formattedDate = formatSessionDateLong(sessionDate)
 
   const cancelMessage: Record<string, string> = {
     DOCTOR: `Your doctor ${doctorName} had to cancel this session.`,
@@ -53,8 +49,7 @@ export default function SessionCancelledEmail({
 
       <EmailInfoCard items={[
         { label: 'Doctor', value: doctorName },
-        { label: 'Date', value: formattedDate },
-        { label: 'Time', value: formattedTime },
+        { label: 'When', value: formattedDate },
       ]} accentColor="#ef4444" />
 
       {refundNote && (
@@ -82,7 +77,7 @@ export default function SessionCancelledEmail({
           margin: '0 0 24px',
         }}>
           <EmailButton
-            href={`${process.env.NEXT_PUBLIC_APP_URL}/user/sessions/book`}
+            href={`${APP_BASE_URL}/user/sessions/book`}
           >
             Book Another Session
           </EmailButton>
