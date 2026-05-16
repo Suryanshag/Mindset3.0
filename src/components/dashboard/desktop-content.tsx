@@ -58,7 +58,7 @@ export default function DesktopContent({
 
       {showRail && (
         <aside
-          className="desktop-rail bg-bg-app overflow-y-auto"
+          className="desktop-rail bg-bg-rail overflow-y-auto"
           style={{ borderLeft: '1px solid var(--color-border)' }}
         >
           <div className="p-6 space-y-6">
