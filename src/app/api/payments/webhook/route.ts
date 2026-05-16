@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
-import { createMeetLinkForSession } from '@/lib/google-calendar'
 import { sendSessionBookingConfirmation, sendPaymentFailed, sendEbookPurchased, sendOrderConfirmation } from '@/lib/email-service'
 import { createShipmentForOrder } from '@/lib/create-shipment-for-order'
 
@@ -231,12 +230,9 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Post-transaction: Meet link (non-blocking)
+      // Meet link added manually by doctor via /doctor/calendar.
+      // See docs/operations.md for the rationale.
       if (payment.type === 'SESSION' && payment.sessionId) {
-        createMeetLinkForSession(payment.sessionId).catch((err) => {
-          console.error('[WEBHOOK] Meet link creation failed:', err)
-        })
-
         // Send session booking confirmation email (non-blocking).
         // Fire-and-forget so the webhook still 200s back to Razorpay
         // even if Resend is down or the template throws.
