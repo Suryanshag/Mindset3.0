@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { render } from '@react-email/render'
+import { FROM_EMAIL } from '@/lib/email-config'
 import SessionConfirmationEmail from '@/emails/session-confirmation'
 import SessionBookingConfirmationEmail from '@/emails/session-booking-confirmation'
 import SessionReminderEmail from '@/emails/session-reminder'
@@ -18,7 +19,6 @@ import OrderShippedEmail from '@/emails/order-shipped'
 import OrderDeliveredEmail from '@/emails/order-delivered'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const FROM = process.env.RESEND_FROM_EMAIL ?? 'Mindset <onboarding@resend.dev>'
 
 // Mask emails in console output: j***@example.com
 function maskEmail(value: string): string {
@@ -39,7 +39,7 @@ function sendEmail(
   const masked = maskEmail(to)
   htmlPromise
     .then((html) =>
-      resend.emails.send({ from: FROM, to, subject, html })
+      resend.emails.send({ from: FROM_EMAIL, to, subject, html })
     )
     .then(() => {
       console.log(`[EMAIL] ✓ ${tag} sent to ${masked}`)
