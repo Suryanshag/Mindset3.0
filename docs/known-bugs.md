@@ -103,3 +103,15 @@ The Vercel feedback widget is benign — it's only injected on preview deploys, 
 The reCAPTCHA block IS a real issue if any form relies on it (auth flows have `react-google-recaptcha-v3` imported). If a server-side action expects a captcha token but the script can't load, the form will fail silently or with a generic error.
 
 **Cleanup:** review the CSP in `next.config.ts` / middleware, add `https://www.google.com` and `https://www.gstatic.com` to `script-src`. Optionally add `https://vercel.live` if preview feedback is desired.
+
+---
+
+## Resolved by removal
+
+### Mindfulness card on /user/practice — removed 2026-05-16
+
+The `/user/practice` hub previously rendered a disabled "Mindfulness — Coming soon" card linked to `#`. The route `/user/practice/mindfulness` 404s and no actual feature exists behind it.
+
+**Resolution:** Mindfulness entry removed from the `sections` array in `src/app/(dashboard)/user/practice/page.tsx`. The 2-card grid (Journal + Assignments) now uses `lg:grid-cols-2` so the remaining cards take more horizontal space.
+
+The route `/user/practice/mindfulness` still 404s but no UI links to it. Revisit when the feature is actually built.
