@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Mail, Loader2, X } from 'lucide-react'
+import { useEmailVerifiedSignal } from '@/lib/use-email-verified-signal'
 
 interface VerifyEmailBannerProps {
   initialDismissed?: boolean
@@ -12,6 +14,15 @@ type SendState = 'idle' | 'sending' | 'sent' | 'error'
 export default function VerifyEmailBanner({ initialDismissed = false }: VerifyEmailBannerProps) {
   const [dismissed, setDismissed] = useState(initialDismissed)
   const [state, setState] = useState<SendState>('idle')
+  const router = useRouter()
+
+  // Self-dismiss + force layout refresh the moment the user finishes
+  // verifying in any tab. The layout's prisma.user.findUnique will then
+  // see emailVerified set and stop rendering this banner on next render.
+  useEmailVerifiedSignal(() => {
+    setDismissed(true)
+    router.refresh()
+  })
 
   if (dismissed) return null
 

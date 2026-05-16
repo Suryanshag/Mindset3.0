@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
+import { useEmailVerifiedSignal } from '@/lib/use-email-verified-signal'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -53,6 +54,15 @@ export default function BookSessionPage() {
     setError('')
     setMessage('')
   }, [pathname])
+
+  // Also clear errors when the user verifies their email in another tab —
+  // the previous booking attempt's "Please verify your email" message
+  // should disappear without requiring a navigation or reload.
+  useEmailVerifiedSignal(() => {
+    setError('')
+    setMessage('')
+    router.refresh()
+  })
 
   useEffect(() => {
     if (doctorId) {

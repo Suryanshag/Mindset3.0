@@ -1,10 +1,11 @@
 'use client'
 
 import { Suspense, useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, Loader2, XCircle } from 'lucide-react'
 import AuthShell from '@/components/auth/auth-shell'
+import { broadcastEmailVerified } from '@/lib/use-email-verified-signal'
 
 type Status = 'verifying' | 'success' | 'expired' | 'invalid' | 'used'
 
@@ -16,6 +17,7 @@ function statusFromError(err: string | undefined): Status {
 
 function VerifyEmailInner() {
   const params = useSearchParams()
+  const router = useRouter()
   const token = params.get('token')
   const [status, setStatus] = useState<Status>('verifying')
 
@@ -35,6 +37,12 @@ function VerifyEmailInner() {
         const data = await res.json()
         if (cancelled) return
         if (res.ok && data.success) {
+          // Broadcast so banners and inline errors in other tabs (or this
+          // tab's prior route) clear themselves immediately.
+          broadcastEmailVerified()
+          // Refresh the router so when the user clicks "Go to dashboard"
+          // below, the destination /user route doesn't serve stale RSC.
+          router.refresh()
           setStatus('success')
         } else {
           setStatus(statusFromError(data?.error))
@@ -46,7 +54,7 @@ function VerifyEmailInner() {
     return () => {
       cancelled = true
     }
-  }, [token])
+  }, [token, router])
 
   if (status === 'verifying') {
     return (
