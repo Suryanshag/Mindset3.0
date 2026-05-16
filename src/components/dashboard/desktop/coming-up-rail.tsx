@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Search, PenLine, Compass } from 'lucide-react'
 import type { UpcomingItem } from '@/lib/queries/upcoming'
-import { formatSessionDateRelative, formatSessionTime } from '@/lib/format-date'
+import { formatSessionDateRelative } from '@/lib/format-date'
+import { isJoinWindowOpen } from '@/lib/session-window'
 
 // ─── Date utilities ────────────────────────────────────────────────────────
 
@@ -17,14 +18,6 @@ export function formatCountdown(d: Date): string {
   if (hours < 24) return `in ${hours} ${hours === 1 ? 'hour' : 'hours'}`
   const days = Math.floor(hours / 24)
   return `in ${days} ${days === 1 ? 'day' : 'days'}`
-}
-
-/** Join window: 15 min before start through 60 min after start. */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function isJoinWindowOpen(startsAt: Date, _durationMin: number): boolean {
-  const now = Date.now()
-  const start = startsAt.getTime()
-  return now >= start - 15 * 60 * 1000 && now <= start + 60 * 60 * 1000
 }
 
 // ─── Chip styling ──────────────────────────────────────────────────────────
@@ -76,7 +69,7 @@ function ItemCard({ item }: { item: UpcomingItem }) {
   // Dates may arrive as ISO strings depending on serialization edges — coerce defensively.
   const startsAt = item.startsAt instanceof Date ? item.startsAt : new Date(item.startsAt)
   const chip = CHIP[item.kind]
-  const canJoin = isJoinWindowOpen(startsAt, item.durationMin) && !!item.meetLink
+  const canJoin = isJoinWindowOpen(startsAt, item.durationMin, item.status) && !!item.meetLink
 
   function handleCardClick(e: React.MouseEvent<HTMLDivElement>) {
     // Don't navigate if the click target is the Join button (anchor)

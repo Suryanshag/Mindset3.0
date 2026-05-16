@@ -10,6 +10,7 @@ export type UpcomingItem =
       meetLink: string | null
       counterpartyName: string
       counterpartyImage: string | null
+      status: string
       href: string
     }
   | {
@@ -21,6 +22,7 @@ export type UpcomingItem =
       meetLink: string | null
       counterpartyName: string | null
       counterpartyImage: string | null
+      status: string
       href: string
     }
 
@@ -48,6 +50,7 @@ export async function getUpcomingItems(userId: string, days = 30): Promise<Upcom
         id: true,
         date: true,
         meetLink: true,
+        status: true,
         doctor: {
           select: {
             photo: true,
@@ -75,6 +78,7 @@ export async function getUpcomingItems(userId: string, days = 30): Promise<Upcom
             startsAt: true,
             durationMin: true,
             meetLink: true,
+            status: true,
             type: true,
             presenter: { select: { name: true } },
           },
@@ -92,6 +96,7 @@ export async function getUpcomingItems(userId: string, days = 30): Promise<Upcom
     meetLink: s.meetLink,
     counterpartyName: s.doctor.user.name,
     counterpartyImage: s.doctor.photo,
+    status: s.status,
     href: `/user/sessions/${s.id}`,
   }))
 
@@ -106,6 +111,7 @@ export async function getUpcomingItems(userId: string, days = 30): Promise<Upcom
       meetLink: w.meetLink,
       counterpartyName: w.presenter?.name ?? null,
       counterpartyImage: null,
+      status: w.status,
       href: `/user/discover/workshops/${w.id}`,
     }
   })
