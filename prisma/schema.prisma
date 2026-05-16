@@ -134,6 +134,7 @@ model Session {
   status          SessionStatus @default(PENDING)
   paymentStatus   PaymentStatus @default(PENDING)
   notes           String?       @db.Text
+  userNotes       String?       @db.Text @map("user_notes")
   reminderSent    Boolean       @default(false)
   followupSent    Boolean       @default(false)
   createdAt       DateTime      @default(now())

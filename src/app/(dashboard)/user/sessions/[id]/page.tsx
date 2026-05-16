@@ -1,17 +1,24 @@
 import { auth } from '@/lib/auth'
 import Image from 'next/image'
+import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import Link from 'next/link'
-import { Calendar, Clock, CheckCircle, XCircle, ChevronRight } from 'lucide-react'
 import PageHeader from '@/components/dashboard/page-header'
 import CancelSessionButton from './cancel-button'
 import SessionJoinCta from './session-join-cta'
-import ChapterView from '@/components/dashboard/desktop/chapter-view'
-import RailPortal from '@/components/dashboard/desktop/rail-portal'
-import SessionRail from '@/components/dashboard/desktop/session-rail'
-import { getChapterData } from '@/lib/queries/reflection'
-import { formatSessionDate, formatSessionTime, formatSessionDateLong } from '@/lib/format-date'
+import SessionUserNotes from './session-user-notes'
+import { formatSessionDateRelative } from '@/lib/format-date'
+
+const SESSION_DURATION_MIN = 60
+
+type SessionStatusKey = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
+
+const STATUS_CHIP: Record<SessionStatusKey, { label: string; cls: string }> = {
+  PENDING: { label: 'Pending', cls: 'bg-accent-tint text-accent' },
+  CONFIRMED: { label: 'Confirmed', cls: 'bg-primary-tint text-primary' },
+  COMPLETED: { label: 'Completed', cls: 'bg-bg-card text-text-faint' },
+  CANCELLED: { label: 'Cancelled', cls: 'bg-red-100 text-red-700' },
+}
 
 export default async function SessionDetailPage({
   params,
@@ -22,29 +29,21 @@ export default async function SessionDetailPage({
   const authSession = await auth()
   if (!authSession?.user?.id) redirect('/login')
 
-  const [session, chapterData] = await Promise.all([
-    prisma.session.findFirst({
-      where: { id, userId: authSession.user.id },
-      include: {
-        doctor: {
-          include: { user: { select: { name: true } } },
-        },
+  const session = await prisma.session.findFirst({
+    where: { id, userId: authSession.user.id },
+    include: {
+      doctor: {
+        include: { user: { select: { name: true } } },
       },
-    }),
-    getChapterData(authSession.user.id, id).catch(() => null),
-  ])
-
+    },
+  })
   if (!session) notFound()
 
   const now = new Date()
   const isUpcoming =
     session.date > now &&
     (session.status === 'PENDING' || session.status === 'CONFIRMED')
-  const isPast = session.status === 'COMPLETED' || session.date < now
   const isCancelled = session.status === 'CANCELLED'
-
-  // Session duration is fixed at 60 min in this codebase.
-  const sessionDurationMin = 60
 
   // Cancel: only if > 24 hours away
   const hoursUntil = (session.date.getTime() - now.getTime()) / (1000 * 60 * 60)
@@ -57,187 +56,108 @@ export default async function SessionDetailPage({
     .join('')
     .slice(0, 2)
 
-  // Related assignments (created within 48h after session)
-  const relatedAssignments = isPast
-    ? await prisma.assignment.findMany({
-        where: {
-          userId: authSession.user.id,
-          doctorId: session.doctorId,
-          createdAt: {
-            gte: session.date,
-            lte: new Date(session.date.getTime() + 48 * 60 * 60 * 1000),
-          },
-        },
-        select: { id: true, title: true, status: true },
-        take: 5,
-      })
-    : []
+  const chip = STATUS_CHIP[session.status as SessionStatusKey] ?? STATUS_CHIP.PENDING
 
   return (
-    <>
-      {/* Mobile: existing session detail */}
-      <div className="lg:hidden">
-        <PageHeader title="Session details" back="/user/sessions" />
+    <div>
+      <PageHeader title="Session details" back="/user/sessions" />
 
-        <div className="space-y-3.5 pt-5">
-          {/* Doctor card */}
-          <div
-            className="bg-bg-card rounded-2xl p-4"
-            style={{ border: '0.5px solid var(--color-border)' }}
-          >
-            <div className="flex items-center gap-3">
-              {session.doctor.photo ? (
-                <Image width={56} height={56}
-                  src={session.doctor.photo}
-                  alt={doctorName}
-                  className="rounded-full object-cover shrink-0"
-                />
-              ) : (
-                <div className="w-14 h-14 rounded-full bg-accent flex items-center justify-center shrink-0">
-                  <span className="text-sm font-medium text-white">{doctorInitials}</span>
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="text-[16px] font-medium text-text">{doctorName}</p>
-                <p className="text-[13px] text-text-muted">{session.doctor.designation}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Status line */}
-          {isCancelled && (
-            <div className="flex items-center gap-2 px-1">
-              <XCircle size={16} className="text-red-500" />
-              <p className="text-[13px] text-red-600 font-medium">Cancelled</p>
-            </div>
-          )}
-          {isPast && !isCancelled && (
-            <div className="flex items-center gap-2 px-1">
-              <CheckCircle size={16} className="text-primary" />
-              <p className="text-[13px] text-primary font-medium">
-                Completed on {formatSessionDate(session.date)}
-              </p>
-            </div>
-          )}
-
-          {/* Session info */}
-          <div
-            className="bg-bg-card rounded-2xl p-4 space-y-3"
-            style={{ border: '0.5px solid var(--color-border)' }}
-          >
-            <div className="flex items-center gap-3">
-              <Calendar size={16} className="text-text-faint shrink-0" />
-              <p className="text-[14px] text-text">
-                {formatSessionDateLong(session.date)}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Clock size={16} className="text-text-faint shrink-0" />
-              <p className="text-[14px] text-text">
-                {formatSessionTime(session.date)}
-                {' '}&middot; 60 min
-              </p>
-            </div>
-            {session.status === 'PENDING' && (
-              <p className="text-[12px] text-accent-deep bg-accent-tint px-3 py-1.5 rounded-lg inline-block">
-                Awaiting confirmation
-              </p>
-            )}
-          </div>
-
-          {/* Join CTA — drives off shared joinWindowState (see session-join-cta.tsx) */}
-          <SessionJoinCta
-            startsAt={session.date}
-            durationMin={sessionDurationMin}
-            status={session.status}
-            meetLink={session.meetLink}
-            doctorId={session.doctorId}
-            doctorName={doctorName}
-          />
-
-          {/* Cancel button only for upcoming sessions */}
-          {isUpcoming && (
-            canCancel ? (
-              <CancelSessionButton sessionId={session.id} />
+      <div className="space-y-5 pt-4">
+        {/* 1. Doctor header */}
+        <div
+          className="flex items-center justify-between gap-3 bg-bg-card rounded-2xl p-4 lg:p-5"
+          style={{ border: '0.5px solid var(--color-border)' }}
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            {session.doctor.photo ? (
+              <Image
+                width={64}
+                height={64}
+                src={session.doctor.photo}
+                alt={doctorName}
+                className="w-12 h-12 lg:w-16 lg:h-16 rounded-full object-cover shrink-0"
+              />
             ) : (
-              <div className="flex items-center justify-center w-full h-[44px] rounded-full bg-bg-card text-text-faint text-[13px]"
-                style={{ border: '0.5px solid var(--color-border)' }}
-              >
-                Can&apos;t cancel within 24 hours of start time
+              <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-full bg-accent flex items-center justify-center shrink-0">
+                <span className="text-sm lg:text-base font-medium text-white">{doctorInitials}</span>
               </div>
-            )
-          )}
-
-          {/* Past: related assignments */}
-          {isPast && !isCancelled && relatedAssignments.length > 0 && (
-            <div>
-              <p className="text-[12px] font-medium text-text-faint uppercase tracking-wider mb-2">
-                Assignments from this session
+            )}
+            <div className="min-w-0">
+              <p className="text-base lg:text-xl font-medium text-text truncate">
+                {doctorName}
               </p>
-              <div
-                className="bg-bg-card rounded-2xl overflow-hidden"
-                style={{ border: '0.5px solid var(--color-border)' }}
-              >
-                {relatedAssignments.map((a, i) => (
-                  <Link
-                    key={a.id}
-                    href={`/user/practice/assignments/${a.id}`}
-                    className="flex items-center gap-3 px-4 py-3"
-                    style={
-                      i < relatedAssignments.length - 1
-                        ? { borderBottom: '0.5px solid var(--color-border)' }
-                        : undefined
-                    }
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-medium text-text truncate">{a.title}</p>
-                      <p className="text-[11px] text-text-faint capitalize">{a.status.toLowerCase()}</p>
-                    </div>
-                    <ChevronRight size={16} className="text-text-faint shrink-0" />
-                  </Link>
-                ))}
-              </div>
+              <p className="text-sm text-text-muted truncate">
+                {session.doctor.designation}
+              </p>
             </div>
-          )}
+          </div>
+          <span
+            className={`shrink-0 text-[11px] font-medium uppercase tracking-[0.5px] px-2.5 py-1 rounded-full ${chip.cls}`}
+          >
+            {chip.label}
+          </span>
+        </div>
 
-          {/* Cancelled: Book again (ended state handled by SessionJoinCta) */}
-          {isCancelled && (
-            <Link
-              href={`/user/sessions/book?doctorId=${session.doctorId}`}
-              className="flex items-center justify-center w-full h-[48px] rounded-full bg-bg-card text-primary text-[14px] font-medium"
+        {/* 2. Date + time + duration */}
+        <p className="text-base text-text-muted">
+          {formatSessionDateRelative(session.date)} · {SESSION_DURATION_MIN} min
+        </p>
+
+        {/* 3. Join CTA — drives off shared joinWindowState */}
+        <SessionJoinCta
+          startsAt={session.date}
+          durationMin={SESSION_DURATION_MIN}
+          status={session.status}
+          meetLink={session.meetLink}
+          doctorId={session.doctorId}
+          doctorName={doctorName}
+        />
+
+        {/* 4. User notes — autosaves on blur */}
+        <SessionUserNotes
+          sessionId={session.id}
+          initialValue={session.userNotes ?? ''}
+        />
+
+        {/* 5. Doctor's notes — only if completed and present */}
+        {session.status === 'COMPLETED' && session.notes && (
+          <div>
+            <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px] mb-2">
+              From your session
+            </p>
+            <div
+              className="bg-bg-card rounded-2xl p-4"
               style={{ border: '0.5px solid var(--color-border)' }}
             >
-              Book again
-            </Link>
-          )}
-        </div>
-      </div>
-
-      {/* Desktop: Chapter view */}
-      <div className="hidden lg:block">
-        {chapterData ? (
-          <>
-            <ChapterView chapter={chapterData} />
-            <RailPortal>
-              <SessionRail
-                doctor={{
-                  name: doctorName,
-                  designation: session.doctor.designation,
-                  photo: session.doctor.photo,
-                }}
-                doctorId={session.doctorId}
-                sessionId={session.id}
-                canCancel={canCancel}
-                assignments={relatedAssignments}
-              />
-            </RailPortal>
-          </>
-        ) : (
-          <div className="py-8">
-            <p className="text-[14px] text-text-faint">Session not found.</p>
+              <p className="text-[14px] text-text whitespace-pre-wrap leading-relaxed">
+                {session.notes}
+              </p>
+            </div>
           </div>
         )}
+
+        {/* Cancel button — upcoming sessions only */}
+        {isUpcoming && (
+          canCancel ? (
+            <CancelSessionButton sessionId={session.id} />
+          ) : (
+            <p className="text-[12px] text-text-faint text-center py-2">
+              Can&apos;t cancel within 24 hours of start time.
+            </p>
+          )
+        )}
+
+        {/* Cancelled: Book again */}
+        {isCancelled && (
+          <Link
+            href={`/user/sessions/book?doctorId=${session.doctorId}`}
+            className="flex items-center justify-center w-full h-12 rounded-full bg-bg-card text-primary text-[14px] font-medium"
+            style={{ border: '0.5px solid var(--color-border)' }}
+          >
+            Book again
+          </Link>
+        )}
       </div>
-    </>
+    </div>
   )
 }
