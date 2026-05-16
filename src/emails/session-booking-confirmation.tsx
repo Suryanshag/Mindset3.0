@@ -57,7 +57,6 @@ export default function SessionBookingConfirmationEmail({
   doctorName,
   sessionDate,
   durationMin,
-  meetLink,
   sessionId,
 }: SessionBookingConfirmationProps) {
   const dashboardUrl = `${APP_BASE_URL}/user/sessions/${sessionId}`
@@ -79,15 +78,15 @@ export default function SessionBookingConfirmationEmail({
         ]}
       />
 
-      <Section style={{ textAlign: 'center' as const, margin: '32px 0 16px' }}>
+      <Text style={{ fontSize: '14px', color: '#334155', margin: '24px 0 12px', lineHeight: '1.6' }}>
+        Your therapist will add a Google Meet link before your session.
+        You&apos;ll see a Join button on your dashboard 15 minutes before the
+        session starts.
+      </Text>
+
+      <Section style={{ textAlign: 'center' as const, margin: '24px 0' }}>
         <EmailButton href={dashboardUrl}>Open session details</EmailButton>
       </Section>
-
-      <Text style={{ fontSize: '13px', color: '#64748b', textAlign: 'center' as const, margin: '0 0 24px' }}>
-        {meetLink
-          ? 'Your Google Meet link will be active 15 minutes before the session starts.'
-          : 'Your Google Meet link will appear in your dashboard shortly.'}
-      </Text>
 
       <Hr style={{ borderColor: '#e2e8f0', margin: '24px 0' }} />
 
