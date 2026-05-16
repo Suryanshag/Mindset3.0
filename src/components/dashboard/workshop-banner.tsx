@@ -1,18 +1,14 @@
 import Link from 'next/link'
 import { Ticket, MessageCircle } from 'lucide-react'
 import type { Workshop } from '@/types/dashboard'
+import { formatSessionDate } from '@/lib/format-date'
 
 type Props = {
   workshop: Workshop
 }
 
 export default function WorkshopBanner({ workshop }: Props) {
-  const d = new Date(workshop.date)
-  const dateStr = d.toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  })
+  const dateStr = formatSessionDate(workshop.date)
 
   return (
     <div className="rounded-2xl bg-accent p-4 text-white">

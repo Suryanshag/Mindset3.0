@@ -6,35 +6,12 @@ import Link from 'next/link'
 import { Video, ChevronRight, CheckCircle } from 'lucide-react'
 import TabControl from '@/components/dashboard/sessions/tab-control'
 import PageHeader from '@/components/dashboard/page-header'
+import { formatSessionDateRelative, formatSessionDate } from '@/lib/format-date'
 
 const doctorSelect = {
   designation: true,
   photo: true,
   user: { select: { name: true } },
-}
-
-function formatDate(d: Date): string {
-  const now = new Date()
-  const diffDays = Math.round(
-    (d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-  )
-  const time = d.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  })
-  if (diffDays === 0) return `Today \u00b7 ${time}`
-  if (diffDays === 1) return `Tomorrow \u00b7 ${time}`
-  return `${d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} \u00b7 ${time}`
-}
-
-function formatPastDate(d: Date): string {
-  return d.toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
 }
 
 export default async function SessionsPage({
@@ -141,7 +118,7 @@ async function UpcomingTab({ userId }: { userId: string }) {
                 </div>
                 <div className="flex items-center justify-between mt-3">
                   <p className="text-[13px] text-white/80">
-                    {formatDate(s.date)}
+                    {formatSessionDateRelative(s.date)}
                   </p>
                   {s.status === 'CONFIRMED' && s.meetLink && (
                     <a
@@ -178,7 +155,7 @@ async function UpcomingTab({ userId }: { userId: string }) {
                 {s.doctor.user.name}
               </p>
               <p className="text-[12px] lg:text-[13px] text-text-faint">
-                {formatDate(s.date)}
+                {formatSessionDateRelative(s.date)}
               </p>
             </div>
             <ChevronRight size={16} className="text-text-faint shrink-0" />
@@ -246,7 +223,7 @@ async function PastTab({ userId }: { userId: string }) {
                 {s.doctor.user.name}
               </p>
               <p className="text-[12px] lg:text-[13px] text-text-faint">
-                {formatPastDate(s.date)}
+                {formatSessionDate(s.date)}
               </p>
               {s.notes && (
                 <p className="text-[12px] lg:text-[13px] text-text-muted italic mt-1 line-clamp-2">

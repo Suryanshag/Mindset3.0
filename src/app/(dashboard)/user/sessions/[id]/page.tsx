@@ -10,6 +10,7 @@ import ChapterView from '@/components/dashboard/desktop/chapter-view'
 import RailPortal from '@/components/dashboard/desktop/rail-portal'
 import SessionRail from '@/components/dashboard/desktop/session-rail'
 import { getChapterData } from '@/lib/queries/reflection'
+import { formatSessionDate, formatSessionTime, formatSessionDateLong } from '@/lib/format-date'
 
 export default async function SessionDetailPage({
   params,
@@ -129,13 +130,7 @@ export default async function SessionDetailPage({
             <div className="flex items-center gap-2 px-1">
               <CheckCircle size={16} className="text-primary" />
               <p className="text-[13px] text-primary font-medium">
-                Completed on{' '}
-                {session.date.toLocaleDateString('en-US', {
-                  weekday: 'short',
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
+                Completed on {formatSessionDate(session.date)}
               </p>
             </div>
           )}
@@ -148,22 +143,13 @@ export default async function SessionDetailPage({
             <div className="flex items-center gap-3">
               <Calendar size={16} className="text-text-faint shrink-0" />
               <p className="text-[14px] text-text">
-                {session.date.toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
+                {formatSessionDateLong(session.date)}
               </p>
             </div>
             <div className="flex items-center gap-3">
               <Clock size={16} className="text-text-faint shrink-0" />
               <p className="text-[14px] text-text">
-                {session.date.toLocaleTimeString('en-US', {
-                  hour: 'numeric',
-                  minute: '2-digit',
-                  hour12: true,
-                })}
+                {formatSessionTime(session.date)}
                 {' '}&middot; 60 min
               </p>
             </div>

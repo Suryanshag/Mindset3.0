@@ -1,27 +1,10 @@
 import Link from 'next/link'
 import { Video } from 'lucide-react'
 import type { Session } from '@/types/dashboard'
+import { formatSessionDateRelative } from '@/lib/format-date'
 
 type Props = {
   session: Session | null
-}
-
-function formatSessionTime(iso: string): string {
-  const d = new Date(iso)
-  const now = new Date()
-  const diffDays = Math.round(
-    (d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-  )
-
-  const time = d.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  })
-
-  if (diffDays === 0) return `Today \u00b7 ${time}`
-  if (diffDays === 1) return `Tomorrow \u00b7 ${time}`
-  return `${d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} \u00b7 ${time}`
 }
 
 export default function NextSessionCard({ session }: Props) {
@@ -76,7 +59,7 @@ export default function NextSessionCard({ session }: Props) {
 
         <div className="flex items-center justify-between mt-3">
           <p className="text-[13px] text-white/80">
-            {formatSessionTime(session.date)}
+            {formatSessionDateRelative(session.date)}
           </p>
           <Link
             href={session.meetLink ?? `/user/sessions`}

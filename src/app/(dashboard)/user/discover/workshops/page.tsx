@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { CalendarDays, Ticket, ChevronRight } from 'lucide-react'
 import PageHeader from '@/components/dashboard/page-header'
+import { formatSessionDate } from '@/lib/format-date'
 
 export default async function WorkshopsListPage() {
   const now = new Date()
@@ -62,11 +63,7 @@ export default async function WorkshopsListPage() {
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <CalendarDays size={12} className="text-text-faint" />
                       <p className="text-[12px] text-text-muted">
-                        {ws.startsAt.toLocaleDateString('en-IN', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                        })}
+                        {formatSessionDate(ws.startsAt)}
                       </p>
                     </div>
                     {ws.subtitle && (
@@ -103,11 +100,7 @@ export default async function WorkshopsListPage() {
                     {ws.title}
                   </p>
                   <p className="text-[12px] text-text-muted">
-                    {ws.startsAt.toLocaleDateString('en-IN', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
+                    {formatSessionDate(ws.startsAt)}
                   </p>
                 </div>
               ))}

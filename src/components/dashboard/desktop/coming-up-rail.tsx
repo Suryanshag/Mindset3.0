@@ -4,30 +4,9 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Search, PenLine, Compass } from 'lucide-react'
 import type { UpcomingItem } from '@/lib/queries/upcoming'
+import { formatSessionDateRelative, formatSessionTime } from '@/lib/format-date'
 
 // ─── Date utilities ────────────────────────────────────────────────────────
-
-export function formatRelativeDay(d: Date): string {
-  const now = new Date()
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const target = new Date(d.getFullYear(), d.getMonth(), d.getDate())
-  const diffDays = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-  if (diffDays === 0) return 'Today'
-  if (diffDays === 1) return 'Tomorrow'
-  return d.toLocaleDateString('en-US', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  })
-}
-
-export function formatTimeShort(d: Date): string {
-  return d.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  })
-}
 
 export function formatCountdown(d: Date): string {
   const ms = d.getTime() - Date.now()
@@ -132,7 +111,7 @@ function ItemCard({ item }: { item: UpcomingItem }) {
       <p className="text-[15px] font-medium text-text leading-tight">{item.title}</p>
 
       <p className="text-[13px] text-text-muted mt-1.5">
-        {formatRelativeDay(startsAt)}, {formatTimeShort(startsAt)}
+        {formatSessionDateRelative(startsAt)}
       </p>
 
       {item.counterpartyName && (

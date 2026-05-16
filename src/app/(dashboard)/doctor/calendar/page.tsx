@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { formatSessionTime } from '@/lib/format-date'
 import {
   startOfMonth,
   endOfMonth,
@@ -222,7 +223,7 @@ export default function DoctorCalendarPage() {
                       </span>
                     </div>
                     <p className="text-xs text-gray-500 mb-2">
-                      {new Date(s.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                      {formatSessionTime(s.date)}
                     </p>
 
                     {/* Meet link section */}

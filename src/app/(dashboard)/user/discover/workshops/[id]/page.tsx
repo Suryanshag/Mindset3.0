@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { Ticket } from 'lucide-react'
 import PageHeader from '@/components/dashboard/page-header'
 import WorkshopRegisterButton from './register-button'
+import { formatSessionDateLong, formatSessionTime } from '@/lib/format-date'
 
 export default async function WorkshopDetailPage({
   params,
@@ -78,19 +79,10 @@ export default async function WorkshopDetailPage({
           style={{ border: '0.5px solid var(--color-border)' }}
         >
           <p className="text-[14px] text-text">
-            {workshop.startsAt.toLocaleDateString('en-IN', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            })}
+            {formatSessionDateLong(workshop.startsAt)}
           </p>
           <p className="text-[14px] text-text">
-            {workshop.startsAt.toLocaleTimeString('en-US', {
-              hour: 'numeric',
-              minute: '2-digit',
-              hour12: true,
-            })}
+            {formatSessionTime(workshop.startsAt)}
             {' '}&middot; {workshop.durationMin} min
           </p>
           {workshop.capacity && (

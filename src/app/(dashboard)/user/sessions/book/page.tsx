@@ -5,9 +5,9 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { format } from 'date-fns'
 import RazorpayCheckout from '@/components/payments/razorpay-checkout'
 import SlotsCalendar, { type CalendarSlot } from '@/components/ui/slots-calendar'
+import { formatSessionDateLong } from '@/lib/format-date'
 
 interface Doctor {
   id: string
@@ -318,8 +318,7 @@ export default function BookSessionPage() {
                             Selected slot
                           </p>
                           <p className="text-lg font-bold mt-0.5" style={{ color: 'var(--navy)' }}>
-                            {format(new Date(selectedSlot.date), 'EEEE, MMMM d')} at{' '}
-                            {format(new Date(selectedSlot.date), 'h:mm a')}
+                            {formatSessionDateLong(selectedSlot.date)}
                           </p>
                         </div>
                         <button

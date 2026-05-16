@@ -61,6 +61,20 @@ export function formatSessionDateRelative(d: Date | string): string {
   return formatSessionDateTime(date)
 }
 
+/** "Thu, 19 Nov" — date only, no time. For tight UI surfaces. */
+export function formatSessionDate(d: Date | string): string {
+  const date = toDate(d)
+  const weekday = fmtPart(date, { weekday: 'short' })
+  const day = fmtPart(date, { day: 'numeric' })
+  const month = fmtPart(date, { month: 'short' })
+  return `${weekday}, ${day} ${month}`
+}
+
+/** "November 2026" — long month + year, for monthly grouping/labels */
+export function formatMonthYear(d: Date | string): string {
+  return fmtPart(toDate(d), { month: 'long', year: 'numeric' })
+}
+
 /** "Thursday, 19 November 2026 at 2:00 PM IST" — for email body, no ambient ctx */
 export function formatSessionDateLong(d: Date | string): string {
   const date = toDate(d)

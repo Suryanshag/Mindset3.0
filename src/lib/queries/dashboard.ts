@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import type { Workshop, Session as DashboardSession } from '@/types/dashboard'
+import { formatSessionTime } from '@/lib/format-date'
 
 /**
  * Next published workshop starting within the next 14 days.
@@ -31,11 +32,7 @@ export async function getNextWorkshop(userId?: string): Promise<Workshop | null>
     id: ws.id,
     title: ws.title,
     date: ws.startsAt.toISOString(),
-    time: ws.startsAt.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    }),
+    time: formatSessionTime(ws.startsAt),
     price: ws.priceCents === 0 ? 'Free' : `\u20B9${(ws.priceCents / 100).toFixed(0)}`,
     imageUrl: ws.coverImageUrl,
     isRegistered,

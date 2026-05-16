@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import type { SpineSession } from '@/lib/queries/reflection'
 import type { EngagementState } from '@/lib/queries/dashboard'
+import { formatMonthYear, formatSessionTime, formatSessionDate } from '@/lib/format-date'
 
 const SPACES = [
   { href: '/user/sessions', label: 'Sessions', Icon: CalendarDays },
@@ -30,14 +31,11 @@ type Props = {
   engagementState?: EngagementState
 }
 
-/** Group sessions by "Month Year" key. */
+/** Group sessions by "Month Year" key (IST calendar). */
 function groupByMonth(sessions: SpineSession[]) {
   const groups = new Map<string, SpineSession[]>()
   for (const s of sessions) {
-    const key = s.date.toLocaleDateString('en-US', {
-      month: 'long',
-      year: 'numeric',
-    })
+    const key = formatMonthYear(s.date)
     if (!groups.has(key)) groups.set(key, [])
     groups.get(key)!.push(s)
   }
@@ -115,15 +113,8 @@ export default function Spine({ sessions = [], engagementState = 'engaged' }: Pr
                   <div className="space-y-0.5">
                     {items.map((s) => {
                       const active = pathname === `/user/sessions/${s.id}`
-                      const dateLabel = s.date.toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                      })
-                      const timeLabel = s.date.toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true,
-                      }).toLowerCase()
+                      const dateLabel = formatSessionDate(s.date)
+                      const timeLabel = formatSessionTime(s.date).toLowerCase()
                       const doctorFirst = s.doctorName.split(' ')[0]
                       return (
                         <Link

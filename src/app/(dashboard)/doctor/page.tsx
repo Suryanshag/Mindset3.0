@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { Calendar, TrendingUp, ClipboardList, IndianRupee } from 'lucide-react'
+import { formatSessionTime } from '@/lib/format-date'
 
 function getGreeting() {
   const hour = new Date().getHours()
@@ -160,7 +161,7 @@ export default async function DoctorOverview() {
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-gray-900 text-sm truncate">{s.user.name}</p>
                       <p className="text-xs text-gray-500">
-                        {new Date(s.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                        {formatSessionTime(s.date)}
                       </p>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-lg font-medium flex-shrink-0 ${
@@ -239,10 +240,7 @@ export default async function DoctorOverview() {
                   <div>
                     <p className="font-medium text-gray-900">{s.user.name}</p>
                     <p className="text-sm text-gray-500">
-                      {new Date(s.date).toLocaleTimeString('en-IN', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {formatSessionTime(s.date)}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">

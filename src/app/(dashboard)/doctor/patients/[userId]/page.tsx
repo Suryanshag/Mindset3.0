@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { formatSessionDateTime } from '@/lib/format-date'
 
 interface PatientData {
   patient: {
@@ -129,14 +130,7 @@ export default function PatientDetailPage() {
                 <div key={s.id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                   <div className="flex items-center justify-between mb-2">
                     <p className="font-medium text-gray-900">
-                      {new Date(s.date).toLocaleDateString('en-IN', {
-                        weekday: 'short',
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {formatSessionDateTime(s.date)}
                     </p>
                     <span
                       className="text-xs px-2 py-1 rounded-full font-medium"

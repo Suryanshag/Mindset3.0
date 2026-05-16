@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ClipboardList, Ticket, PenLine } from 'lucide-react'
 import type { ChapterData, TimelineItem, PreSessionAssignment } from '@/lib/queries/reflection'
+import { formatSessionTime, formatSessionDate, formatSessionDateLong } from '@/lib/format-date'
 
 const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
 
@@ -44,18 +45,8 @@ function relativeIntro(daysAfter: number, kind: Verb): string {
 export default function ChapterView({ chapter }: { chapter: ChapterData }) {
   const { session, timeline, preSessionAssignments } = chapter
 
-  const dateStr = session.date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-
-  const timeStr = session.date.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  })
+  const dateStr = formatSessionDateLong(session.date)
+  const timeStr = formatSessionTime(session.date)
 
   return (
     <div className="py-4">
@@ -228,10 +219,7 @@ function WorkshopCard({
 }: {
   workshop: { id: string; title: string; startsAt: Date }
 }) {
-  const dateLabel = workshop.startsAt.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  })
+  const dateLabel = formatSessionDate(workshop.startsAt)
 
   return (
     <Link

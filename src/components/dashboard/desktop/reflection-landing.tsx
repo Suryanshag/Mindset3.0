@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Video, Search, PenLine, Compass } from 'lucide-react'
 import type { ReflectionLandingData } from '@/lib/queries/reflection'
 import type { EngagementState } from '@/lib/queries/dashboard'
+import { formatSessionTime, formatSessionDate, formatSessionDateLong } from '@/lib/format-date'
 
 function numberWord(n: number): string {
   const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
@@ -49,11 +50,7 @@ function daysUntil(date: Date): string {
     (date.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
   )
   if (diff <= 0) {
-    return `today at ${date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    })}`
+    return `today at ${formatSessionTime(date)}`
   }
   if (diff === 1) return 'tomorrow'
   return `in ${diff} days`
@@ -131,12 +128,8 @@ export default function ReflectionLanding({
     })
   }
   if (data.upcomingWorkshop) {
-    const wsDate = data.upcomingWorkshop.startsAt.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    })
     pendingItems.push({
-      label: `Attending: ${data.upcomingWorkshop.title}, ${wsDate}`,
+      label: `Attending: ${data.upcomingWorkshop.title}, ${formatSessionDate(data.upcomingWorkshop.startsAt)}`,
       href: `/user/discover/workshops/${data.upcomingWorkshop.id}`,
     })
   }
@@ -217,17 +210,7 @@ export default function ReflectionLanding({
             Your next session is {daysUntil(data.nextSession.date)}
           </p>
           <p className="text-[14px] text-text-muted mt-1">
-            {new Date(data.nextSession.date).toLocaleDateString('en-US', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-            })}
-            {' '}&middot;{' '}
-            {new Date(data.nextSession.date).toLocaleTimeString('en-US', {
-              hour: 'numeric',
-              minute: '2-digit',
-              hour12: true,
-            })}
+            {formatSessionDateLong(data.nextSession.date)}
           </p>
           <div className="mt-4">
             {joinWindowOpen && data.nextSession.meetLink ? (
