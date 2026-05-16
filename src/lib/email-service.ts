@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { render } from '@react-email/render'
 import SessionConfirmationEmail from '@/emails/session-confirmation'
+import SessionBookingConfirmationEmail from '@/emails/session-booking-confirmation'
 import SessionReminderEmail from '@/emails/session-reminder'
 import OrderConfirmationEmail from '@/emails/order-confirmation'
 import AssignmentCreatedEmail from '@/emails/assignment-created'
@@ -64,6 +65,27 @@ export function sendSessionConfirmation(
     `Session Confirmed — ${props.doctorName}`,
     render(SessionConfirmationEmail(props)),
     'session-confirmation'
+  )
+}
+
+// 1b. Session booking confirmation (richer template — used by webhook after
+//     payment.captured flips Session.status to CONFIRMED).
+export function sendSessionBookingConfirmation(
+  to: string,
+  props: {
+    userName: string
+    doctorName: string
+    sessionDate: Date
+    durationMin: number
+    meetLink: string | null
+    sessionId: string
+  }
+): void {
+  sendEmail(
+    to,
+    `Your session with ${props.doctorName} is confirmed`,
+    render(SessionBookingConfirmationEmail(props)),
+    'session-booking-confirmation'
   )
 }
 

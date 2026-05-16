@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { createMeetLinkForSession } from '@/lib/google-calendar'
-import { sendSessionConfirmation, sendPaymentFailed, sendEbookPurchased, sendOrderConfirmation } from '@/lib/email-service'
+import { sendSessionBookingConfirmation, sendPaymentFailed, sendEbookPurchased, sendOrderConfirmation } from '@/lib/email-service'
 import { createShipmentForOrder } from '@/lib/create-shipment-for-order'
 
 // CRITICAL: Log every single step
@@ -237,7 +237,9 @@ export async function POST(req: NextRequest) {
           console.error('[WEBHOOK] Meet link creation failed:', err)
         })
 
-        // Send session confirmation email (non-blocking)
+        // Send session booking confirmation email (non-blocking).
+        // Fire-and-forget so the webhook still 200s back to Razorpay
+        // even if Resend is down or the template throws.
         try {
           const fullSession = await prisma.session.findUnique({
             where: { id: payment.sessionId },
@@ -245,23 +247,23 @@ export async function POST(req: NextRequest) {
               user: { select: { name: true, email: true } },
               doctor: {
                 select: {
-                  designation: true,
                   user: { select: { name: true } },
                 },
               },
             },
           })
           if (fullSession) {
-            sendSessionConfirmation(fullSession.user.email, {
+            sendSessionBookingConfirmation(fullSession.user.email, {
               userName: fullSession.user.name ?? 'there',
               doctorName: fullSession.doctor.user.name ?? 'your doctor',
-              doctorDesignation: fullSession.doctor.designation,
               sessionDate: fullSession.date,
+              durationMin: 60,
               meetLink: fullSession.meetLink,
+              sessionId: fullSession.id,
             })
           }
         } catch (err) {
-          console.error('[WEBHOOK] Session email failed:', err)
+          console.error('[WEBHOOK] Session booking email failed for session', payment.sessionId, err)
         }
       }
     }
