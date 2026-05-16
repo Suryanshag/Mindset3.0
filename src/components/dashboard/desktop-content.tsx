@@ -17,11 +17,20 @@ type Props = {
 }
 
 // Routes where the rail is force-hidden regardless of items (focus mode).
-const HIDE_RAIL_ROUTES = new Set<string>([
+const HIDE_RAIL_EXACT = [
+  '/user/cart',
   '/user/practice/journal/new',
-])
+]
 
-const JOURNAL_EDIT_RE = /^\/user\/practice\/journal\/[^/]+\/edit$/
+const HIDE_RAIL_PREFIX = [
+  '/user/profile', // /user/profile and /user/profile/anything
+]
+
+const HIDE_RAIL_REGEX = [
+  /^\/user\/practice\/journal\/[^/]+\/edit$/,
+  /^\/user\/shop\/[^/]+$/,
+  /^\/user\/orders\/[^/]+$/,
+]
 
 export default function DesktopContent({
   spineSessions,
@@ -33,7 +42,9 @@ export default function DesktopContent({
   const pathname = usePathname() ?? ''
 
   const forceHideRail =
-    HIDE_RAIL_ROUTES.has(pathname) || JOURNAL_EDIT_RE.test(pathname)
+    HIDE_RAIL_EXACT.includes(pathname) ||
+    HIDE_RAIL_PREFIX.some((p) => pathname.startsWith(p)) ||
+    HIDE_RAIL_REGEX.some((r) => r.test(pathname))
 
   // First-steps fallback only on /user home for the empty engagement state.
   const showFirstStepsFallback =
