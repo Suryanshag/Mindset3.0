@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { toast } from 'sonner'
 import { formatSessionTime } from '@/lib/format-date'
 import {
   startOfMonth,
@@ -13,7 +15,19 @@ import {
   addMonths,
   subMonths,
 } from 'date-fns'
-import { ChevronLeft, ChevronRight, CheckCircle, Loader2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CheckCircle, Loader2, X } from 'lucide-react'
+
+const MEET_TIP_STORAGE_KEY = 'mindset.meetLinkTip.dismissed'
+
+const ALLOWED_MEET_HOSTS = ['meet.google.com', 'zoom.us', 'whereby.com']
+
+function validateMeetUrl(url: string): string | null {
+  if (!url.startsWith('https://')) return 'Link must start with https://'
+  if (!ALLOWED_MEET_HOSTS.some((h) => url.includes(h))) {
+    return 'Must be a Google Meet, Zoom, or Whereby link'
+  }
+  return null
+}
 
 interface Session {
   id: string
@@ -46,6 +60,9 @@ function isActiveButTooEarly(s: Session): boolean {
 }
 
 export default function DoctorCalendarPage() {
+  const searchParams = useSearchParams()
+  const highlightId = searchParams.get('highlight')
+
   const [sessions, setSessions] = useState<Session[]>([])
   const [loading, setLoading] = useState(true)
   const [currentMonth, setCurrentMonth] = useState(new Date())
@@ -58,6 +75,9 @@ export default function DoctorCalendarPage() {
   const [savingMeetLink, setSavingMeetLink] = useState(false)
   const [meetLinkError, setMeetLinkError] = useState('')
   const [completingId, setCompletingId] = useState<string | null>(null)
+  const [tipDismissed, setTipDismissed] = useState(true) // default true until we read storage
+  const highlightAppliedRef = useRef(false)
+  const highlightedSessionRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     fetch('/api/doctor/sessions?view=all')
@@ -68,14 +88,65 @@ export default function DoctorCalendarPage() {
       .finally(() => setLoading(false))
   }, [])
 
+  // Read tip-dismissed flag once on mount.
+  useEffect(() => {
+    try {
+      setTipDismissed(localStorage.getItem(MEET_TIP_STORAGE_KEY) === '1')
+    } catch {
+      // localStorage unavailable — keep dismissed (default true) so tip
+      // doesn't show indefinitely in privacy modes.
+    }
+  }, [])
+
+  // Highlight from email link: select the session's date and auto-open
+  // the Add Meet Link editor for that session.
+  useEffect(() => {
+    if (!highlightId || highlightAppliedRef.current) return
+    const target = sessions.find((s) => s.id === highlightId)
+    if (!target) return
+    highlightAppliedRef.current = true
+    const d = new Date(target.date)
+    setSelectedDate(d)
+    setCurrentMonth(d)
+    if (!target.meetLink) {
+      setEditingMeetLink(target.id)
+      setMeetLinkText('')
+      setMeetLinkError('')
+    }
+  }, [highlightId, sessions])
+
+  // After the highlighted session renders, scroll it into view once.
+  useEffect(() => {
+    if (highlightedSessionRef.current && highlightAppliedRef.current) {
+      highlightedSessionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [selectedDate, sessions, editingMeetLink])
+
   const monthStart = startOfMonth(currentMonth)
   const monthEnd = endOfMonth(currentMonth)
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
   const startPadding = getDay(monthStart) // 0=Sun
 
+  // CONFIRMED sessions missing a Meet link surface to top within their day.
   const selectedSessions = selectedDate
-    ? sessions.filter((s) => isSameDay(new Date(s.date), selectedDate))
+    ? sessions
+        .filter((s) => isSameDay(new Date(s.date), selectedDate))
+        .slice()
+        .sort((a, b) => {
+          const aPending = a.status === 'CONFIRMED' && !a.meetLink ? 0 : 1
+          const bPending = b.status === 'CONFIRMED' && !b.meetLink ? 0 : 1
+          return aPending - bPending
+        })
     : []
+
+  function dismissTip() {
+    try {
+      localStorage.setItem(MEET_TIP_STORAGE_KEY, '1')
+    } catch {
+      // ignore
+    }
+    setTipDismissed(true)
+  }
 
   async function saveNotes(sessionId: string) {
     setSavingNotes(true)
@@ -97,23 +168,30 @@ export default function DoctorCalendarPage() {
 
   async function saveMeetLink(sessionId: string) {
     setMeetLinkError('')
-    if (!meetLinkText.startsWith('https://meet.google.com/')) {
-      setMeetLinkError('Must be a valid Google Meet link (https://meet.google.com/...)')
+    const validationError = validateMeetUrl(meetLinkText.trim())
+    if (validationError) {
+      setMeetLinkError(validationError)
       return
     }
     setSavingMeetLink(true)
     try {
+      const trimmed = meetLinkText.trim()
       const res = await fetch(`/api/doctor/sessions/${sessionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ meetLink: meetLinkText }),
+        body: JSON.stringify({ meetLink: trimmed }),
       })
       const data = await res.json()
       if (data.success) {
-        setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, meetLink: meetLinkText } : s)))
+        setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, meetLink: trimmed } : s)))
         setEditingMeetLink(null)
         setMeetLinkText('')
+        toast.success('Link added. The user can now see it on their dashboard.')
+      } else {
+        toast.error(data.error ?? 'Failed to save link')
       }
+    } catch {
+      toast.error('Failed to save link')
     } finally {
       setSavingMeetLink(false)
     }
@@ -170,6 +248,9 @@ export default function DoctorCalendarPage() {
             ))}
             {days.map((day) => {
               const daySessions = sessions.filter((s) => isSameDay(new Date(s.date), day))
+              const hasPendingLink = daySessions.some(
+                (s) => s.status === 'CONFIRMED' && !s.meetLink
+              )
               const today = isToday(day)
               const selected = selectedDate && isSameDay(day, selectedDate)
               return (
@@ -178,7 +259,10 @@ export default function DoctorCalendarPage() {
                   onClick={() => setSelectedDate(day)}
                   className={`p-2 rounded-lg text-sm relative transition-colors ${
                     selected ? 'ring-2 ring-blue-500' : ''
+                  } ${
+                    hasPendingLink && !selected ? 'ring-1 ring-amber-400' : ''
                   } ${today ? 'bg-blue-50 font-bold' : 'hover:bg-gray-50'}`}
+                  title={hasPendingLink ? 'Session needs a Meet link' : undefined}
                 >
                   {format(day, 'd')}
                   {daySessions.length > 0 && (
@@ -211,8 +295,15 @@ export default function DoctorCalendarPage() {
             <div className="space-y-3">
               {selectedSessions.map((s) => {
                 const colors = STATUS_COLORS[s.status] ?? { bg: '#f3f4f6', text: '#374151' }
+                const isHighlighted = highlightId === s.id
                 return (
-                  <div key={s.id} className="p-3 rounded-lg bg-gray-50">
+                  <div
+                    key={s.id}
+                    ref={isHighlighted ? highlightedSessionRef : undefined}
+                    className={`p-3 rounded-lg bg-gray-50 ${
+                      isHighlighted ? 'ring-2 ring-amber-400' : ''
+                    }`}
+                  >
                     <div className="flex items-center justify-between mb-2">
                       <p className="font-medium text-gray-900 text-sm">{s.user.name}</p>
                       <span
@@ -252,17 +343,32 @@ export default function DoctorCalendarPage() {
                     )}
                     {s.status === 'CONFIRMED' && !s.meetLink && editingMeetLink !== s.id && (
                       <div className="mb-2 p-2 bg-amber-50 rounded-lg border border-amber-200">
-                        <p className="text-xs text-amber-700 font-medium mb-1.5">No Meet link yet</p>
-                        <button
-                          onClick={() => {
-                            setEditingMeetLink(s.id)
-                            setMeetLinkText('')
-                            setMeetLinkError('')
-                          }}
-                          className="text-xs px-2.5 py-1 rounded-lg bg-amber-500 text-white font-medium hover:bg-amber-600 transition-colors"
-                        >
-                          Add Meet Link
-                        </button>
+                        <p className="text-xs text-amber-700 font-medium mb-1.5">🔗 Needs Meet link</p>
+                        <div className="flex items-start gap-2">
+                          <button
+                            onClick={() => {
+                              setEditingMeetLink(s.id)
+                              setMeetLinkText('')
+                              setMeetLinkError('')
+                            }}
+                            className="text-xs px-2.5 py-1 rounded-lg bg-amber-500 text-white font-medium hover:bg-amber-600 transition-colors shrink-0"
+                          >
+                            Add Meet Link
+                          </button>
+                          {!tipDismissed && (
+                            <div className="relative flex-1 max-w-xs text-[11px] text-gray-700 bg-white border border-gray-200 rounded-lg p-2 pr-6 leading-snug">
+                              <button
+                                type="button"
+                                aria-label="Dismiss tip"
+                                onClick={dismissTip}
+                                className="absolute top-1 right-1 p-0.5 text-gray-400 hover:text-gray-700"
+                              >
+                                <X size={12} />
+                              </button>
+                              Open meet.google.com → New meeting → Create for later → Copy URL → Paste here
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                     {editingMeetLink === s.id && (
@@ -271,7 +377,7 @@ export default function DoctorCalendarPage() {
                           type="url"
                           value={meetLinkText}
                           onChange={(e) => setMeetLinkText(e.target.value)}
-                          placeholder="https://meet.google.com/..."
+                          placeholder="https://meet.google.com/... or Zoom/Whereby link"
                           className="w-full text-xs px-2 py-1 border rounded text-gray-900 mb-1"
                         />
                         {meetLinkError && (
