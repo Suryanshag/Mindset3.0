@@ -3,9 +3,10 @@ import Image from 'next/image'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import { Video, Calendar, Clock, CheckCircle, XCircle, ChevronRight } from 'lucide-react'
+import { Calendar, Clock, CheckCircle, XCircle, ChevronRight } from 'lucide-react'
 import PageHeader from '@/components/dashboard/page-header'
 import CancelSessionButton from './cancel-button'
+import SessionJoinCta from './session-join-cta'
 import ChapterView from '@/components/dashboard/desktop/chapter-view'
 import RailPortal from '@/components/dashboard/desktop/rail-portal'
 import SessionRail from '@/components/dashboard/desktop/session-rail'
@@ -42,24 +43,8 @@ export default async function SessionDetailPage({
   const isPast = session.status === 'COMPLETED' || session.date < now
   const isCancelled = session.status === 'CANCELLED'
 
-  // Join button: enabled 15 min before to 15 min after (assume 60 min session)
-  const fifteenMin = 15 * 60 * 1000
-  const sessionEnd = new Date(session.date.getTime() + 60 * 60 * 1000)
-  const joinEnabled =
-    isUpcoming &&
-    session.status === 'CONFIRMED' &&
-    session.meetLink &&
-    now.getTime() >= session.date.getTime() - fifteenMin &&
-    now.getTime() <= sessionEnd.getTime() + fifteenMin
-
-  const joinDisabledReason =
-    now.getTime() < session.date.getTime() - fifteenMin
-      ? 'Join opens 15 min before your session'
-      : now.getTime() > sessionEnd.getTime() + fifteenMin
-        ? 'Session has ended'
-        : !session.meetLink
-          ? 'Meeting link not available yet'
-          : null
+  // Session duration is fixed at 60 min in this codebase.
+  const sessionDurationMin = 60
 
   // Cancel: only if > 24 hours away
   const hoursUntil = (session.date.getTime() - now.getTime()) / (1000 * 60 * 60)
@@ -160,47 +145,27 @@ export default async function SessionDetailPage({
             )}
           </div>
 
-          {/* Upcoming: Join + Cancel buttons */}
-          {isUpcoming && (
-            <div className="space-y-2.5">
-              {session.meetLink ? (
-                joinEnabled ? (
-                  <a
-                    href={session.meetLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full h-[48px] rounded-full bg-primary text-white text-[14px] font-medium"
-                  >
-                    <Video size={18} />
-                    Join session
-                  </a>
-                ) : (
-                  <div className="flex items-center justify-center gap-2 w-full h-[48px] rounded-full bg-bg-card text-text-faint text-[14px] font-medium"
-                    style={{ border: '0.5px solid var(--color-border)' }}
-                  >
-                    <Video size={18} />
-                    {joinDisabledReason}
-                  </div>
-                )
-              ) : (
-                <div className="flex items-center justify-center gap-2 w-full h-[48px] rounded-full bg-bg-card text-text-faint text-[14px] font-medium"
-                  style={{ border: '0.5px solid var(--color-border)' }}
-                >
-                  <Video size={18} />
-                  Meeting link not available yet
-                </div>
-              )}
+          {/* Join CTA — drives off shared joinWindowState (see session-join-cta.tsx) */}
+          <SessionJoinCta
+            startsAt={session.date}
+            durationMin={sessionDurationMin}
+            status={session.status}
+            meetLink={session.meetLink}
+            doctorId={session.doctorId}
+            doctorName={doctorName}
+          />
 
-              {canCancel ? (
-                <CancelSessionButton sessionId={session.id} />
-              ) : (
-                <div className="flex items-center justify-center w-full h-[44px] rounded-full bg-bg-card text-text-faint text-[13px]"
-                  style={{ border: '0.5px solid var(--color-border)' }}
-                >
-                  Can&apos;t cancel within 24 hours of start time
-                </div>
-              )}
-            </div>
+          {/* Cancel button only for upcoming sessions */}
+          {isUpcoming && (
+            canCancel ? (
+              <CancelSessionButton sessionId={session.id} />
+            ) : (
+              <div className="flex items-center justify-center w-full h-[44px] rounded-full bg-bg-card text-text-faint text-[13px]"
+                style={{ border: '0.5px solid var(--color-border)' }}
+              >
+                Can&apos;t cancel within 24 hours of start time
+              </div>
+            )
           )}
 
           {/* Past: related assignments */}
@@ -235,14 +200,14 @@ export default async function SessionDetailPage({
             </div>
           )}
 
-          {/* Past / Cancelled: Book again */}
-          {(isPast || isCancelled) && (
+          {/* Cancelled: Book again (ended state handled by SessionJoinCta) */}
+          {isCancelled && (
             <Link
               href={`/user/sessions/book?doctorId=${session.doctorId}`}
               className="flex items-center justify-center w-full h-[48px] rounded-full bg-bg-card text-primary text-[14px] font-medium"
               style={{ border: '0.5px solid var(--color-border)' }}
             >
-              {isCancelled ? 'Book again' : 'Book follow-up'}
+              Book again
             </Link>
           )}
         </div>
