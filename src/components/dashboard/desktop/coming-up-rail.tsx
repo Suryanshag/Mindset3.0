@@ -37,6 +37,13 @@ const CHIP: Record<UpcomingItem['kind'], { label: string; cls: string }> = {
   },
 }
 
+// Type-colored left accent stroke — picks from existing palette.
+const TYPE_STROKE: Record<UpcomingItem['kind'], string> = {
+  session: 'var(--color-primary)',
+  workshop: 'var(--color-accent)',
+  circle: '#C9A961',
+}
+
 // ─── Rail ──────────────────────────────────────────────────────────────────
 
 type Props = {
@@ -92,8 +99,11 @@ function ItemCard({ item }: { item: UpcomingItem }) {
       tabIndex={0}
       onClick={handleCardClick}
       onKeyDown={handleKey}
-      className="block rounded-xl p-4 bg-bg-card cursor-pointer transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
-      style={{ border: '1px solid var(--color-border)' }}
+      className="block rounded-xl py-4 px-4 bg-bg-card cursor-pointer transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
+      style={{
+        border: '1px solid var(--color-border)',
+        borderLeft: `3px solid ${TYPE_STROKE[item.kind]}`,
+      }}
     >
       <div className="flex items-center gap-2 mb-2">
         <span
@@ -105,7 +115,7 @@ function ItemCard({ item }: { item: UpcomingItem }) {
 
       <p className="text-[15px] font-medium text-text leading-tight">{item.title}</p>
 
-      <p className="text-[13px] text-text-muted mt-1.5">
+      <p className="text-[14px] text-text-muted mt-1.5">
         {formatSessionDateRelative(startsAt)}
       </p>
 
