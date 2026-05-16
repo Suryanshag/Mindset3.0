@@ -11,6 +11,7 @@ export async function GET() {
       where: { userId: session.user.id },
       select: {
         id: true,
+        orderNumber: true,
         totalAmount: true,
         deliveryCharge: true,
         paymentStatus: true,

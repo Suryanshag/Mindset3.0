@@ -191,6 +191,7 @@ export async function POST(req: NextRequest) {
             sendOrderConfirmation(orderDetails.user.email, {
               userName: orderDetails.user.name ?? 'there',
               orderId: orderDetails.id,
+              orderNumber: orderDetails.orderNumber,
               items: orderDetails.orderItems.map(oi => ({
                 name: oi.product.name,
                 quantity: oi.quantity,

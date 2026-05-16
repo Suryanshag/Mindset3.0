@@ -135,6 +135,7 @@ export function sendOrderConfirmation(
   props: {
     userName: string
     orderId: string
+    orderNumber?: string | null
     items: { name: string; quantity: number; price: number }[]
     totalAmount: number
     shippingAddress: {
@@ -149,9 +150,10 @@ export function sendOrderConfirmation(
     courierName?: string
   }
 ): void {
+  const display = props.orderNumber ?? `#${props.orderId.slice(-8).toUpperCase()}`
   sendEmail(
     to,
-    `Order Confirmed — #${props.orderId.slice(-8).toUpperCase()}`,
+    `Order Confirmed — ${display}`,
     render(OrderConfirmationEmail(props)),
     'order-confirmation'
   )
@@ -318,15 +320,16 @@ export function sendOrderShipped(
   props: {
     userName: string
     orderId: string
+    orderNumber?: string | null
     courierName: string | null
     awbCode: string | null
     trackingUrl: string | null
   }
 ): void {
-  const shortId = props.orderId.slice(-8).toUpperCase()
+  const display = props.orderNumber ?? `#${props.orderId.slice(-8).toUpperCase()}`
   sendEmail(
     to,
-    `Your order has shipped — #${shortId}`,
+    `Your order has shipped — ${display}`,
     render(OrderShippedEmail(props)),
     'order-shipped'
   )
@@ -338,12 +341,13 @@ export function sendOrderDelivered(
   props: {
     userName: string
     orderId: string
+    orderNumber?: string | null
   }
 ): void {
-  const shortId = props.orderId.slice(-8).toUpperCase()
+  const display = props.orderNumber ?? `#${props.orderId.slice(-8).toUpperCase()}`
   sendEmail(
     to,
-    `Your order has arrived — #${shortId}`,
+    `Your order has arrived — ${display}`,
     render(OrderDeliveredEmail(props)),
     'order-delivered'
   )

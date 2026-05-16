@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
           where: { id: order.id },
           select: {
             id: true,
+            orderNumber: true,
             awbCode: true,
             courierName: true,
             trackingUrl: true,
@@ -113,6 +114,7 @@ export async function POST(req: NextRequest) {
             sendOrderShipped(fullOrder.user.email, {
               userName: fullOrder.user.name ?? 'there',
               orderId: fullOrder.id,
+              orderNumber: fullOrder.orderNumber,
               courierName: fullOrder.courierName,
               awbCode: fullOrder.awbCode,
               trackingUrl: fullOrder.trackingUrl,
@@ -121,6 +123,7 @@ export async function POST(req: NextRequest) {
             sendOrderDelivered(fullOrder.user.email, {
               userName: fullOrder.user.name ?? 'there',
               orderId: fullOrder.id,
+              orderNumber: fullOrder.orderNumber,
             })
           }
         }

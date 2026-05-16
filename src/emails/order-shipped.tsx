@@ -6,6 +6,7 @@ import { APP_BASE_URL } from '@/lib/email-config'
 interface OrderShippedProps {
   userName: string
   orderId: string
+  orderNumber?: string | null
   courierName: string | null
   awbCode: string | null
   trackingUrl: string | null
@@ -14,11 +15,12 @@ interface OrderShippedProps {
 export default function OrderShippedEmail({
   userName,
   orderId,
+  orderNumber,
   courierName,
   awbCode,
   trackingUrl,
 }: OrderShippedProps) {
-  const shortOrderId = orderId.slice(-8).toUpperCase()
+  const shortOrderId = orderNumber ?? orderId.slice(-8).toUpperCase()
 
   return (
     <EmailLayout preview={`Your order #${shortOrderId} has shipped!`}>

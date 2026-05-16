@@ -6,6 +6,7 @@ import ToastContainer from '@/components/ui/toast-container'
 
 interface OrderRow {
   id: string
+  orderNumber: string | null
   totalAmount: string
   deliveryCharge: string
   paymentStatus: string
@@ -163,7 +164,7 @@ export default function AdminOrdersPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-semibold text-gray-900">{o.user.name}</p>
-                      <p className="text-sm text-gray-500 mt-0.5">#{o.id.slice(-8)}</p>
+                      <p className="text-sm text-gray-500 mt-0.5">{o.orderNumber ?? `#${o.id.slice(-8)}`}</p>
                     </div>
                     <p className="font-bold text-gray-900 flex-shrink-0">{'\u20B9'}{Number(o.totalAmount).toLocaleString('en-IN')}</p>
                   </div>
@@ -252,7 +253,7 @@ export default function AdminOrdersPage() {
                       <tr key={o.id} className="border-b border-gray-50">
                         <td className="py-3 px-4">
                           <button onClick={() => setExpandedId(expandedId === o.id ? null : o.id)} className="text-xs text-blue-600 hover:underline font-medium">
-                            #{o.id.slice(-8)}
+                            {o.orderNumber ?? `#${o.id.slice(-8)}`}
                           </button>
                         </td>
                         <td className="py-3 px-4">

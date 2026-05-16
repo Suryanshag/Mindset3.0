@@ -6,13 +6,15 @@ import { APP_BASE_URL } from '@/lib/email-config'
 interface OrderDeliveredProps {
   userName: string
   orderId: string
+  orderNumber?: string | null
 }
 
 export default function OrderDeliveredEmail({
   userName,
   orderId,
+  orderNumber,
 }: OrderDeliveredProps) {
-  const shortOrderId = orderId.slice(-8).toUpperCase()
+  const shortOrderId = orderNumber ?? orderId.slice(-8).toUpperCase()
 
   return (
     <EmailLayout preview={`Your order #${shortOrderId} has been delivered!`}>

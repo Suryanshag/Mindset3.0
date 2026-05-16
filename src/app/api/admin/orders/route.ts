@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
         take: limit,
         select: {
           id: true,
+          orderNumber: true,
           totalAmount: true,
           deliveryCharge: true,
           paymentStatus: true,

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { razorpay } from '@/lib/razorpay'
 import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { getServiceableCouriers, getPickupPincode } from '@/lib/shiprocket'
+import { generateOrderNumber } from '@/lib/order-number'
 import { z } from 'zod'
 import { apiLimiter } from '@/lib/arcjet'
 import { handleArcjetDenial } from '@/lib/arcjet-protect'
@@ -178,9 +179,11 @@ export async function POST(req: NextRequest) {
 
       // Create Order + OrderItems + Payment atomically
       const result = await prisma.$transaction(async (tx) => {
+        const orderNumber = await generateOrderNumber(tx)
         const newOrder = await tx.order.create({
           data: {
             userId: session.user.id,
+            orderNumber,
             totalAmount,
             deliveryCharge: verifiedDeliveryCharge,
             selectedCourierId: hasPhysical ? selectedCourierId : undefined,

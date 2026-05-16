@@ -25,6 +25,7 @@ interface OrderItem {
 
 interface Order {
   id: string
+  orderNumber: string | null
   totalAmount: string
   paymentStatus: string
   shippingStatus: string
@@ -194,7 +195,7 @@ export default function OrdersPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-sm font-mono text-gray-400">
-                        #{order.id.slice(0, 8)}
+                        {order.orderNumber ?? `#${order.id.slice(0, 8)}`}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         {format(new Date(order.createdAt), 'dd MMM yyyy, h:mm a')}

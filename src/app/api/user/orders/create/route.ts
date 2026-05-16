@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { createOrderSchema } from '@/lib/validations/order'
 import { getServiceableCouriers, getPickupPincode } from '@/lib/shiprocket'
+import { generateOrderNumber } from '@/lib/order-number'
 
 export async function POST(req: Request) {
   try {
@@ -96,9 +97,11 @@ export async function POST(req: Request) {
 
     // Create order + order items + reduce stock in a transaction
     const order = await prisma.$transaction(async (tx) => {
+      const orderNumber = await generateOrderNumber(tx)
       const newOrder = await tx.order.create({
         data: {
           userId: session.user.id,
+          orderNumber,
           totalAmount,
           deliveryCharge: verifiedDeliveryCharge,
           selectedCourierId,

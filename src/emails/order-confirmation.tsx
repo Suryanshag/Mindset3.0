@@ -21,6 +21,7 @@ interface ShippingAddress {
 interface OrderConfirmationProps {
   userName: string
   orderId: string
+  orderNumber?: string | null
   items: OrderItem[]
   totalAmount: number
   shippingAddress: ShippingAddress
@@ -31,13 +32,14 @@ interface OrderConfirmationProps {
 export default function OrderConfirmationEmail({
   userName,
   orderId,
+  orderNumber,
   items,
   totalAmount,
   shippingAddress,
   deliveryCharge,
   courierName,
 }: OrderConfirmationProps) {
-  const shortOrderId = orderId.slice(-8).toUpperCase()
+  const shortOrderId = orderNumber ?? orderId.slice(-8).toUpperCase()
 
   return (
     <EmailLayout preview={`Order #${shortOrderId} confirmed — we're packing it!`}>
