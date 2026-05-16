@@ -1,38 +1,40 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 /**
- * localStorage key that /verify-email writes a timestamp into on success.
- * Other tabs (banner, booking page) listen via the `storage` event so they
- * can react without the user navigating or reloading.
+ * Coordinates UI updates when the user verifies their email.
  *
- * Why a separate signal instead of relying on revalidatePath alone:
- * revalidatePath busts the server cache, but the original tab where the
- * banner shows or where the "verify your email" error sits never re-fetches
- * unless it's the active document. Storage events fire across tabs in the
- * same origin, so this is the cleanest way to propagate.
+ * Three trigger paths covered:
+ *
+ *   1. Same-browser cross-tab (e.g. verify in tab B from email link
+ *      on desktop, banner is in tab A): localStorage `storage` event.
+ *      Fires `onSignal` — consumer knows verification happened.
+ *
+ *   2. Cross-device (verify on phone, banner is on desktop):
+ *      `visibilitychange` event when desktop tab becomes visible
+ *      again — we don't KNOW the user verified, but they may have,
+ *      so we call router.refresh() to re-fetch server state. If they
+ *      did verify, the layout's prisma query sees emailVerified set
+ *      and the banner stops rendering naturally.
+ *
+ *   3. Same-tab post-verify navigation (verify in /verify-email tab,
+ *      then click "Go to dashboard"): mount-time recent-signal check
+ *      in case the storage event fired just before this hook mounted.
+ *
+ * onSignal is reserved for definitive verification events (#1 and #3).
+ * Path #2 just refreshes silently — no onSignal call, no false positives.
  */
 export const EMAIL_VERIFIED_STORAGE_KEY = 'mindset:email_verified_at'
 
-/**
- * Subscribe to "this user just verified their email" signals from any tab.
- * Callback fires on:
- *   - cross-tab signal (storage event)
- *   - in-tab signal (also fires `storage` via the helper below, useful when
- *     verify happens in the same tab and we want consumers to react before
- *     the user navigates away)
- *
- * Also checks the current localStorage value on mount and fires once if a
- * very recent signal exists (within `recentMs`), handling the case where
- * the verify tab wrote the signal and then closed before this hook mounted.
- */
 export function useEmailVerifiedSignal(onSignal: () => void, recentMs = 60_000) {
+  const router = useRouter()
+
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    // Catch a signal that fired just before this hook mounted (e.g.
-    // banner just rendered after the user landed on /user from /verify-email).
+    // Path 3: catch a signal that fired just before this hook mounted.
     try {
       const ts = window.localStorage.getItem(EMAIL_VERIFIED_STORAGE_KEY)
       if (ts) {
@@ -45,15 +47,31 @@ export function useEmailVerifiedSignal(onSignal: () => void, recentMs = 60_000) 
       // localStorage can throw in private browsing or sandboxed iframes.
     }
 
-    function handler(e: StorageEvent) {
+    // Path 1: cross-tab storage event.
+    function storageHandler(e: StorageEvent) {
       if (e.key === EMAIL_VERIFIED_STORAGE_KEY && e.newValue) {
         onSignal()
       }
     }
-    window.addEventListener('storage', handler)
-    return () => window.removeEventListener('storage', handler)
+    window.addEventListener('storage', storageHandler)
+
+    // Path 2: cross-device — tab regains focus after user did something
+    // on another device (e.g. tapped the verify link on phone). We can't
+    // know that they actually verified, so just refresh server state.
+    // If they did, the next render won't render us anymore.
+    function visibilityHandler() {
+      if (document.visibilityState === 'visible') {
+        router.refresh()
+      }
+    }
+    document.addEventListener('visibilitychange', visibilityHandler)
+
+    return () => {
+      window.removeEventListener('storage', storageHandler)
+      document.removeEventListener('visibilitychange', visibilityHandler)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [router])
 }
 
 /** Broadcast that the email was verified — call from /verify-email on success. */
