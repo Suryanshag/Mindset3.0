@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams, useRouter, usePathname } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { useEmailVerifiedSignal } from '@/lib/use-email-verified-signal'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import RazorpayCheckout from '@/components/payments/razorpay-checkout'
 import SlotsCalendar, { type CalendarSlot } from '@/components/ui/slots-calendar'
 import { formatSessionDateLong } from '@/lib/format-date'
@@ -28,7 +29,6 @@ interface Doctor {
 export default function BookSessionPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const pathname = usePathname()
   const { data: authSession } = useSession()
   const doctorId = searchParams.get('doctorId')
 
@@ -37,8 +37,6 @@ export default function BookSessionPage() {
   const [selectedSlot, setSelectedSlot] = useState<CalendarSlot | null>(null)
   const [loading, setLoading] = useState(true)
   const [booking, setBooking] = useState(false)
-  const [message, setMessage] = useState('')
-  const [error, setError] = useState('')
 
   // Payment state
   const [paymentData, setPaymentData] = useState<{
@@ -47,20 +45,10 @@ export default function BookSessionPage() {
     sessionId: string
   } | null>(null)
 
-  // Reset transient error/message state when the route changes within the SPA
-  // — prevents a "verify your email" red banner from sticking around after
-  // the user has verified and navigated back to this page.
-  useEffect(() => {
-    setError('')
-    setMessage('')
-  }, [pathname])
-
-  // Also clear errors when the user verifies their email in another tab —
-  // the previous booking attempt's "Please verify your email" message
-  // should disappear without requiring a navigation or reload.
+  // When the user verifies email in another tab, dismiss any stale
+  // "verify your email" toast and refresh server state.
   useEmailVerifiedSignal(() => {
-    setError('')
-    setMessage('')
+    toast.dismiss()
     router.refresh()
   })
 
@@ -70,7 +58,7 @@ export default function BookSessionPage() {
         .then((r) => r.json())
         .then((res) => {
           if (res.success) setSelectedDoctor(res.data)
-          else setError('Doctor not found')
+          else toast.error('Doctor not found')
         })
         .finally(() => setLoading(false))
     } else {
@@ -86,8 +74,6 @@ export default function BookSessionPage() {
   async function handleBook() {
     if (!selectedSlot || !selectedDoctor) return
     setBooking(true)
-    setError('')
-    setMessage('')
 
     try {
       // Step 1: Create pending session
@@ -102,11 +88,12 @@ export default function BookSessionPage() {
       const data = await res.json()
       if (!data.success) {
         if (res.status === 403 && /verify your email/i.test(data.error ?? '')) {
-          setError(
-            'Please verify your email to book sessions. Check your inbox for the link — or open your dashboard and tap "Send link" in the verify banner.'
+          toast.error(
+            'Please verify your email to book sessions. Check your inbox for the link — or tap "Send link" in the verify banner.',
+            { duration: 8000 }
           )
         } else {
-          setError(data.error ?? 'Failed to book session')
+          toast.error(data.error ?? 'Failed to book session')
         }
         setBooking(false)
         return
@@ -122,7 +109,7 @@ export default function BookSessionPage() {
       })
       const payData = await payRes.json()
       if (!payData.success) {
-        setError(payData.error ?? 'Failed to create payment order')
+        toast.error(payData.error ?? 'Failed to create payment order')
         setBooking(false)
         return
       }
@@ -135,21 +122,21 @@ export default function BookSessionPage() {
       })
       setBooking(false)
     } catch {
-      setError('Something went wrong')
+      toast.error('Something went wrong')
       setBooking(false)
     }
   }
 
   function handlePaymentSuccess() {
     setPaymentData(null)
-    setMessage('Payment successful! Your session is confirmed.')
+    toast.success('Payment successful! Your session is confirmed.')
     setSelectedSlot(null)
     setTimeout(() => router.push('/user/sessions'), 2000)
   }
 
   function handlePaymentDismiss() {
     setPaymentData(null)
-    setError('Payment cancelled. Your session slot is still reserved for 10 minutes.')
+    toast.info('Payment cancelled. Your session slot is still reserved for 10 minutes.')
   }
 
   if (loading) {
@@ -237,13 +224,6 @@ export default function BookSessionPage() {
       <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
         Book a Session
       </h1>
-
-      {error && (
-        <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg mb-4">{error}</p>
-      )}
-      {message && (
-        <p className="text-sm text-green-700 bg-green-50 px-4 py-2 rounded-lg mb-4">{message}</p>
-      )}
 
       {selectedDoctor && (
         <>

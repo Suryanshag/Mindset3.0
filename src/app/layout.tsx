@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Nunito, Barlow_Condensed, Source_Serif_4 } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 import AuthSessionProvider from "@/components/providers/session-provider";
 import RecaptchaProvider from "@/components/providers/recaptcha-provider";
@@ -113,6 +114,13 @@ export default async function RootLayout({
           <RecaptchaProvider>
             <CartProvider>
               <div className="wp-site-blocks">{children}</div>
+              <Toaster
+                richColors
+                position="top-right"
+                closeButton
+                expand={false}
+                visibleToasts={3}
+              />
             </CartProvider>
           </RecaptchaProvider>
         </AuthSessionProvider>
