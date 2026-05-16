@@ -80,9 +80,62 @@ export default function AdminSessionsPage() {
 
   const totalPages = Math.ceil(total / limit)
 
+  // CONFIRMED sessions still missing a Meet link (within the current page
+  // load — admin can apply the CONFIRMED filter to scan more). Sorted by
+  // session date ASC so the most-urgent are first.
+  const pendingLink = sessions
+    .filter((s) => s.status === 'CONFIRMED' && !s.meetLink)
+    .slice()
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Sessions</h1>
+
+      {pendingLink.length > 0 && (
+        <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-semibold text-amber-900">
+              🔗 {pendingLink.length} confirmed session{pendingLink.length === 1 ? '' : 's'} need{pendingLink.length === 1 ? 's' : ''} a Meet link
+            </p>
+            <p className="text-xs text-amber-700">Soonest first</p>
+          </div>
+          <div className="space-y-1.5">
+            {pendingLink.map((s) => (
+              <div
+                key={`pending-${s.id}`}
+                className="flex items-center justify-between gap-3 bg-white rounded-lg px-3 py-2 text-xs"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-gray-900 truncate">
+                    {s.user.name} <span className="text-gray-500 font-normal">with {s.doctor.user.name}</span>
+                  </p>
+                  <p className="text-gray-500 text-[11px]">
+                    {new Date(s.date).toLocaleString('en-IN', {
+                      weekday: 'short', day: 'numeric', month: 'short',
+                      hour: '2-digit', minute: '2-digit',
+                      timeZone: 'Asia/Kolkata',
+                    })} IST
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setEditingId(s.id)
+                    setEditForm({ status: '', meetLink: s.meetLink ?? '' })
+                    // Scroll the editing row into view if needed
+                    requestAnimationFrame(() => {
+                      document.getElementById(`session-row-${s.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                    })
+                  }}
+                  className="text-xs px-2.5 py-1 rounded-lg bg-amber-500 text-white font-medium hover:bg-amber-600 transition-colors shrink-0"
+                >
+                  Add link
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-3 mb-6">
         <select
@@ -110,7 +163,7 @@ export default function AdminSessionsPage() {
               const sColors = STATUS_COLORS[s.status] ?? { bg: '#f3f4f6', text: '#374151' }
               const pColors = STATUS_COLORS[s.paymentStatus] ?? { bg: '#f3f4f6', text: '#374151' }
               return (
-                <div key={s.id} className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100/80">
+                <div key={s.id} id={`session-row-${s.id}`} className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100/80">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-semibold text-gray-900">{s.user.name}</p>
@@ -172,7 +225,7 @@ export default function AdminSessionsPage() {
                   const sColors = STATUS_COLORS[s.status] ?? { bg: '#f3f4f6', text: '#374151' }
                   const pColors = STATUS_COLORS[s.paymentStatus] ?? { bg: '#f3f4f6', text: '#374151' }
                   return (
-                    <tr key={s.id} className="border-b border-gray-50">
+                    <tr key={s.id} id={`session-row-${s.id}`} className="border-b border-gray-50">
                       <td className="py-3 px-4">
                         <p className="font-medium text-gray-900">{s.user.name}</p>
                         <p className="text-xs text-gray-500">{s.user.email}</p>

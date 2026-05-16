@@ -4,6 +4,29 @@ Out-of-scope issues encountered during sprints. Kept here so they don't get lost
 
 ---
 
+## Resolved-by-design
+
+### Google Meet link not auto-generating — **resolved by manual workflow** — 2026-05-16
+
+Originally flagged after case 1 smoke: every booking ended up with
+`Session.meetLink = null` because `src/lib/google-calendar.ts`'s service-
+account approach can't create Meet conferences (Google anti-abuse policy).
+
+**Resolution**: switched to a manual doctor-paste workflow. Webhook no
+longer calls `createMeetLinkForSession` (removed in commit `20c1ab3`).
+Doctor receives a notification email with a deep link to
+`/doctor/calendar?highlight={sessionId}` and pastes a Meet/Zoom/Whereby
+URL. User dashboard shows a clear "therapist will add the link" message
+until the link lands.
+
+See `docs/operations.md` § "Session Meet links" for the full runbook.
+
+`src/lib/google-calendar.ts` is intentionally retained for the eventual
+switch to OAuth2 or DWD, when booking volume justifies the additional
+infra complexity.
+
+---
+
 ## Desktop dashboard (Sprint A — coming-up rail) leftovers — 2026-05-14
 
 ### Dead code: RailPortal-based rails
