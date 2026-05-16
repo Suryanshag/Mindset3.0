@@ -3,6 +3,7 @@ import { render } from '@react-email/render'
 import { FROM_EMAIL } from '@/lib/email-config'
 import SessionConfirmationEmail from '@/emails/session-confirmation'
 import SessionBookingConfirmationEmail from '@/emails/session-booking-confirmation'
+import DoctorNewBookingEmail from '@/emails/doctor-new-booking'
 import SessionReminderEmail from '@/emails/session-reminder'
 import OrderConfirmationEmail from '@/emails/order-confirmation'
 import AssignmentCreatedEmail from '@/emails/assignment-created'
@@ -86,6 +87,26 @@ export function sendSessionBookingConfirmation(
     `Your session with ${props.doctorName} is confirmed`,
     render(SessionBookingConfirmationEmail(props)),
     'session-booking-confirmation'
+  )
+}
+
+// 1c. Doctor "new booking, please add Meet link" notification — fired
+//     from the webhook alongside sendSessionBookingConfirmation.
+export function sendDoctorNewBookingNotification(
+  to: string,
+  props: {
+    doctorName: string
+    userName: string
+    sessionDate: Date
+    durationMin: number
+    sessionId: string
+  }
+): void {
+  sendEmail(
+    to,
+    'New session booking — please add a Meet link',
+    render(DoctorNewBookingEmail(props)),
+    'doctor-new-booking'
   )
 }
 

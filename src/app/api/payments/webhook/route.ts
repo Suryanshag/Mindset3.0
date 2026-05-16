@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
-import { sendSessionBookingConfirmation, sendPaymentFailed, sendEbookPurchased, sendOrderConfirmation } from '@/lib/email-service'
+import { sendSessionBookingConfirmation, sendDoctorNewBookingNotification, sendPaymentFailed, sendEbookPurchased, sendOrderConfirmation } from '@/lib/email-service'
 import { createShipmentForOrder } from '@/lib/create-shipment-for-order'
 
 // CRITICAL: Log every single step
@@ -233,9 +233,10 @@ export async function POST(req: NextRequest) {
       // Meet link added manually by doctor via /doctor/calendar.
       // See docs/operations.md for the rationale.
       if (payment.type === 'SESSION' && payment.sessionId) {
-        // Send session booking confirmation email (non-blocking).
-        // Fire-and-forget so the webhook still 200s back to Razorpay
-        // even if Resend is down or the template throws.
+        // Send two emails (both fire-and-forget, both wrapped):
+        //   1. Patient — "your session is confirmed"
+        //   2. Doctor  — "new booking, please add a Meet link"
+        // Webhook returns 200 to Razorpay regardless of email outcome.
         try {
           const fullSession = await prisma.session.findUnique({
             where: { id: payment.sessionId },
@@ -243,7 +244,7 @@ export async function POST(req: NextRequest) {
               user: { select: { name: true, email: true } },
               doctor: {
                 select: {
-                  user: { select: { name: true } },
+                  user: { select: { name: true, email: true } },
                 },
               },
             },
@@ -257,9 +258,16 @@ export async function POST(req: NextRequest) {
               meetLink: fullSession.meetLink,
               sessionId: fullSession.id,
             })
+            sendDoctorNewBookingNotification(fullSession.doctor.user.email, {
+              doctorName: fullSession.doctor.user.name ?? 'Doctor',
+              userName: fullSession.user.name ?? 'A patient',
+              sessionDate: fullSession.date,
+              durationMin: 60,
+              sessionId: fullSession.id,
+            })
           }
         } catch (err) {
-          console.error('[WEBHOOK] Session booking email failed for session', payment.sessionId, err)
+          console.error('[WEBHOOK] Session booking emails failed for session', payment.sessionId, err)
         }
       }
     }
