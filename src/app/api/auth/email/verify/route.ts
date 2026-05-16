@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { authLimiter } from '@/lib/arcjet'
@@ -68,6 +69,12 @@ export async function POST(req: NextRequest) {
     kind: 'EMAIL_VERIFIED',
     request: req,
   })
+
+  // Bust the layout cache so the verify banner disappears on the next
+  // /user navigation without requiring a hard reload. The layout
+  // re-runs prisma.user.findUnique on every render, so once the cache
+  // is invalidated the new render sees emailVerified set.
+  revalidatePath('/user', 'layout')
 
   return NextResponse.json({ success: true })
 }

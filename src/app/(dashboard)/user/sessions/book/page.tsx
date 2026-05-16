@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -27,6 +27,7 @@ interface Doctor {
 export default function BookSessionPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const pathname = usePathname()
   const { data: authSession } = useSession()
   const doctorId = searchParams.get('doctorId')
 
@@ -44,6 +45,14 @@ export default function BookSessionPage() {
     amount: number
     sessionId: string
   } | null>(null)
+
+  // Reset transient error/message state when the route changes within the SPA
+  // — prevents a "verify your email" red banner from sticking around after
+  // the user has verified and navigated back to this page.
+  useEffect(() => {
+    setError('')
+    setMessage('')
+  }, [pathname])
 
   useEffect(() => {
     if (doctorId) {
