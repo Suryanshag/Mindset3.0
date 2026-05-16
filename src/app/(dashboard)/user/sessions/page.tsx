@@ -109,14 +109,21 @@ async function UpcomingTab({ userId }: { userId: string }) {
           .slice(0, 2)
 
         if (isFirst) {
-          // Hero card — same style as NextSessionCard
+          // Hero card — same style as NextSessionCard.
+          // Card-wide Link is an absolute overlay so the inner Join anchor
+          // stays usable (anchors can't be nested in HTML).
           return (
             <div
               key={s.id}
-              className="relative overflow-hidden rounded-2xl bg-primary p-4"
+              className="relative overflow-hidden rounded-2xl bg-primary p-4 transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
             >
-              <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-primary-soft opacity-40" />
-              <div className="relative z-10">
+              <Link
+                href={`/user/sessions/${s.id}`}
+                aria-label={`View session with ${s.doctor.user.name}`}
+                className="absolute inset-0 z-0 rounded-2xl"
+              />
+              <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-primary-soft opacity-40 pointer-events-none" />
+              <div className="relative z-10 pointer-events-none">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center shrink-0">
                     <span className="text-xs font-medium text-white">
@@ -141,7 +148,7 @@ async function UpcomingTab({ userId }: { userId: string }) {
                       href={s.meetLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-accent text-white text-[13px] font-medium"
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-accent text-white text-[13px] font-medium relative z-20 pointer-events-auto"
                     >
                       <Video size={14} />
                       Join
