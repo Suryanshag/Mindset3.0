@@ -124,7 +124,7 @@ export default function NotificationList({ notifications, hasUnread }: Props) {
                   key={n.id}
                   onClick={() => handleTap(n)}
                   className="flex items-start gap-3 w-full text-left rounded-2xl p-3 transition-colors active:bg-bg-app"
-                  style={{ border: '0.5px solid var(--color-border)' }}
+                  style={{ border: '1px solid var(--color-border)' }}
                 >
                   {/* Unread dot */}
                   <div className="flex flex-col items-center pt-1.5 shrink-0 w-2">

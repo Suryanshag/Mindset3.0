@@ -31,7 +31,7 @@ export default function PageHeader({ title, subtitle, back, rightAction }: Props
       style={{
         height: hasSubtitle ? '76px' : '56px',
         gridTemplateColumns: '56px 1fr 56px',
-        borderBottom: '0.5px solid var(--color-border)',
+        borderBottom: '1px solid var(--color-border)',
       }}
     >
       {/* Left: back button or spacer — always 56px wide */}

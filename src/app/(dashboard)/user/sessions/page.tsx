@@ -143,7 +143,7 @@ async function UpcomingTab({ userId }: { userId: string }) {
             key={s.id}
             href={`/user/sessions/${s.id}`}
             className="flex items-center gap-3 lg:gap-4 bg-bg-card rounded-2xl p-3 lg:p-4 transition-colors duration-150 lg:hover:bg-white/80"
-            style={{ border: '0.5px solid var(--color-border)' }}
+            style={{ border: '1px solid var(--color-border)' }}
           >
             <div className="w-9 h-9 lg:w-12 lg:h-12 rounded-full bg-primary-tint flex items-center justify-center shrink-0">
               <span className="text-xs lg:text-sm font-medium text-primary">
@@ -154,7 +154,7 @@ async function UpcomingTab({ userId }: { userId: string }) {
               <p className="text-[13px] lg:text-[15px] font-medium text-text truncate">
                 {s.doctor.user.name}
               </p>
-              <p className="text-[12px] lg:text-[13px] text-text-faint">
+              <p className="text-[12px] lg:text-[13px] text-text-muted">
                 {formatSessionDateRelative(s.date)}
               </p>
             </div>
@@ -211,7 +211,7 @@ async function PastTab({ userId }: { userId: string }) {
             key={s.id}
             href={`/user/sessions/${s.id}`}
             className="flex items-start gap-3 lg:gap-4 bg-bg-card rounded-2xl p-3.5 lg:p-4 transition-colors duration-150 lg:hover:bg-white/80"
-            style={{ border: '0.5px solid var(--color-border)' }}
+            style={{ border: '1px solid var(--color-border)' }}
           >
             <div className="w-9 h-9 lg:w-12 lg:h-12 rounded-full bg-primary-tint flex items-center justify-center shrink-0 mt-0.5">
               <span className="text-xs lg:text-sm font-medium text-primary">
@@ -222,7 +222,7 @@ async function PastTab({ userId }: { userId: string }) {
               <p className="text-[13px] lg:text-[15px] font-medium text-text truncate">
                 {s.doctor.user.name}
               </p>
-              <p className="text-[12px] lg:text-[13px] text-text-faint">
+              <p className="text-[12px] lg:text-[13px] text-text-muted">
                 {formatSessionDate(s.date)}
               </p>
               {s.notes && (
@@ -278,7 +278,7 @@ async function AssignmentsTab({ userId }: { userId: string }) {
                 key={a.id}
                 href={`/user/sessions?tab=assignments`}
                 className="flex items-center gap-3 lg:gap-4 bg-bg-card rounded-2xl p-3.5 lg:p-4 transition-colors duration-150 lg:hover:bg-white/80"
-                style={{ border: '0.5px solid var(--color-border)' }}
+                style={{ border: '1px solid var(--color-border)' }}
               >
                 <div className="w-8 h-8 rounded-full bg-accent-tint flex items-center justify-center shrink-0">
                   <span className="text-[11px] font-medium text-accent">
@@ -293,7 +293,7 @@ async function AssignmentsTab({ userId }: { userId: string }) {
                   <p className="text-[13px] font-medium text-text truncate">
                     {a.title}
                   </p>
-                  <p className="text-[12px] text-text-faint">
+                  <p className="text-[12px] text-text-muted">
                     from {a.doctor.user.name}
                     {a.dueDate &&
                       ` \u00b7 Due ${new Date(a.dueDate).toLocaleDateString(
@@ -320,12 +320,12 @@ async function AssignmentsTab({ userId }: { userId: string }) {
               <div
                 key={a.id}
                 className="flex items-center gap-3 bg-bg-card rounded-2xl p-3.5 opacity-60"
-                style={{ border: '0.5px solid var(--color-border)' }}
+                style={{ border: '1px solid var(--color-border)' }}
               >
                 <CheckCircle size={18} className="text-primary shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] text-text truncate">{a.title}</p>
-                  <p className="text-[12px] text-text-faint">
+                  <p className="text-[12px] text-text-muted">
                     from {a.doctor.user.name}
                   </p>
                 </div>

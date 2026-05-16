@@ -93,7 +93,7 @@ function ItemCard({ item }: { item: UpcomingItem }) {
       onClick={handleCardClick}
       onKeyDown={handleKey}
       className="block rounded-xl p-4 bg-bg-card cursor-pointer transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
-      style={{ border: '0.5px solid var(--color-border)' }}
+      style={{ border: '1px solid var(--color-border)' }}
     >
       <div className="flex items-center gap-2 mb-2">
         <span
@@ -175,7 +175,7 @@ function FirstStepCard({
     <Link
       href={href}
       className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] text-text transition-colors duration-150 hover:bg-white/60"
-      style={{ border: '0.5px solid var(--color-border)' }}
+      style={{ border: '1px solid var(--color-border)' }}
     >
       <Icon size={16} className="text-text-faint shrink-0" />
       {label}

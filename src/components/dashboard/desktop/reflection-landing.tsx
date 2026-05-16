@@ -142,7 +142,7 @@ export default function ReflectionLanding({
         <h1 className="text-[22px] font-medium text-text">
           {greeting}, {firstName}
         </h1>
-        <p className="text-[14px] text-text-faint mt-1">{todayStr}</p>
+        <p className="text-[14px] text-text-muted mt-1">{todayStr}</p>
       </div>
 
       {/* Last session reflection */}
@@ -319,7 +319,7 @@ function EmptyState({ greeting, firstName }: { greeting: string; firstName: stri
         <Link
           href="/doctors"
           className="block rounded-xl p-5 bg-bg-card transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
-          style={{ border: '0.5px solid var(--color-border)', borderLeft: '3px solid var(--color-accent)' }}
+          style={{ border: '1px solid var(--color-border)', borderLeft: '3px solid var(--color-accent)' }}
         >
           <div className="flex items-start gap-3">
             <Search size={18} className="text-accent shrink-0 mt-0.5" />
@@ -339,7 +339,7 @@ function EmptyState({ greeting, firstName }: { greeting: string; firstName: stri
         <Link
           href="/user/practice/journal/new"
           className="block rounded-xl p-5 bg-bg-card transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
-          style={{ border: '0.5px solid var(--color-border)' }}
+          style={{ border: '1px solid var(--color-border)' }}
         >
           <div className="flex items-start gap-3">
             <PenLine size={18} className="text-text-muted shrink-0 mt-0.5" />
@@ -359,7 +359,7 @@ function EmptyState({ greeting, firstName }: { greeting: string; firstName: stri
         <Link
           href="/user/discover/workshops"
           className="block rounded-xl p-5 bg-bg-card transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
-          style={{ border: '0.5px solid var(--color-border)' }}
+          style={{ border: '1px solid var(--color-border)' }}
         >
           <div className="flex items-start gap-3">
             <Compass size={18} className="text-text-muted shrink-0 mt-0.5" />

@@ -66,7 +66,7 @@ export default function SessionUserNotes({ sessionId, initialValue }: Props) {
         rows={4}
         placeholder="Jot down anything you want to bring up in this session..."
         className="w-full rounded-2xl bg-bg-card p-4 text-[14px] text-text resize-y min-h-[112px] focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-        style={{ border: '0.5px solid var(--color-border)' }}
+        style={{ border: '1px solid var(--color-border)' }}
       />
       <p className="text-[11px] text-text-faint mt-1.5">
         {value.length}/{MAX_LEN}

@@ -157,7 +157,7 @@ function JournalCard({
     <Link
       href={`/user/practice/journal/${entry.id}`}
       className="block rounded-xl p-4 bg-bg-card transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
-      style={{ border: '0.5px solid var(--color-border)' }}
+      style={{ border: '1px solid var(--color-border)' }}
     >
       <p className="text-[12px] text-text-faint mb-2">{dateLabel}</p>
       {entry.title && (
@@ -196,7 +196,7 @@ function AssignmentCard({
     <Link
       href={`/user/practice/assignments/${assignment.id}`}
       className="flex items-start gap-3 rounded-xl p-4 bg-bg-card transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
-      style={{ border: '0.5px solid var(--color-border)' }}
+      style={{ border: '1px solid var(--color-border)' }}
     >
       <div className={`w-9 h-9 rounded-lg ${cfg.bg} flex items-center justify-center shrink-0`}>
         <ClipboardList size={16} className={cfg.icon} />
@@ -225,7 +225,7 @@ function WorkshopCard({
     <Link
       href={`/user/discover/workshops/${workshop.id}`}
       className="flex items-start gap-3 rounded-xl p-4 bg-bg-card transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
-      style={{ border: '0.5px solid var(--color-border)' }}
+      style={{ border: '1px solid var(--color-border)' }}
     >
       <div className="w-9 h-9 rounded-lg bg-accent-tint flex items-center justify-center shrink-0">
         <Ticket size={16} className="text-accent" />
@@ -267,7 +267,7 @@ function PreSessionCard({
     <Link
       href={`/user/practice/assignments/${assignment.id}`}
       className="flex items-start gap-3 rounded-xl p-4 bg-bg-card transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
-      style={{ border: '0.5px solid var(--color-border)' }}
+      style={{ border: '1px solid var(--color-border)' }}
     >
       <div className={`w-9 h-9 rounded-lg ${cfg.bg} flex items-center justify-center shrink-0`}>
         <PenLine size={16} className={cfg.icon} />

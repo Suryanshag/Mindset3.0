@@ -57,6 +57,8 @@
     /* ── New dashboard (warm / therapy) ── */
     --color-bg-app:       #F7F2EA;
     --color-bg-card:      #FFFFFF;
+    --color-bg-spine:     #EDE5D6;
+    --color-bg-rail:      #FBF7F0;
     --color-primary:      #2D5A4F;
     --color-primary-soft: #3F6E62;
     --color-primary-tint: #DDE9DC;
@@ -64,12 +66,11 @@
     --color-accent-deep:  #9A3412;
     --color-accent-tint:  #FBE9DD;
     --color-text:         #1A1A1A;
-    --color-text-muted:   #6B6862;
-    --color-text-faint:   #9A968F;
-    --color-border:       rgba(0,0,0,0.06);
+    --color-text-muted:   #4A4742;
+    --color-text-faint:   #7A7670;
+    --color-border:       rgba(0,0,0,0.10);
     --color-purple-tint:  #E8E4F2;
     --color-tan-tint:     #F4E4D6;
-    --color-bg-spine:     #F2EDE3;
 
     --font-heading: "var(--font-heading-var)", "Barlow Condensed", "Helvetica", "Arial", sans-serif;
     --font-serif: "var(--font-serif-var)", "Source Serif 4", "Georgia", "Times New Roman", serif;

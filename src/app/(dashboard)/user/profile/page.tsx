@@ -95,7 +95,7 @@ export default async function ProfilePage() {
       {therapist && (
         <div
           className="bg-bg-card rounded-2xl p-3.5"
-          style={{ border: '0.5px solid var(--color-border)' }}
+          style={{ border: '1px solid var(--color-border)' }}
         >
           <p className="text-[11px] font-medium text-text-faint uppercase tracking-wider mb-2.5">
             Your therapist
@@ -118,7 +118,7 @@ export default async function ProfilePage() {
               <p className="text-[14px] font-medium text-text">
                 {therapist.name}
               </p>
-              <p className="text-[12px] text-text-faint">
+              <p className="text-[12px] text-text-muted">
                 {therapist.specialty}
               </p>
             </div>
@@ -135,7 +135,7 @@ export default async function ProfilePage() {
       {/* Settings list */}
       <div
         className="bg-bg-card rounded-2xl overflow-hidden"
-        style={{ border: '0.5px solid var(--color-border)' }}
+        style={{ border: '1px solid var(--color-border)' }}
       >
         {settingsItems.map((item, i) => (
           <Link
@@ -144,7 +144,7 @@ export default async function ProfilePage() {
             className="flex items-center gap-3 px-4 py-3.5 lg:py-4 transition-colors duration-150 lg:hover:bg-white/60"
             style={
               i < settingsItems.length - 1
-                ? { borderBottom: '0.5px solid var(--color-border)' }
+                ? { borderBottom: '1px solid var(--color-border)' }
                 : undefined
             }
           >

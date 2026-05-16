@@ -25,7 +25,7 @@ export default function JournalDeleteButton({ entryId }: { entryId: string }) {
       onClick={handleDelete}
       disabled={isPending}
       className="w-8 h-8 rounded-full bg-bg-card flex items-center justify-center"
-      style={{ border: '0.5px solid var(--color-border)' }}
+      style={{ border: '1px solid var(--color-border)' }}
     >
       <Trash2
         size={14}

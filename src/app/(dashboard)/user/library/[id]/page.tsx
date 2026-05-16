@@ -64,7 +64,7 @@ export default async function LibraryDetailPage({
         {/* Cover image */}
         <div
           className="relative w-full aspect-[3/4] rounded-2xl bg-bg-card overflow-hidden flex items-center justify-center"
-          style={{ border: '0.5px solid var(--color-border)' }}
+          style={{ border: '1px solid var(--color-border)' }}
         >
           {material.coverImage ? (
             <Image
@@ -93,7 +93,7 @@ export default async function LibraryDetailPage({
               </span>
               <span
                 className="text-[13px] font-medium px-2.5 py-1 rounded-full text-text-muted"
-                style={{ border: '0.5px solid var(--color-border)' }}
+                style={{ border: '1px solid var(--color-border)' }}
               >
                 Digital
               </span>
@@ -105,7 +105,7 @@ export default async function LibraryDetailPage({
               </p>
               <span
                 className="text-[13px] font-medium px-2.5 py-1 rounded-full text-text-muted"
-                style={{ border: '0.5px solid var(--color-border)' }}
+                style={{ border: '1px solid var(--color-border)' }}
               >
                 Digital
               </span>

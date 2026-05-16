@@ -37,7 +37,7 @@ export default async function JournalDetailPage({
             <Link
               href={`/user/practice/journal/${id}/edit`}
               className="w-9 h-9 rounded-full bg-bg-card flex items-center justify-center"
-              style={{ border: '0.5px solid var(--color-border)' }}
+              style={{ border: '1px solid var(--color-border)' }}
             >
               <Pencil size={14} className="text-text-muted" />
             </Link>

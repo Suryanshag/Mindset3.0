@@ -37,7 +37,7 @@ export default function HelpPage() {
       <div className="pt-5">
         <div
           className="bg-bg-card rounded-2xl overflow-hidden"
-          style={{ border: '0.5px solid var(--color-border)' }}
+          style={{ border: '1px solid var(--color-border)' }}
         >
           {items.map((item, i) => (
             <a
@@ -48,7 +48,7 @@ export default function HelpPage() {
               className="flex items-center gap-3.5 px-4 py-3.5 lg:py-4 transition-colors duration-150 lg:hover:bg-white/60"
               style={
                 i < items.length - 1
-                  ? { borderBottom: '0.5px solid var(--color-border)' }
+                  ? { borderBottom: '1px solid var(--color-border)' }
                   : undefined
               }
             >
@@ -57,7 +57,7 @@ export default function HelpPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[14px] font-medium text-text">{item.title}</p>
-                <p className="text-[12px] text-text-faint mt-0.5">{item.description}</p>
+                <p className="text-[12px] text-text-muted mt-0.5">{item.description}</p>
               </div>
               <ChevronRight size={16} className="text-text-faint shrink-0" />
             </a>

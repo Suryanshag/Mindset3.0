@@ -54,7 +54,7 @@ export default function WorkshopRegisterButton({
   if (isPast) {
     return (
       <div className="flex items-center justify-center w-full h-[48px] rounded-full bg-bg-card text-text-faint text-[14px] font-medium"
-        style={{ border: '0.5px solid var(--color-border)' }}
+        style={{ border: '1px solid var(--color-border)' }}
       >
         This workshop has ended
       </div>
@@ -74,7 +74,7 @@ export default function WorkshopRegisterButton({
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full h-[44px] rounded-full bg-bg-card text-text text-[13px] font-medium"
-            style={{ border: '0.5px solid var(--color-border)' }}
+            style={{ border: '1px solid var(--color-border)' }}
           >
             <MessageCircle size={16} />
             Open WhatsApp group
@@ -88,7 +88,7 @@ export default function WorkshopRegisterButton({
   if (isFull) {
     return (
       <div className="flex items-center justify-center w-full h-[48px] rounded-full bg-bg-card text-text-faint text-[14px] font-medium"
-        style={{ border: '0.5px solid var(--color-border)' }}
+        style={{ border: '1px solid var(--color-border)' }}
       >
         Spots filled
       </div>
@@ -123,7 +123,7 @@ export default function WorkshopRegisterButton({
           />
           <div
             className="relative z-10 w-full max-w-sm mx-4 mb-8 bg-bg-card rounded-2xl p-5 space-y-4"
-            style={{ border: '0.5px solid var(--color-border)' }}
+            style={{ border: '1px solid var(--color-border)' }}
           >
             <div className="text-center">
               <p className="text-[18px] font-medium text-text">You&apos;re in!</p>
@@ -148,7 +148,7 @@ export default function WorkshopRegisterButton({
               <button
                 onClick={() => setShowModal(false)}
                 className="flex items-center justify-center w-full h-[44px] rounded-full bg-bg-card text-text-muted text-[13px] font-medium"
-                style={{ border: '0.5px solid var(--color-border)' }}
+                style={{ border: '1px solid var(--color-border)' }}
               >
                 Later
               </button>

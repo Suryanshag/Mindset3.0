@@ -74,7 +74,7 @@ export default function ProfilePaymentsPage() {
         {/* Total card */}
         <div
           className="bg-bg-card rounded-2xl p-4"
-          style={{ border: '0.5px solid var(--color-border)' }}
+          style={{ border: '1px solid var(--color-border)' }}
         >
           <p className="text-[12px] text-text-faint">Total spent</p>
           <p className="text-[24px] font-medium text-text mt-0.5">
@@ -86,7 +86,7 @@ export default function ProfilePaymentsPage() {
         {payments.length === 0 ? (
           <div
             className="bg-bg-card rounded-2xl py-16 flex flex-col items-center"
-            style={{ border: '0.5px solid var(--color-border)' }}
+            style={{ border: '1px solid var(--color-border)' }}
           >
             <CreditCard size={32} className="text-text-faint mb-3" />
             <p className="text-[14px] font-medium text-text">No payments yet</p>
@@ -95,7 +95,7 @@ export default function ProfilePaymentsPage() {
         ) : (
           <div
             className="bg-bg-card rounded-2xl overflow-hidden"
-            style={{ border: '0.5px solid var(--color-border)' }}
+            style={{ border: '1px solid var(--color-border)' }}
           >
             {payments.map((p, i) => {
               const statusStyle = STATUS_STYLES[p.status] ?? STATUS_STYLES.PENDING
@@ -105,7 +105,7 @@ export default function ProfilePaymentsPage() {
                   className="flex items-center gap-3 px-4 py-3.5"
                   style={
                     i < payments.length - 1
-                      ? { borderBottom: '0.5px solid var(--color-border)' }
+                      ? { borderBottom: '1px solid var(--color-border)' }
                       : undefined
                   }
                 >
@@ -118,7 +118,7 @@ export default function ProfilePaymentsPage() {
                         {p.status}
                       </span>
                     </div>
-                    <p className="text-[12px] text-text-faint mt-0.5">
+                    <p className="text-[12px] text-text-muted mt-0.5">
                       {formatDate(p.createdAt)}
                     </p>
                   </div>

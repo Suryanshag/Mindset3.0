@@ -25,7 +25,7 @@ export default function AboutPage() {
         {/* About copy */}
         <div
           className="bg-bg-card rounded-2xl p-4"
-          style={{ border: '0.5px solid var(--color-border)' }}
+          style={{ border: '1px solid var(--color-border)' }}
         >
           <p className="text-[14px] text-text leading-relaxed">
             Mindset bridges the gap between those who need support and qualified
@@ -42,12 +42,12 @@ export default function AboutPage() {
         {/* Contact links */}
         <div
           className="bg-bg-card rounded-2xl overflow-hidden"
-          style={{ border: '0.5px solid var(--color-border)' }}
+          style={{ border: '1px solid var(--color-border)' }}
         >
           <a
             href={`mailto:${SUPPORT_EMAIL}`}
             className="flex items-center gap-3 px-4 py-3.5 lg:py-4 transition-colors duration-150 lg:hover:bg-white/60"
-            style={{ borderBottom: '0.5px solid var(--color-border)' }}
+            style={{ borderBottom: '1px solid var(--color-border)' }}
           >
             <Mail size={16} className="text-text-faint shrink-0" />
             <span className="text-[13px] text-text-muted">{SUPPORT_EMAIL}</span>

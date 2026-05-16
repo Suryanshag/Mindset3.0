@@ -45,7 +45,7 @@ export default function CancelTextLink({ sessionId }: { sessionId: string }) {
           />
           <div
             className="relative z-10 w-full max-w-sm mx-4 mb-8 bg-bg-card rounded-2xl p-5 space-y-4"
-            style={{ border: '0.5px solid var(--color-border)' }}
+            style={{ border: '1px solid var(--color-border)' }}
           >
             <div>
               <p className="text-[16px] font-medium text-text">Cancel this session?</p>
@@ -58,7 +58,7 @@ export default function CancelTextLink({ sessionId }: { sessionId: string }) {
                 onClick={() => setShowConfirm(false)}
                 disabled={isPending}
                 className="flex-1 h-[44px] rounded-full bg-bg-card text-text text-[14px] font-medium disabled:opacity-50"
-                style={{ border: '0.5px solid var(--color-border)' }}
+                style={{ border: '1px solid var(--color-border)' }}
               >
                 Keep session
               </button>

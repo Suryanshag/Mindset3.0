@@ -166,7 +166,7 @@ export default function ProfileAddressesPage() {
         {showAdd && (
           <div
             className="bg-bg-card rounded-2xl p-4"
-            style={{ border: '0.5px solid var(--color-primary)' }}
+            style={{ border: '1px solid var(--color-primary)' }}
           >
             <div className="flex items-center justify-between mb-4">
               <p className="text-[15px] font-medium text-text">New address</p>
@@ -187,7 +187,7 @@ export default function ProfileAddressesPage() {
         {addresses.length === 0 && !showAdd && (
           <div
             className="bg-bg-card rounded-2xl py-16 flex flex-col items-center"
-            style={{ border: '0.5px solid var(--color-border)' }}
+            style={{ border: '1px solid var(--color-border)' }}
           >
             <MapPin size={32} className="text-text-faint mb-3" />
             <p className="text-[14px] font-medium text-text">No addresses saved</p>
@@ -207,7 +207,7 @@ export default function ProfileAddressesPage() {
             {editing?.id === addr.id ? (
               <div
                 className="bg-bg-card rounded-2xl p-4"
-                style={{ border: '0.5px solid var(--color-primary)' }}
+                style={{ border: '1px solid var(--color-primary)' }}
               >
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-[15px] font-medium text-text">Edit address</p>
@@ -226,7 +226,7 @@ export default function ProfileAddressesPage() {
             ) : (
               <div
                 className="bg-bg-card rounded-2xl p-4"
-                style={{ border: addr.isDefault ? '0.5px solid var(--color-primary)' : '0.5px solid var(--color-border)' }}
+                style={{ border: addr.isDefault ? '1px solid var(--color-primary)' : '1px solid var(--color-border)' }}
               >
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">

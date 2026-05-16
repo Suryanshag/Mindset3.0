@@ -131,13 +131,13 @@ export default async function LibraryPage() {
                   key={item.id}
                   href={`/user/library/${item.id}`}
                   className="bg-bg-card rounded-2xl p-2.5 lg:p-3 transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
-                  style={{ border: '0.5px solid var(--color-border)' }}
+                  style={{ border: '1px solid var(--color-border)' }}
                 >
                   <MaterialCover item={item} />
                   <p className="text-[13px] lg:text-[14px] font-medium text-text mt-2 line-clamp-2">
                     {item.title}
                   </p>
-                  <p className="text-[11px] lg:text-[12px] text-text-faint mt-0.5">
+                  <p className="text-[11px] lg:text-[12px] text-text-muted mt-0.5">
                     {item.type === 'FREE' ? 'Free' : 'Purchased'}
                   </p>
                 </Link>
@@ -146,7 +146,7 @@ export default async function LibraryPage() {
                 <div
                   key={item.id}
                   className="bg-bg-card rounded-2xl p-2.5 lg:p-3"
-                  style={{ border: '0.5px solid var(--color-border)' }}
+                  style={{ border: '1px solid var(--color-border)' }}
                 >
                   <ProductCover item={item} />
                   <p className="text-[13px] lg:text-[14px] font-medium text-text mt-2 line-clamp-2">
@@ -186,7 +186,7 @@ export default async function LibraryPage() {
                   key={item.id}
                   href={`/user/library/${item.id}`}
                   className="bg-bg-card rounded-2xl p-2.5 lg:p-3 transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
-                  style={{ border: '0.5px solid var(--color-border)' }}
+                  style={{ border: '1px solid var(--color-border)' }}
                 >
                   <MaterialCover item={item} />
                   <p className="text-[13px] lg:text-[14px] font-medium text-text mt-2 line-clamp-2">

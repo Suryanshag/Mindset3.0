@@ -164,7 +164,7 @@ export default function AssignmentResponseSurface({ assignmentId, type }: Props)
         rows={8}
         className="w-full px-4 py-3 rounded-2xl bg-bg-card text-[14px] text-text placeholder:text-text-faint resize-none"
         style={{
-          border: '0.5px solid var(--color-border)',
+          border: '1px solid var(--color-border)',
           lineHeight: '1.7',
         }}
       />

@@ -76,7 +76,7 @@ export default async function WorkshopDetailPage({
         {/* Info card — plain text, no icons */}
         <div
           className="bg-bg-card rounded-2xl p-4 space-y-2"
-          style={{ border: '0.5px solid var(--color-border)' }}
+          style={{ border: '1px solid var(--color-border)' }}
         >
           <p className="text-[14px] text-text">
             {formatSessionDateLong(workshop.startsAt)}
@@ -99,7 +99,7 @@ export default async function WorkshopDetailPage({
         {workshop.description && (
           <div
             className="bg-bg-card rounded-2xl p-4"
-            style={{ border: '0.5px solid var(--color-border)' }}
+            style={{ border: '1px solid var(--color-border)' }}
           >
             <p className="text-[11px] font-medium text-text-faint uppercase tracking-wider mb-2">
               About this workshop
@@ -112,7 +112,7 @@ export default async function WorkshopDetailPage({
       </div>
 
       {/* Sticky registration button — above bottom nav on mobile, bottom-0 on desktop */}
-      <div className="fixed left-0 right-0 z-40 p-4 bg-bg-app/80 backdrop-blur-sm lg:sticky lg:bottom-0 lg:left-auto lg:right-auto lg:max-w-[720px] lg:mx-auto lg:px-0 lg:pb-6" style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))', borderTop: '0.5px solid var(--color-border)' }}>
+      <div className="fixed left-0 right-0 z-40 p-4 bg-bg-app/80 backdrop-blur-sm lg:sticky lg:bottom-0 lg:left-auto lg:right-auto lg:max-w-[720px] lg:mx-auto lg:px-0 lg:pb-6" style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))', borderTop: '1px solid var(--color-border)' }}>
         <WorkshopRegisterButton
           workshopId={workshop.id}
           isPast={isPast}

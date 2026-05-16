@@ -46,7 +46,7 @@ export default async function ProductDetailPage({
       <div className="pt-3.5 space-y-4 lg:max-w-[680px] lg:mx-auto">
         {/* Product image */}
         <div className="relative w-full aspect-[4/3] rounded-2xl bg-bg-card overflow-hidden flex items-center justify-center"
-          style={{ border: '0.5px solid var(--color-border)' }}
+          style={{ border: '1px solid var(--color-border)' }}
         >
           {product.image ? (
             <Image
@@ -91,7 +91,7 @@ export default async function ProductDetailPage({
         {/* Description */}
         <div
           className="bg-bg-card rounded-2xl p-4"
-          style={{ border: '0.5px solid var(--color-border)' }}
+          style={{ border: '1px solid var(--color-border)' }}
         >
           <p className="text-[12px] font-medium text-text-faint uppercase tracking-wider mb-2">
             Description

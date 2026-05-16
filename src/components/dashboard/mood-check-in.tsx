@@ -29,7 +29,7 @@ export default function MoodCheckIn({ todaysCheckIn }: Props) {
     return (
       <div
         className="bg-bg-card rounded-2xl px-4 py-3 flex items-center justify-between"
-        style={{ border: '0.5px solid var(--color-border)' }}
+        style={{ border: '1px solid var(--color-border)' }}
       >
         <div className="flex items-center gap-2.5">
           <div
@@ -55,7 +55,7 @@ export default function MoodCheckIn({ todaysCheckIn }: Props) {
   return (
     <div
       className="bg-bg-card rounded-2xl px-3.5 py-3.5"
-      style={{ border: '0.5px solid var(--color-border)' }}
+      style={{ border: '1px solid var(--color-border)' }}
     >
       <p className="text-[13px] text-text-muted mb-3">
         How are you feeling today?

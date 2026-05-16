@@ -35,7 +35,7 @@ export default function SessionRail({
     .slice(0, 2)
 
   return (
-    <div className="space-y-6 pb-6 mb-6" style={{ borderBottom: '0.5px solid var(--color-border)' }}>
+    <div className="space-y-6 pb-6 mb-6" style={{ borderBottom: '1px solid var(--color-border)' }}>
       <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px]">
         About this session
       </p>
@@ -89,7 +89,7 @@ export default function SessionRail({
                 key={a.id}
                 href={`/user/practice/assignments/${a.id}`}
                 className="flex items-center justify-between rounded-lg px-3 py-2 text-[13px] text-text transition-colors duration-150 hover:bg-white/60"
-                style={{ border: '0.5px solid var(--color-border)' }}
+                style={{ border: '1px solid var(--color-border)' }}
               >
                 <span className="truncate">{a.title}</span>
                 <span className="text-[11px] text-text-faint capitalize shrink-0 ml-2">

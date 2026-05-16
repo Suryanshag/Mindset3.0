@@ -43,7 +43,7 @@ export default function StatsRow({ stats }: Props) {
         <div
           key={item.label}
           className="bg-bg-card rounded-2xl px-3 py-3 flex flex-col items-center justify-center"
-          style={{ border: '0.5px solid var(--color-border)', height: '64px' }}
+          style={{ border: '1px solid var(--color-border)', height: '64px' }}
         >
           <p className="text-[20px] font-medium text-text leading-tight">
             {item.value}

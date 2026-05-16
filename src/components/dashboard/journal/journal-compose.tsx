@@ -149,7 +149,7 @@ export default function JournalCompose({
           value={entryDate}
           onChange={(e) => setEntryDate(e.target.value)}
           className="w-full lg:w-auto px-3 py-2 rounded-xl bg-bg-card text-[13px] text-text"
-          style={{ border: '0.5px solid var(--color-border)' }}
+          style={{ border: '1px solid var(--color-border)' }}
         />
         <div className="flex items-center gap-2">
           <span className="text-[12px] text-text-faint mr-1">Mood:</span>
@@ -185,7 +185,7 @@ export default function JournalCompose({
         placeholder="Title"
         maxLength={500}
         className="w-full px-3 py-2 lg:px-0 lg:py-3 rounded-xl lg:rounded-none bg-bg-card lg:bg-transparent text-[15px] lg:text-[24px] font-medium text-text placeholder:text-text-faint lg:border-none lg:focus:outline-none lg:focus:ring-0"
-        style={{ border: '0.5px solid var(--color-border)' }}
+        style={{ border: '1px solid var(--color-border)' }}
       />
 
       {/* Body */}
@@ -196,7 +196,7 @@ export default function JournalCompose({
         rows={12}
         className="w-full px-4 py-3 lg:px-0 lg:py-2 rounded-2xl lg:rounded-none bg-bg-card lg:bg-transparent text-[16px] lg:text-[17px] text-text placeholder:text-text-faint resize-none font-serif lg:border-none lg:focus:outline-none lg:focus:ring-0"
         style={{
-          border: '0.5px solid var(--color-border)',
+          border: '1px solid var(--color-border)',
           lineHeight: '1.8',
         }}
       />

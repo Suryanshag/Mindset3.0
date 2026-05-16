@@ -143,7 +143,7 @@ function PromptSection({
       </p>
       <div
         className="rounded-xl p-4 bg-bg-card"
-        style={{ border: '0.5px solid var(--color-border)' }}
+        style={{ border: '1px solid var(--color-border)' }}
       >
         <p className="text-[14px] font-medium text-text">{prompt.title}</p>
         {prompt.instructions && (

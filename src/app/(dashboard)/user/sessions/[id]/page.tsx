@@ -99,7 +99,7 @@ export default async function SessionDetailPage({
         {/* 1. Doctor header */}
         <div
           className="flex items-center justify-between gap-3 bg-bg-card rounded-2xl p-4 lg:p-5"
-          style={{ border: '0.5px solid var(--color-border)' }}
+          style={{ border: '1px solid var(--color-border)' }}
         >
           <div className="flex items-center gap-3 min-w-0">
             {session.doctor.photo ? (
@@ -160,7 +160,7 @@ export default async function SessionDetailPage({
             </p>
             <div
               className="bg-bg-card rounded-2xl p-4"
-              style={{ border: '0.5px solid var(--color-border)' }}
+              style={{ border: '1px solid var(--color-border)' }}
             >
               <p className="text-[14px] text-text whitespace-pre-wrap leading-relaxed">
                 {session.notes}
@@ -174,7 +174,7 @@ export default async function SessionDetailPage({
           canCancel ? (
             <CancelSessionButton sessionId={session.id} />
           ) : (
-            <p className="text-[12px] text-text-faint text-center py-2">
+            <p className="text-[12px] text-text-muted text-center py-2">
               Can&apos;t cancel within 24 hours of start time.
             </p>
           )
@@ -185,7 +185,7 @@ export default async function SessionDetailPage({
           <Link
             href={`/user/sessions/book?doctorId=${session.doctorId}`}
             className="flex items-center justify-center w-full h-12 rounded-full bg-bg-card text-primary text-[14px] font-medium"
-            style={{ border: '0.5px solid var(--color-border)' }}
+            style={{ border: '1px solid var(--color-border)' }}
           >
             Book again
           </Link>

@@ -95,7 +95,7 @@ export default function PersonalInfoPage() {
         {/* Form card */}
         <div
           className="bg-bg-card rounded-2xl p-4 lg:p-6 space-y-4"
-          style={{ border: '0.5px solid var(--color-border)' }}
+          style={{ border: '1px solid var(--color-border)' }}
         >
           <Field
             label="Full name"
@@ -177,7 +177,7 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className="w-full px-3 py-3 rounded-xl bg-bg-app text-[14px] text-text placeholder:text-text-faint focus:outline-none focus:ring-2 focus:ring-primary/30"
-        style={{ border: '0.5px solid var(--color-border)' }}
+        style={{ border: '1px solid var(--color-border)' }}
       />
     </div>
   )

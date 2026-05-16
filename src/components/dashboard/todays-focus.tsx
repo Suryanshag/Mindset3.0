@@ -19,7 +19,7 @@ export default function TodaysFocus({ item }: Props) {
     <Link
       href={item.href}
       className="flex items-center gap-3 bg-bg-card rounded-2xl p-3.5"
-      style={{ border: '0.5px solid var(--color-border)' }}
+      style={{ border: '1px solid var(--color-border)' }}
     >
       <div className="w-10 h-10 rounded-xl bg-accent-tint flex items-center justify-center shrink-0">
         <Icon size={18} className="text-accent" />

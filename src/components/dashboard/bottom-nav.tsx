@@ -30,7 +30,7 @@ export default function BottomNav() {
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 bg-bg-card lg:max-w-md lg:mx-auto"
       style={{
-        borderTop: '0.5px solid var(--color-border)',
+        borderTop: '1px solid var(--color-border)',
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >

@@ -75,7 +75,7 @@ export default async function DiscoverHubPage() {
 
       <div className="space-y-3.5 pt-3.5">
         {statsLine && (
-          <p className="text-[12px] text-text-faint">{statsLine}</p>
+          <p className="text-[12px] text-text-muted">{statsLine}</p>
         )}
 
         <div className="space-y-2 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-4">
@@ -84,7 +84,7 @@ export default async function DiscoverHubPage() {
               key={s.title}
               href={s.href}
               className="flex items-center gap-3.5 lg:flex-col lg:items-start lg:gap-3 bg-bg-card rounded-2xl py-3.5 px-3.5 lg:p-5 lg:min-h-[160px] transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
-              style={{ border: '0.5px solid var(--color-border)' }}
+              style={{ border: '1px solid var(--color-border)' }}
             >
               <div
                 className={`w-10 h-10 lg:w-11 lg:h-11 rounded-xl ${s.color} flex items-center justify-center shrink-0`}
@@ -93,7 +93,7 @@ export default async function DiscoverHubPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[15px] font-medium text-text">{s.title}</p>
-                <p className="text-[12px] lg:text-[13px] text-text-faint line-clamp-1 lg:mt-1">
+                <p className="text-[12px] lg:text-[13px] text-text-muted line-clamp-1 lg:mt-1">
                   {s.subtitle}
                 </p>
               </div>

@@ -118,7 +118,7 @@ function Muted({
 }) {
   return (
     <div className="space-y-2">
-      <p className="text-[13px] text-text-faint">{text}</p>
+      <p className="text-[13px] text-text-muted">{text}</p>
       {secondary && (
         <Link
           href={secondary.href}

@@ -50,7 +50,7 @@ export default function JournalFilters({
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search entries..."
             className="w-full pl-8 pr-3 py-2 rounded-xl bg-bg-card text-[13px] text-text placeholder:text-text-faint"
-            style={{ border: '0.5px solid var(--color-border)' }}
+            style={{ border: '1px solid var(--color-border)' }}
           />
         </form>
         <button
@@ -60,7 +60,7 @@ export default function JournalFilters({
           }`}
           style={
             !showFilters && !currentMood
-              ? { border: '0.5px solid var(--color-border)' }
+              ? { border: '1px solid var(--color-border)' }
               : undefined
           }
         >

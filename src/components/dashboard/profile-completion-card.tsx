@@ -13,7 +13,7 @@ export default function ProfileCompletionCard({ done, total }: Props) {
     <Link
       href="/user/profile"
       className="block bg-bg-card rounded-2xl p-4"
-      style={{ border: '0.5px solid var(--color-border)' }}
+      style={{ border: '1px solid var(--color-border)' }}
     >
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-full bg-primary-tint flex items-center justify-center shrink-0">

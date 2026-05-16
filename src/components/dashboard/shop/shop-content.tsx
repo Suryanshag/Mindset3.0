@@ -130,7 +130,7 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <div
       className="bg-bg-card rounded-2xl p-2.5 lg:p-3 transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
-      style={{ border: '0.5px solid var(--color-border)' }}
+      style={{ border: '1px solid var(--color-border)' }}
     >
       <Link href={`/user/shop/${product.id}`}>
         <div className="relative w-full h-28 rounded-xl bg-bg-app flex items-center justify-center mb-2 overflow-hidden">

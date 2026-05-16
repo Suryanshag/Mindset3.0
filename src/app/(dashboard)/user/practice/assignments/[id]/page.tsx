@@ -55,7 +55,7 @@ export default async function AssignmentDetailPage({
       {assignment.instructions && (
         <div
           className="bg-bg-card rounded-2xl p-4"
-          style={{ border: '0.5px solid var(--color-border)' }}
+          style={{ border: '1px solid var(--color-border)' }}
         >
           <p className="text-[11px] font-medium text-text-faint uppercase tracking-wider mb-2">
             Instructions
@@ -69,7 +69,7 @@ export default async function AssignmentDetailPage({
       {assignment.description && !assignment.instructions && (
         <div
           className="bg-bg-card rounded-2xl p-4"
-          style={{ border: '0.5px solid var(--color-border)' }}
+          style={{ border: '1px solid var(--color-border)' }}
         >
           <p className="text-[14px] text-text whitespace-pre-wrap">
             {assignment.description}

@@ -40,7 +40,7 @@ export default async function WorkshopsListPage() {
                   key={ws.id}
                   href={`/user/discover/workshops/${ws.id}`}
                   className="bg-bg-card rounded-2xl py-3 px-3.5 lg:p-4 flex gap-3 lg:gap-4 transition-colors duration-150 lg:hover:bg-white/60"
-                  style={{ border: '0.5px solid var(--color-border)' }}
+                  style={{ border: '1px solid var(--color-border)' }}
                 >
                   <div className="relative w-10 h-10 lg:w-20 lg:h-20 rounded-xl bg-accent-tint flex items-center justify-center shrink-0 overflow-hidden">
                     {ws.coverImageUrl ? (
@@ -94,7 +94,7 @@ export default async function WorkshopsListPage() {
                 <div
                   key={ws.id}
                   className="bg-bg-card rounded-2xl py-3 px-3.5 opacity-60"
-                  style={{ border: '0.5px solid var(--color-border)' }}
+                  style={{ border: '1px solid var(--color-border)' }}
                 >
                   <p className="text-[15px] font-medium text-text line-clamp-1">
                     {ws.title}

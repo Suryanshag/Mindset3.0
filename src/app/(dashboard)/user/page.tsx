@@ -167,7 +167,7 @@ export default async function UserHome({
         ) : (
           <div className="py-8">
             <h1 className="text-[22px] font-medium text-text">Welcome to Mindset</h1>
-            <p className="text-[14px] text-text-faint mt-1">Your reflection space is loading...</p>
+            <p className="text-[14px] text-text-muted mt-1">Your reflection space is loading...</p>
           </div>
         )}
       </div>

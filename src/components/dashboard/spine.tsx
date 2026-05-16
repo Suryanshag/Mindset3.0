@@ -144,7 +144,7 @@ export default function Spine({ sessions = [], engagementState = 'engaged' }: Pr
       </div>
 
       {/* Spaces — main navigation, pinned */}
-      <div className="px-4 pt-3 pb-1 shrink-0" style={{ borderTop: '0.5px solid var(--color-border)' }}>
+      <div className="px-4 pt-3 pb-1 shrink-0" style={{ borderTop: '1px solid var(--color-border)' }}>
         <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px] mb-2">
           Spaces
         </p>
