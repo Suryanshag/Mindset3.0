@@ -35,7 +35,11 @@ export default function SessionRail({
     .slice(0, 2)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-6 mb-6" style={{ borderBottom: '0.5px solid var(--color-border)' }}>
+      <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px]">
+        About this session
+      </p>
+
       {/* Doctor card */}
       <div className="text-center">
         {doctor.photo ? (

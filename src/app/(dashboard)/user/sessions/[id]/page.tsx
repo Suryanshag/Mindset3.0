@@ -7,6 +7,8 @@ import PageHeader from '@/components/dashboard/page-header'
 import CancelSessionButton from './cancel-button'
 import SessionJoinCta from './session-join-cta'
 import SessionUserNotes from './session-user-notes'
+import RailPortal from '@/components/dashboard/desktop/rail-portal'
+import SessionRail from '@/components/dashboard/desktop/session-rail'
 import { formatSessionDateRelative } from '@/lib/format-date'
 
 const SESSION_DURATION_MIN = 60
@@ -39,6 +41,22 @@ export default async function SessionDetailPage({
   })
   if (!session) notFound()
 
+  const isPast = session.status === 'COMPLETED' || session.date < new Date()
+  const relatedAssignments = isPast
+    ? await prisma.assignment.findMany({
+        where: {
+          userId: authSession.user.id,
+          doctorId: session.doctorId,
+          createdAt: {
+            gte: session.date,
+            lte: new Date(session.date.getTime() + 48 * 60 * 60 * 1000),
+          },
+        },
+        select: { id: true, title: true, status: true },
+        take: 5,
+      })
+    : []
+
   const now = new Date()
   const isUpcoming =
     session.date > now &&
@@ -60,6 +78,21 @@ export default async function SessionDetailPage({
 
   return (
     <div>
+      {/* Desktop right-rail: doctor card + book follow-up + cancel + related assignments */}
+      <RailPortal>
+        <SessionRail
+          doctor={{
+            name: doctorName,
+            designation: session.doctor.designation,
+            photo: session.doctor.photo,
+          }}
+          doctorId={session.doctorId}
+          sessionId={session.id}
+          canCancel={canCancel}
+          assignments={relatedAssignments}
+        />
+      </RailPortal>
+
       <PageHeader title="Session details" back="/user/sessions" />
 
       <div className="space-y-5 pt-4">

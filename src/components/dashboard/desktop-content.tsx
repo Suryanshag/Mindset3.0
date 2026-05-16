@@ -61,7 +61,14 @@ export default function DesktopContent({
           className="desktop-rail bg-bg-app overflow-y-auto"
           style={{ borderLeft: '0.5px solid var(--color-border)' }}
         >
-          <div className="p-6">
+          <div className="p-6 space-y-6">
+            {/*
+              Per-route rail slot. Pages can inject route-specific content
+              here via <RailPortal> (e.g. SessionRail on /user/sessions/[id]).
+              When nothing is injected, this is an empty 0-height div and
+              ComingUpRail renders alone.
+            */}
+            <div id="desktop-rail-content" />
             <ComingUpRail
               items={upcomingItems}
               showFirstSteps={showFirstStepsFallback}
