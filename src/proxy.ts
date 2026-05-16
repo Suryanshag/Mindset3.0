@@ -22,7 +22,9 @@ export const proxy = auth((req) => {
     if (pathname.startsWith(route)) {
       if (!session?.user) {
         const loginUrl = new URL('/login', req.url)
-        loginUrl.searchParams.set('callbackUrl', pathname)
+        // Preserve the full path + query string so post-login redirect lands
+        // back exactly where the user was, including e.g. ?doctorId=X.
+        loginUrl.searchParams.set('callbackUrl', pathname + nextUrl.search)
         return NextResponse.redirect(loginUrl)
       }
 
