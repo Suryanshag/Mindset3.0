@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Search, PenLine, Compass } from 'lucide-react'
 import type { UpcomingItem } from '@/lib/queries/upcoming'
 import { formatSessionDateRelative } from '@/lib/format-date'
-import { isJoinWindowOpen } from '@/lib/session-window'
+import { joinWindowState } from '@/lib/session-window'
 
 // ─── Date utilities ────────────────────────────────────────────────────────
 
@@ -69,7 +69,9 @@ function ItemCard({ item }: { item: UpcomingItem }) {
   // Dates may arrive as ISO strings depending on serialization edges — coerce defensively.
   const startsAt = item.startsAt instanceof Date ? item.startsAt : new Date(item.startsAt)
   const chip = CHIP[item.kind]
-  const canJoin = isJoinWindowOpen(startsAt, item.durationMin, item.status) && !!item.meetLink
+  const winState = joinWindowState(startsAt, item.durationMin, item.status)
+  const canJoin = winState === 'open' && !!item.meetLink
+  const awaitingLink = winState === 'open' && !item.meetLink
 
   function handleCardClick(e: React.MouseEvent<HTMLDivElement>) {
     // Don't navigate if the click target is the Join button (anchor)
@@ -125,6 +127,8 @@ function ItemCard({ item }: { item: UpcomingItem }) {
           >
             Join
           </a>
+        ) : awaitingLink ? (
+          <p className="text-[12px] text-amber-700">Awaiting Meet link from therapist</p>
         ) : (
           <p className="text-[12px] text-text-faint">{formatCountdown(startsAt)}</p>
         )}

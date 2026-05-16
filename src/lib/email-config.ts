@@ -15,6 +15,12 @@
 const FALLBACK_FROM = 'Mindset <hello@mindset.org.in>'
 
 export const FROM_EMAIL: string = (() => {
+  // FROM_EMAIL is only ever used server-side (inside resend.emails.send).
+  // process.env.RESEND_FROM_EMAIL is not inlined into the client bundle, so
+  // skip the env check entirely on the client — otherwise SUPPORT_EMAIL +
+  // APP_BASE_URL importers in client components would trigger spurious
+  // console.warn lines on every page load.
+  if (typeof window !== 'undefined') return FALLBACK_FROM
   const env = process.env.RESEND_FROM_EMAIL
   if (!env) {
     console.warn('[EMAIL] RESEND_FROM_EMAIL not set — using fallback:', FALLBACK_FROM)
