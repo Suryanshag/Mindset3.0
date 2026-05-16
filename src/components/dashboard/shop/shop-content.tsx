@@ -88,7 +88,7 @@ export default function ShopContent({
 
       {/* Product grid */}
       {products.length > 0 ? (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 lg:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 gap-2.5 lg:gap-4">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
@@ -147,7 +147,7 @@ function ProductCard({ product }: { product: Product }) {
             <ShoppingBag size={24} className="text-text-faint/30" />
           )}
         </div>
-        <p className="text-[13px] font-medium text-text line-clamp-1">
+        <p className="text-[13px] font-medium text-text line-clamp-2">
           {product.name}
         </p>
         <p className="text-[12px] text-primary font-medium">

@@ -83,7 +83,7 @@ export default async function DiscoverHubPage() {
             <Link
               key={s.title}
               href={s.href}
-              className="flex items-center gap-3.5 lg:flex-col lg:items-start lg:gap-3 bg-bg-card rounded-2xl py-3.5 px-3.5 lg:p-5 lg:min-h-[160px] transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
+              className="flex items-center gap-3.5 lg:flex-col lg:items-start lg:gap-3 bg-bg-card rounded-2xl py-3.5 px-3.5 lg:p-6 lg:min-h-[180px] transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
               style={{ border: '1px solid var(--color-border)' }}
             >
               <div

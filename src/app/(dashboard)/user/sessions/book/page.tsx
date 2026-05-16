@@ -145,7 +145,7 @@ export default function BookSessionPage() {
         <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
           Book a Session
         </h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="bg-white rounded-xl border border-gray-100 p-5 animate-pulse">
               <div className="w-16 h-16 bg-gray-200 rounded-full mb-3" />
@@ -172,7 +172,7 @@ export default function BookSessionPage() {
             No doctors available at the moment.
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
             {doctors.map((doc) => (
               <Link
                 key={doc.id}
@@ -199,10 +199,10 @@ export default function BookSessionPage() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-semibold text-[15px] truncate" style={{ color: 'var(--navy)' }}>
+                    <p className="font-semibold text-[15px]" style={{ color: 'var(--navy)' }}>
                       {doc.user.name}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">{doc.designation}</p>
+                    <p className="text-xs text-gray-500 line-clamp-2">{doc.designation}</p>
                   </div>
                 </div>
                 <p className="text-sm font-semibold" style={{ color: 'var(--teal)' }}>
