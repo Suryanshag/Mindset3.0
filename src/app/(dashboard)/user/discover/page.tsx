@@ -1,11 +1,22 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Ticket, BookOpen, ShoppingBag, ChevronRight } from 'lucide-react'
 import { getNextWorkshop } from '@/lib/queries/dashboard'
 import PageHeader from '@/components/dashboard/page-header'
+import { formatSessionDateRelative } from '@/lib/format-date'
 
 export default async function DiscoverHubPage() {
-  const [workshop, recentMaterials, featuredProduct, upcomingCount, materialCount] = await Promise.all([
+  const [
+    workshop,
+    recentMaterials,
+    featuredProduct,
+    upcomingCount,
+    materialCount,
+    nextWorkshopFull,
+    libraryPreview,
+    shopPreview,
+  ] = await Promise.all([
     getNextWorkshop().catch(() => null),
     prisma.studyMaterial
       .findMany({
@@ -28,14 +39,47 @@ export default async function DiscoverHubPage() {
     prisma.studyMaterial
       .count({ where: { isPublished: true } })
       .catch(() => 0),
+    // Full record for the "Coming up" preview card below.
+    prisma.workshop
+      .findFirst({
+        where: { published: true, startsAt: { gte: new Date() } },
+        orderBy: { startsAt: 'asc' },
+        select: {
+          id: true,
+          title: true,
+          subtitle: true,
+          startsAt: true,
+          durationMin: true,
+          priceCents: true,
+          capacity: true,
+          instructorName: true,
+          presenter: { select: { name: true } },
+          _count: { select: { registrations: true } },
+        },
+      })
+      .catch(() => null),
+    prisma.studyMaterial
+      .findMany({
+        where: { isPublished: true },
+        orderBy: { createdAt: 'desc' },
+        take: 3,
+        select: { id: true, title: true, type: true, price: true, coverImage: true },
+      })
+      .catch(() => []),
+    prisma.product
+      .findMany({
+        where: { isActive: true },
+        orderBy: { createdAt: 'desc' },
+        take: 2,
+        select: { id: true, name: true, price: true, image: true },
+      })
+      .catch(() => []),
   ])
 
   const sections = [
     {
       title: 'Workshops',
-      subtitle: workshop
-        ? `Next: ${workshop.title}`
-        : 'No upcoming workshops',
+      subtitle: workshop ? `Next: ${workshop.title}` : 'No upcoming workshops',
       href: '/user/discover/workshops',
       Icon: Ticket,
       color: 'bg-accent-tint',
@@ -54,9 +98,7 @@ export default async function DiscoverHubPage() {
     },
     {
       title: 'Shop',
-      subtitle: featuredProduct
-        ? `Featured: ${featuredProduct.name}`
-        : 'Browse products',
+      subtitle: featuredProduct ? `Featured: ${featuredProduct.name}` : 'Browse products',
       href: '/user/shop',
       Icon: ShoppingBag,
       color: 'bg-tan-tint',
@@ -68,6 +110,9 @@ export default async function DiscoverHubPage() {
     upcomingCount > 0 ? `${upcomingCount} upcoming workshop${upcomingCount > 1 ? 's' : ''}` : null,
     materialCount > 0 ? `${materialCount} book${materialCount > 1 ? 's' : ''} in library` : null,
   ].filter(Boolean).join(' · ')
+
+  const presenterName =
+    nextWorkshopFull?.presenter?.name ?? nextWorkshopFull?.instructorName ?? null
 
   return (
     <div>
@@ -102,6 +147,148 @@ export default async function DiscoverHubPage() {
           ))}
         </div>
       </div>
+
+      {/* Section A — Coming up workshop */}
+      {nextWorkshopFull && (
+        <section className="mt-12">
+          <p className="text-[11px] font-medium text-text-faint uppercase tracking-wider mb-2.5">
+            Coming up
+          </p>
+          <Link
+            href={`/user/discover/workshops/${nextWorkshopFull.id}`}
+            className="block bg-bg-card rounded-2xl p-5 transition-colors duration-150 lg:hover:bg-white/80"
+            style={{
+              border: '1px solid var(--color-border)',
+              borderLeft: '3px solid var(--color-accent)',
+            }}
+          >
+            <p className="text-[18px] font-medium text-text leading-tight">
+              {nextWorkshopFull.title}
+            </p>
+            {nextWorkshopFull.subtitle && (
+              <p className="text-[13px] text-text-muted line-clamp-1 mt-1">
+                {nextWorkshopFull.subtitle}
+              </p>
+            )}
+            <p className="text-[13px] text-text-muted mt-2">
+              {formatSessionDateRelative(nextWorkshopFull.startsAt)}
+              {' · '}
+              {nextWorkshopFull.durationMin} min
+              {presenterName && (
+                <>
+                  {' · '}
+                  with {presenterName}
+                </>
+              )}
+            </p>
+            <div className="flex items-center justify-between mt-3">
+              <p className="text-[12px] text-text-muted">
+                {nextWorkshopFull.capacity != null
+                  ? `${nextWorkshopFull._count.registrations} of ${nextWorkshopFull.capacity} spots filled`
+                  : `${nextWorkshopFull._count.registrations} registered`}
+                {' · '}
+                <span className="font-medium text-text">
+                  {nextWorkshopFull.priceCents === 0
+                    ? 'Free'
+                    : `₹${(nextWorkshopFull.priceCents / 100).toLocaleString('en-IN')}`}
+                </span>
+              </p>
+              <span className="text-[13px] text-primary font-medium">Learn more →</span>
+            </div>
+          </Link>
+        </section>
+      )}
+
+      {/* Section B — From the library */}
+      {libraryPreview.length > 0 && (
+        <section className="mt-10">
+          <p className="text-[11px] font-medium text-text-faint uppercase tracking-wider mb-2.5">
+            From the library
+          </p>
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 lg:gap-4">
+            {libraryPreview.map((item) => (
+              <Link
+                key={item.id}
+                href={`/user/library/${item.id}`}
+                className="bg-bg-card rounded-2xl p-2.5 lg:p-3 transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
+                style={{ border: '1px solid var(--color-border)' }}
+              >
+                <div className="relative w-full h-32 rounded-xl bg-primary-tint flex items-center justify-center overflow-hidden">
+                  {item.coverImage ? (
+                    <Image
+                      fill
+                      src={item.coverImage}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <BookOpen size={28} className="text-primary/30" />
+                  )}
+                  <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-full bg-black/50 backdrop-blur-sm">
+                    <span className="text-[9px] font-medium text-white">
+                      {item.type === 'FREE' ? 'Free' : `₹${Number(item.price)}`}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-[13px] lg:text-[14px] font-medium text-text mt-2 line-clamp-2">
+                  {item.title}
+                </p>
+              </Link>
+            ))}
+          </div>
+          <Link
+            href="/user/library"
+            className="inline-block text-[13px] text-primary font-medium mt-3 hover:underline"
+          >
+            Browse all books →
+          </Link>
+        </section>
+      )}
+
+      {/* Section C — From the shop */}
+      {shopPreview.length > 0 && (
+        <section className="mt-10">
+          <p className="text-[11px] font-medium text-text-faint uppercase tracking-wider mb-2.5">
+            From the shop
+          </p>
+          <div className="grid grid-cols-2 gap-2.5 lg:gap-4">
+            {shopPreview.map((p) => (
+              <Link
+                key={p.id}
+                href={`/user/shop/${p.id}`}
+                className="bg-bg-card rounded-2xl p-2.5 lg:p-3 transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
+                style={{ border: '1px solid var(--color-border-strong)' }}
+              >
+                <div className="relative w-full h-32 rounded-xl bg-bg-app flex items-center justify-center overflow-hidden">
+                  {p.image ? (
+                    <Image
+                      fill
+                      src={p.image}
+                      alt={p.name}
+                      className="w-full h-full object-cover rounded-xl"
+                      unoptimized
+                    />
+                  ) : (
+                    <ShoppingBag size={28} className="text-text-faint/30" />
+                  )}
+                </div>
+                <p className="text-[13px] lg:text-[14px] font-medium text-text mt-2 line-clamp-2">
+                  {p.name}
+                </p>
+                <p className="text-[12px] text-primary font-medium mt-0.5">
+                  {'₹'}{Number(p.price).toLocaleString('en-IN')}
+                </p>
+              </Link>
+            ))}
+          </div>
+          <Link
+            href="/user/shop"
+            className="inline-block text-[13px] text-primary font-medium mt-3 hover:underline"
+          >
+            Browse the shop →
+          </Link>
+        </section>
+      )}
     </div>
   )
 }
