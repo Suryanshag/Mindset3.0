@@ -10,6 +10,7 @@ import {
   Bell,
 } from 'lucide-react'
 import { markNotificationRead, markAllNotificationsRead } from '@/lib/actions/notifications'
+import { formatSessionTime } from '@/lib/format-date'
 
 type Notification = {
   id: string
@@ -34,18 +35,24 @@ const kindIcons: Record<string, typeof Bell> = {
   SYSTEM: Bell,
 }
 
+/** "2026-05-17" for the given Date, computed against Asia/Kolkata so a
+ *  notification created at 23:50 IST groups under today, not tomorrow. */
+function istDateKey(d: Date): string {
+  // en-CA gives ISO-ish YYYY-MM-DD regardless of locale display rules
+  return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
+}
+
 function relativeDay(iso: string): string {
   const d = new Date(iso)
   const now = new Date()
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const startOfDay = new Date(d.getFullYear(), d.getMonth(), d.getDate())
-  const diff = Math.round(
-    (startOfToday.getTime() - startOfDay.getTime()) / (1000 * 60 * 60 * 24)
-  )
+  const todayKey = istDateKey(now)
+  const yesterdayKey = istDateKey(new Date(now.getTime() - 24 * 60 * 60 * 1000))
+  const sevenDaysAgoKey = istDateKey(new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000))
+  const dKey = istDateKey(d)
 
-  if (diff === 0) return 'Today'
-  if (diff === 1) return 'Yesterday'
-  if (diff < 7) return 'This week'
+  if (dKey === todayKey) return 'Today'
+  if (dKey === yesterdayKey) return 'Yesterday'
+  if (dKey > sevenDaysAgoKey) return 'This week'
   return 'Earlier'
 }
 
@@ -149,11 +156,7 @@ export default function NotificationList({ notifications, hasUnread }: Props) {
                       {n.body}
                     </p>
                     <p className="text-[10px] text-text-faint mt-1">
-                      {new Date(n.createdAt).toLocaleString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true,
-                      })}
+                      {formatSessionTime(n.createdAt)}
                     </p>
                   </div>
                 </button>
