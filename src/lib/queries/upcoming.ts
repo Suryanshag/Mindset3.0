@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { prisma } from '@/lib/prisma'
 
 export type UpcomingItem =
@@ -33,9 +34,10 @@ const MAX_ITEMS = 20
 /**
  * Merge upcoming user sessions + workshop/circle registrations into a single
  * chronological list. Failed sub-queries degrade to [] for that source —
- * never throws.
+ * never throws. Cached per-request — same userId only hits the DB once
+ * per render tree even if multiple components ask.
  */
-export async function getUpcomingItems(userId: string, days = 30): Promise<UpcomingItem[]> {
+export const getUpcomingItems = cache(async (userId: string, days = 30): Promise<UpcomingItem[]> => {
   const now = new Date()
   const horizon = new Date(now.getTime() + days * DAY_MS)
 
@@ -119,4 +121,4 @@ export async function getUpcomingItems(userId: string, days = 30): Promise<Upcom
   return [...sessionItems, ...workshopItems]
     .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime())
     .slice(0, MAX_ITEMS)
-}
+})

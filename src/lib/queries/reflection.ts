@@ -1,7 +1,10 @@
+import { cache } from 'react'
 import { prisma } from '@/lib/prisma'
 
-/** Sessions grouped by month for the spine sidebar. */
-export async function getSpineSessions(userId: string) {
+/** Sessions grouped by month for the spine sidebar.
+ *  Cached per-request: DesktopShell calls this on every /user/* render
+ *  and so might other components that share the same render tree. */
+export const getSpineSessions = cache(async (userId: string) => {
   const sessions = await prisma.session.findMany({
     where: {
       userId,
@@ -27,7 +30,7 @@ export async function getSpineSessions(userId: string) {
     status: s.status,
     doctorName: s.doctor.user.name,
   }))
-}
+})
 
 export type SpineSession = Awaited<ReturnType<typeof getSpineSessions>>[number]
 

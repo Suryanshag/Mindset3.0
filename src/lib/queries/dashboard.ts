@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { prisma } from '@/lib/prisma'
 import type { Workshop, Session as DashboardSession } from '@/types/dashboard'
 import { formatSessionTime } from '@/lib/format-date'
@@ -177,23 +178,25 @@ export async function getUnreadNotificationCount(userId: string): Promise<number
  */
 export type EngagementState = 'empty' | 'partial' | 'engaged'
 
-export async function getUserEngagementState(userId: string): Promise<EngagementState> {
-  const now = new Date()
-  const [pastSessions, journalCount, completedCount] = await Promise.all([
-    prisma.session.count({
-      where: { userId, date: { lt: now }, status: { in: ['COMPLETED', 'CONFIRMED'] } },
-    }),
-    prisma.journalEntry.count({ where: { userId, isDraft: false } }),
-    prisma.assignment.count({
-      where: { userId, status: { in: ['COMPLETED', 'SUBMITTED', 'REVIEWED'] } },
-    }),
-  ])
+export const getUserEngagementState = cache(
+  async (userId: string): Promise<EngagementState> => {
+    const now = new Date()
+    const [pastSessions, journalCount, completedCount] = await Promise.all([
+      prisma.session.count({
+        where: { userId, date: { lt: now }, status: { in: ['COMPLETED', 'CONFIRMED'] } },
+      }),
+      prisma.journalEntry.count({ where: { userId, isDraft: false } }),
+      prisma.assignment.count({
+        where: { userId, status: { in: ['COMPLETED', 'SUBMITTED', 'REVIEWED'] } },
+      }),
+    ])
 
-  if (pastSessions === 0 && journalCount === 0 && completedCount === 0) {
-    return 'empty'
+    if (pastSessions === 0 && journalCount === 0 && completedCount === 0) {
+      return 'empty'
+    }
+    if (pastSessions >= 3 && journalCount >= 3 && completedCount >= 2) {
+      return 'engaged'
+    }
+    return 'partial'
   }
-  if (pastSessions >= 3 && journalCount >= 3 && completedCount >= 2) {
-    return 'engaged'
-  }
-  return 'partial'
-}
+)

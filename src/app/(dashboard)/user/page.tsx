@@ -12,6 +12,7 @@ import RailPortal from '@/components/dashboard/desktop/rail-portal'
 import HomeRail from '@/components/dashboard/desktop/home-rail'
 import { getNextWorkshop, getUnreadNotificationCount, getUpcomingSession, getTodaysMoodCheckIn, getUserStats, getUserEngagementState } from '@/lib/queries/dashboard'
 import { getReflectionLandingData } from '@/lib/queries/reflection'
+import { getCurrentUserBasics } from '@/lib/queries/current-user'
 
 export default async function UserHome({
   searchParams,
@@ -28,21 +29,7 @@ export default async function UserHome({
 
   // Fetch all data in parallel — mobile + desktop
   const [dbUser, workshop, unreadCount, pendingAssignments, upcomingSession, todaysMood, realStats, reflectionData, engagementState] = await Promise.all([
-    userId
-      ? prisma.user
-          .findUnique({
-            where: { id: userId },
-            select: {
-              name: true,
-              image: true,
-              phone: true,
-              dateOfBirth: true,
-              preferredLanguage: true,
-              emergencyContact: true,
-            },
-          })
-          .catch(() => null)
-      : Promise.resolve(null),
+    userId ? getCurrentUserBasics(userId).catch(() => null) : Promise.resolve(null),
     getNextWorkshop(userId ?? undefined).catch(() => null),
     userId ? getUnreadNotificationCount(userId).catch(() => 0) : Promise.resolve(0),
     userId
