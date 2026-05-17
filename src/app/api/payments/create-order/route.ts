@@ -38,6 +38,10 @@ const paymentSchema = z.discriminatedUnion('type', [
     type: z.literal('EBOOK'),
     studyMaterialId: z.string().cuid(),
   }),
+  z.object({
+    type: z.literal('WORKSHOP'),
+    workshopId: z.string().cuid(),
+  }),
 ])
 
 export async function POST(req: NextRequest) {
@@ -240,7 +244,7 @@ export async function POST(req: NextRequest) {
         keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
       })
 
-    } else {
+    } else if (type === 'EBOOK') {
       const { studyMaterialId } = parsed.data
 
       const material = await prisma.studyMaterial.findUnique({
@@ -271,10 +275,66 @@ export async function POST(req: NextRequest) {
       amountInPaise = Math.round(Number(material.price) * 100)
       receiptId = `ebook_${studyMaterialId}`
       metadata = { studyMaterialId, userId: session.user.id }
+
+    } else {
+      // WORKSHOP — paid workshop registration.
+      const { workshopId } = parsed.data
+
+      const workshop = await prisma.workshop.findUnique({
+        where: { id: workshopId },
+      })
+
+      if (!workshop) {
+        return errorResponse('Workshop not found', 404)
+      }
+      if (!workshop.published) {
+        return errorResponse('Workshop is not open for registration', 400)
+      }
+      if (workshop.status !== 'SCHEDULED') {
+        return errorResponse('Workshop is not open for registration', 400)
+      }
+      if (workshop.startsAt.getTime() <= Date.now()) {
+        return errorResponse('Workshop has already started', 400)
+      }
+      if (workshop.priceCents === 0) {
+        return errorResponse(
+          'This workshop is free — use the free registration flow',
+          400
+        )
+      }
+
+      // Already-registered guard — registration row exists only post-payment,
+      // so this also catches the "double-paid" case where the user tries to
+      // pay twice.
+      const existingRegistration = await prisma.workshopRegistration.findUnique({
+        where: { userId_workshopId: { userId: session.user.id, workshopId } },
+      })
+      if (existingRegistration) {
+        return errorResponse('You are already registered for this workshop', 400)
+      }
+
+      // Capacity check counts confirmed registrations + any in-flight PENDING
+      // payments (the user clicked Pay but hasn't finished Razorpay yet) so
+      // we don't oversell. Capacity=null means unlimited.
+      if (workshop.capacity != null) {
+        const [confirmedCount, pendingCount] = await Promise.all([
+          prisma.workshopRegistration.count({ where: { workshopId } }),
+          prisma.payment.count({
+            where: { workshopId, type: 'WORKSHOP', status: 'PENDING' },
+          }),
+        ])
+        if (confirmedCount + pendingCount >= workshop.capacity) {
+          return errorResponse('Workshop is full', 400)
+        }
+      }
+
+      amountInPaise = workshop.priceCents
+      receiptId = `wkshop_${workshopId.slice(-8)}_${Date.now().toString().slice(-8)}`
+      metadata = { workshopId, userId: session.user.id }
     }
 
-    // SESSION and EBOOK flows: create Razorpay order + Payment (no DB order needed)
-    // PRODUCT flow returns early above, so this only runs for SESSION/EBOOK
+    // SESSION, EBOOK, and WORKSHOP flows: create Razorpay order + Payment.
+    // PRODUCT flow returns early above.
     const razorpayOrder = await razorpay.orders.create({
       amount: amountInPaise,
       currency: 'INR',
@@ -292,6 +352,7 @@ export async function POST(req: NextRequest) {
         sessionId: type === 'SESSION' ? parsed.data.sessionId : null,
         orderId: null,
         studyMaterialId: type === 'EBOOK' ? parsed.data.studyMaterialId : null,
+        workshopId: type === 'WORKSHOP' ? parsed.data.workshopId : null,
       },
     })
 
