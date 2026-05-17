@@ -85,7 +85,7 @@ export default function EbooksPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
+        <h1 className="text-2xl font-bold mb-6 text-text">
           E-Books &amp; Resources
         </h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -105,7 +105,7 @@ export default function EbooksPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
+      <h1 className="text-2xl font-bold mb-6 text-text">
         E-Books &amp; Resources
       </h1>
 

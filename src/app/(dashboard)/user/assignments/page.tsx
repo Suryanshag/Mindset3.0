@@ -78,7 +78,7 @@ export default function AssignmentsPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
+        <h1 className="text-2xl font-bold mb-6 text-text">
           Assignments
         </h1>
         <div className="space-y-4">
@@ -96,7 +96,7 @@ export default function AssignmentsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
+      <h1 className="text-2xl font-bold mb-6 text-text">
         Assignments
       </h1>
 

@@ -11,7 +11,7 @@ export default function CartPage() {
   if (isLoading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
+        <h1 className="text-2xl font-bold mb-6 text-text">
           My Cart
         </h1>
         <div className="bg-white rounded-xl border border-gray-100 p-8 animate-pulse">
@@ -26,7 +26,7 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div>
-        <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
+        <h1 className="text-2xl font-bold mb-6 text-text">
           My Cart
         </h1>
         <div className="bg-white rounded-xl border border-gray-100 p-12 text-center">
@@ -45,7 +45,7 @@ export default function CartPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
+      <h1 className="text-2xl font-bold mb-6 text-text">
         My Cart
       </h1>
 

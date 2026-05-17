@@ -65,7 +65,7 @@ export default function PaymentDetailPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
+        <h1 className="text-2xl font-bold mb-6 text-text">
           Payment Details
         </h1>
         <div className="bg-white rounded-xl border border-gray-100 p-8 animate-pulse">
@@ -80,7 +80,7 @@ export default function PaymentDetailPage() {
   if (error || !payment) {
     return (
       <div>
-        <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
+        <h1 className="text-2xl font-bold mb-6 text-text">
           Payment Details
         </h1>
         <div className="bg-white rounded-xl border border-gray-100 p-12 text-center text-gray-500">
@@ -101,7 +101,7 @@ export default function PaymentDetailPage() {
         &larr; Back to Payments
       </Link>
 
-      <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
+      <h1 className="text-2xl font-bold mb-6 text-text">
         Payment Details
       </h1>
 

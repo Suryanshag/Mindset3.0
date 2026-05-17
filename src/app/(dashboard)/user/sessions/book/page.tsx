@@ -142,7 +142,7 @@ export default function BookSessionPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
+        <h1 className="text-2xl font-bold mb-6 text-text">
           Book a Session
         </h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
@@ -162,7 +162,7 @@ export default function BookSessionPage() {
   if (!doctorId && !selectedDoctor) {
     return (
       <div>
-        <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
+        <h1 className="text-2xl font-bold mb-6 text-text">
           Book a Session
         </h1>
         <p className="text-gray-500 mb-6">Choose a doctor to book a session with:</p>
@@ -222,7 +222,7 @@ export default function BookSessionPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
+      <h1 className="text-2xl font-bold mb-6 text-text">
         Book a Session
       </h1>
 

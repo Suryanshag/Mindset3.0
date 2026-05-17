@@ -54,7 +54,7 @@ export default function PaymentsPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
+        <h1 className="text-2xl font-bold mb-6 text-text">
           Payments
         </h1>
         <div className="space-y-4">
@@ -71,7 +71,7 @@ export default function PaymentsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
+      <h1 className="text-2xl font-bold mb-6 text-text">
         Payments
       </h1>
 

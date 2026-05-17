@@ -137,7 +137,7 @@ export default function OrdersPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
+        <h1 className="text-2xl font-bold mb-6 text-text">
           My Orders
         </h1>
         <div className="space-y-4">
@@ -154,7 +154,7 @@ export default function OrdersPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
+      <h1 className="text-2xl font-bold mb-6 text-text">
         My Orders
       </h1>
 

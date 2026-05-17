@@ -345,7 +345,7 @@ export default function CheckoutPage() {
   if (message) {
     return (
       <div>
-        <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>Checkout</h1>
+        <h1 className="text-2xl font-bold mb-6 text-text">Checkout</h1>
         <div className="bg-green-50 rounded-xl p-8 text-center">
           <p className="text-green-700 font-semibold text-lg">{message}</p>
           <p className="text-sm text-gray-500 mt-2">Redirecting to your orders...</p>
@@ -366,7 +366,7 @@ export default function CheckoutPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--navy)' }}>Checkout</h1>
+      <h1 className="text-2xl font-bold mb-6 text-text">Checkout</h1>
 
       {/* Step indicator */}
       <div className="flex items-center justify-center mb-8">
