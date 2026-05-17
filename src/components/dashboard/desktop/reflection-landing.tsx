@@ -172,7 +172,7 @@ export default function ReflectionLanding({
               href={`/user/sessions/${data.lastSession.id}`}
               className="text-[14px] text-primary font-medium hover:underline"
             >
-              Open chapter ↗
+              Open last session →
             </Link>
             {showSchedulePrompt && (
               <Link
