@@ -2,8 +2,10 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { MessageCircle } from 'lucide-react'
 import { registerForWorkshop } from '@/lib/actions/workshops'
+import RazorpayCheckout from '@/components/payments/razorpay-checkout'
 
 type Props = {
   workshopId: string
@@ -13,6 +15,12 @@ type Props = {
   isRegistered: boolean
   whatsappUrl: string | null
   price: number
+  workshopTitle: string
+}
+
+type PaymentSession = {
+  razorpayOrderId: string
+  amount: number
 }
 
 export default function WorkshopRegisterButton({
@@ -23,20 +31,49 @@ export default function WorkshopRegisterButton({
   isRegistered,
   whatsappUrl,
   price,
+  workshopTitle,
 }: Props) {
+  const router = useRouter()
+  const { data: authSession } = useSession()
+
   const [showModal, setShowModal] = useState(false)
   const [modalWhatsapp, setModalWhatsapp] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
 
-  function handleRegister() {
-    if (!isFree) {
-      // Paid flow — not implemented yet
-      setError('Paid workshop registration coming soon')
-      return
+  // When set, mounts <RazorpayCheckout autoOpen> below the button.
+  // Cleared when the modal dismisses or the payment succeeds.
+  const [payment, setPayment] = useState<PaymentSession | null>(null)
+  // Separate flag for "paid Razorpay checkout is loading" so the button
+  // shows "Starting payment…" while we wait on /api/payments/create-order.
+  const [paying, setPaying] = useState(false)
+
+  async function handlePaidRegister() {
+    setPaying(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/payments/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'WORKSHOP', workshopId }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        setError(data.error ?? 'Could not start payment')
+        setPaying(false)
+        return
+      }
+      setPayment({
+        razorpayOrderId: data.data.razorpayOrderId,
+        amount: data.data.amount,
+      })
+    } catch {
+      setError('Could not start payment. Please try again.')
+      setPaying(false)
     }
+  }
 
+  function handleFreeRegister() {
     setError(null)
     startTransition(async () => {
       const result = await registerForWorkshop(workshopId)
@@ -48,6 +85,24 @@ export default function WorkshopRegisterButton({
         router.refresh()
       }
     })
+  }
+
+  function handlePaymentSuccess() {
+    // Razorpay handler resolved — the webhook will create the registration
+    // row server-side. Refresh so the page re-fetches and the
+    // "You're enrolled" state takes over on next render.
+    setPayment(null)
+    setPaying(false)
+    setModalWhatsapp(whatsappUrl)
+    setShowModal(true)
+    router.refresh()
+  }
+
+  function handlePaymentDismiss() {
+    // User closed the Razorpay modal without paying — clear the session so
+    // the button is clickable again.
+    setPayment(null)
+    setPaying(false)
   }
 
   // Past
@@ -96,19 +151,40 @@ export default function WorkshopRegisterButton({
   }
 
   // Registerable
+  const busy = isPending || paying
+  const buttonLabel = busy
+    ? isFree ? 'Registering…' : 'Starting payment…'
+    : isFree
+      ? 'Reserve spot'
+      : `Pay ₹${(price / 100).toFixed(0)} and register`
+
   return (
     <>
-      <button
-        onClick={handleRegister}
-        disabled={isPending}
-        className="flex items-center justify-center w-full h-[48px] rounded-full bg-primary text-white text-[14px] font-medium disabled:opacity-50"
-      >
-        {isPending
-          ? 'Registering...'
-          : isFree
-            ? 'Reserve spot'
-            : `Reserve spot \u00b7 \u20B9${(price / 100).toFixed(0)}`}
-      </button>
+      {payment && authSession?.user ? (
+        // autoOpen=true triggers the Razorpay modal immediately on mount.
+        // The wrapper button is the same shape as the original CTA so the
+        // layout doesn't shift while the SDK loads.
+        <RazorpayCheckout
+          orderId={payment.razorpayOrderId}
+          amount={payment.amount}
+          name={authSession.user.name ?? ''}
+          email={authSession.user.email ?? ''}
+          description={`Workshop: ${workshopTitle}`}
+          onSuccess={handlePaymentSuccess}
+          onDismiss={handlePaymentDismiss}
+          buttonText="Re-open payment"
+          autoOpen
+          className="flex items-center justify-center w-full h-[48px] rounded-full bg-primary text-white text-[14px] font-medium"
+        />
+      ) : (
+        <button
+          onClick={isFree ? handleFreeRegister : handlePaidRegister}
+          disabled={busy}
+          className="flex items-center justify-center w-full h-[48px] rounded-full bg-primary text-white text-[14px] font-medium disabled:opacity-50"
+        >
+          {buttonLabel}
+        </button>
+      )}
 
       {error && (
         <p className="text-[13px] text-red-600 text-center">{error}</p>
@@ -130,6 +206,11 @@ export default function WorkshopRegisterButton({
               {modalWhatsapp && (
                 <p className="text-[13px] text-text-muted mt-2">
                   Join the WhatsApp group to get workshop details and reminders.
+                </p>
+              )}
+              {!isFree && (
+                <p className="text-[13px] text-text-muted mt-2">
+                  A confirmation email is on its way.
                 </p>
               )}
             </div>

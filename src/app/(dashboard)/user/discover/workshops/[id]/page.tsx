@@ -117,6 +117,7 @@ export default async function WorkshopDetailPage({
       <div className="fixed left-0 right-0 z-40 p-4 bg-bg-app/80 backdrop-blur-sm lg:sticky lg:bottom-0 lg:left-auto lg:right-auto lg:max-w-[720px] lg:mx-auto lg:px-0 lg:pb-6" style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))', borderTop: '1px solid var(--color-border)' }}>
         <WorkshopRegisterButton
           workshopId={workshop.id}
+          workshopTitle={workshop.title}
           isPast={isPast}
           isFull={isFull && !isRegistered}
           isFree={isFree}
