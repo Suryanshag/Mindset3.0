@@ -1,8 +1,6 @@
 'use client'
 
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Search, PenLine, Compass } from 'lucide-react'
 import type { UpcomingItem } from '@/lib/queries/upcoming'
 import { formatSessionDateRelative } from '@/lib/format-date'
 import { joinWindowState } from '@/lib/session-window'
@@ -48,13 +46,16 @@ const TYPE_STROKE: Record<UpcomingItem['kind'], string> = {
 
 type Props = {
   items: UpcomingItem[]
-  showFirstSteps: boolean
 }
 
-export default function ComingUpRail({ items, showFirstSteps }: Props) {
+export default function ComingUpRail({ items }: Props) {
   if (items.length === 0) {
-    if (!showFirstSteps) return null
-    return <FirstStepsRail />
+    // Empty-state rail content is owned by HomeRail (route-specific via
+    // RailPortal) so the two stacked blocks don't duplicate. We render
+    // nothing here; the rail container stays open because the parent
+    // shell uses the same showFirstStepsFallback flag to keep the rail
+    // mounted on /user even when there are no upcoming items.
+    return null
   }
 
   return (
@@ -147,48 +148,3 @@ function ItemCard({ item }: { item: UpcomingItem }) {
   )
 }
 
-// ─── First-steps fallback (empty engagement on /user) ──────────────────────
-
-function FirstStepsRail() {
-  return (
-    <div className="space-y-5">
-      <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px]">
-        First steps
-      </p>
-      <div className="space-y-2">
-        <FirstStepCard href="/doctors" icon={Search} label="Find a therapist" />
-        <FirstStepCard
-          href="/user/practice/journal/new"
-          icon={PenLine}
-          label="Write your first entry"
-        />
-        <FirstStepCard
-          href="/user/discover/workshops"
-          icon={Compass}
-          label="Browse workshops"
-        />
-      </div>
-    </div>
-  )
-}
-
-function FirstStepCard({
-  href,
-  icon: Icon,
-  label,
-}: {
-  href: string
-  icon: React.ComponentType<{ size?: number; className?: string }>
-  label: string
-}) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] text-text transition-colors duration-150 hover:bg-white/60"
-      style={{ border: '1px solid var(--color-border)' }}
-    >
-      <Icon size={16} className="text-text-faint shrink-0" />
-      {label}
-    </Link>
-  )
-}

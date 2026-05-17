@@ -80,10 +80,7 @@ export default function DesktopContent({
               ComingUpRail renders alone.
             */}
             <div id="desktop-rail-content" />
-            <ComingUpRail
-              items={upcomingItems}
-              showFirstSteps={showFirstStepsFallback}
-            />
+            <ComingUpRail items={upcomingItems} />
           </div>
         </aside>
       )}
