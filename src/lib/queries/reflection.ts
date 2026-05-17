@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { prisma } from '@/lib/prisma'
+import { getCurrentUserBasics } from '@/lib/queries/current-user'
 
 /** Sessions grouped by month for the spine sidebar.
  *  Cached per-request: DesktopShell calls this on every /user/* render
@@ -38,17 +39,19 @@ export type SpineSession = Awaited<ReturnType<typeof getSpineSessions>>[number]
 export async function getReflectionLandingData(userId: string) {
   const now = new Date()
 
+  // First batch: 6 independent queries. user goes through the cached
+  // helper so it dedupes with layout/page calls. totalPending (was
+  // sequential in the prior version) moves here since it depends on
+  // nothing.
   const [
     user,
     lastSession,
     nextSession,
     pendingAssignments,
     registeredWorkshops,
+    totalPending,
   ] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: userId },
-      select: { name: true },
-    }),
+    getCurrentUserBasics(userId),
 
     // Most recent past session
     prisma.session.findFirst({
@@ -119,9 +122,16 @@ export async function getReflectionLandingData(userId: string) {
       },
       take: 1,
     }),
+
+    // Total pending count (independent — was awaited after the lastSession
+    // chain in the prior version, costing one extra round-trip).
+    prisma.assignment.count({
+      where: { userId, status: 'PENDING' },
+    }),
   ])
 
-  // Count journal entries + completed assignments since last session
+  // Second batch: depends on lastSession.date — counts since last session.
+  // Only runs when there IS a last session.
   let entriesSinceLastSession = 0
   let completedSinceLastSession = 0
   if (lastSession) {
@@ -140,11 +150,6 @@ export async function getReflectionLandingData(userId: string) {
     entriesSinceLastSession = ec
     completedSinceLastSession = ac
   }
-
-  // Total pending count (to say "and N more")
-  const totalPending = await prisma.assignment.count({
-    where: { userId, status: 'PENDING' },
-  })
 
   return {
     userName: user?.name ?? 'there',
