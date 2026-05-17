@@ -72,16 +72,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         // Currently locked? Refuse even if password is correct.
         if (user.lockedUntil && user.lockedUntil > new Date()) {
-          await logAuthEvent({
+          // Fire-and-forget — audit log, doesn't gate the response.
+          logAuthEvent({
             userId: user.id,
             kind: 'LOGIN_FAILED',
             metadata: { reason: 'locked' },
-          })
+          }).catch((err) => console.error('[AUTH_EVENT_LOG_FAILED]', err))
           return null
         }
 
         const passwordMatch = await bcrypt.compare(password, user.password)
         if (!passwordMatch) {
+          // Failed-password branch: lockout state MUST be awaited so an
+          // attacker can't beat the rate limit by firing parallel attempts.
           const newAttempts = user.failedLoginAttempts + 1
           if (newAttempts >= 5) {
             await prisma.user.update({
@@ -91,27 +94,36 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 lockedUntil: new Date(Date.now() + 15 * 60 * 1000),
               },
             })
-            await logAuthEvent({ userId: user.id, kind: 'ACCOUNT_LOCKED' })
+            logAuthEvent({ userId: user.id, kind: 'ACCOUNT_LOCKED' })
+              .catch((err) => console.error('[AUTH_EVENT_LOG_FAILED]', err))
           } else {
             await prisma.user.update({
               where: { id: user.id },
               data: { failedLoginAttempts: newAttempts },
             })
-            await logAuthEvent({
+            logAuthEvent({
               userId: user.id,
               kind: 'LOGIN_FAILED',
               metadata: { attempts: newAttempts },
-            })
+            }).catch((err) => console.error('[AUTH_EVENT_LOG_FAILED]', err))
           }
           return null
         }
 
-        // Success — reset counter, bump lastLoginAt
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { failedLoginAttempts: 0, lastLoginAt: new Date() },
-        })
-        await logAuthEvent({ userId: user.id, kind: 'LOGIN_SUCCESS' })
+        // Success — fire-and-forget the counter reset + audit log so we
+        // return to NextAuth immediately. lastLoginAt and the success row
+        // are not required to be persisted before the user's session
+        // cookie is set; both can settle async without affecting auth
+        // correctness. Saves a sequential update + insert (~400-500ms warm)
+        // off the credentials POST critical path.
+        prisma.user
+          .update({
+            where: { id: user.id },
+            data: { failedLoginAttempts: 0, lastLoginAt: new Date() },
+          })
+          .catch((err) => console.error('[AUTH_POST_LOGIN_UPDATE_FAILED]', err))
+        logAuthEvent({ userId: user.id, kind: 'LOGIN_SUCCESS' })
+          .catch((err) => console.error('[AUTH_EVENT_LOG_FAILED]', err))
 
         return {
           id: user.id,
