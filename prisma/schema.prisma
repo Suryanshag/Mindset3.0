@@ -248,6 +248,7 @@ model Workshop {
 
   presenter     Presenter?             @relation(fields: [presenterId], references: [id], onDelete: Restrict)
   registrations WorkshopRegistration[]
+  payments      Payment[]
 
   @@index([presenterId])
   @@index([startsAt, status])
@@ -419,12 +420,17 @@ model Payment {
   sessionId           String?       @unique
   orderId             String?       @unique
   studyMaterialId     String?
+  // For type=WORKSHOP, links the pending Payment to its target Workshop
+  // BEFORE a WorkshopRegistration row exists. Registration is created
+  // only after Razorpay captures the payment (webhook).
+  workshopId          String?       @map("workshop_id")
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
 
   user                 User                  @relation(fields: [userId], references: [id])
   session              Session?              @relation(fields: [sessionId], references: [id])
   order                Order?                @relation(fields: [orderId], references: [id])
+  workshop             Workshop?             @relation(fields: [workshopId], references: [id])
   earning              DoctorEarning?
   workshopRegistration WorkshopRegistration?
 }
