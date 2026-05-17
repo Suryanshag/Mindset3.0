@@ -26,6 +26,21 @@ export const FROM_EMAIL: string = (() => {
     console.warn('[EMAIL] RESEND_FROM_EMAIL not set — using fallback:', FALLBACK_FROM)
     return FALLBACK_FROM
   }
+  // Hard refuse Resend's test sender — it 403s every recipient that isn't
+  // the Resend account owner. That value shipped silently for ~24h after
+  // the Workshops-Paid sprint until the hotfix investigation caught it
+  // (see docs/workshops-paid-hotfix-investigation.md). If someone re-sets
+  // the env to the test sender, fall back to the verified production
+  // sender and shout in the logs so the next deploy's first log line
+  // makes the misconfiguration obvious.
+  if (env.toLowerCase().includes('onboarding@resend.dev')) {
+    console.error(
+      "[EMAIL] RESEND_FROM_EMAIL is set to Resend's test sender " +
+        '(onboarding@resend.dev). This 403s any recipient other than ' +
+        'the Resend account owner. Forcing fallback to ' + FALLBACK_FROM
+    )
+    return FALLBACK_FROM
+  }
   return env
 })()
 
