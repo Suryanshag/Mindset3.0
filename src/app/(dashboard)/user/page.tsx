@@ -18,6 +18,8 @@ export default async function UserHome({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
+  // PERF-INVESTIGATION (temporary, remove after data collected)
+  const __tPage0 = Date.now()
   const params = await searchParams
   const session = await auth()
   const userId = session?.user?.id
@@ -27,6 +29,7 @@ export default async function UserHome({
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
   // Fetch all data in parallel — mobile + desktop
+  const __tParallel = Date.now()
   const [dbUser, workshop, unreadCount, pendingAssignments, upcomingSession, todaysMood, realStats, reflectionData, engagementState] = await Promise.all([
     userId
       ? prisma.user
@@ -76,6 +79,8 @@ export default async function UserHome({
       ? getUserEngagementState(userId).catch(() => 'empty' as const)
       : Promise.resolve('empty' as const),
   ])
+  console.log(`[PERF] /user page Promise.all (9 fetchers) ${Date.now() - __tParallel}ms`)
+  console.log(`[PERF] /user page TOTAL ${Date.now() - __tPage0}ms`)
 
   // Derive user display info from real DB row
   const userName = dbUser?.name ?? session?.user?.name ?? 'User'
