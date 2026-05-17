@@ -74,7 +74,7 @@ export default function Spine({ sessions = [], engagementState = 'engaged' }: Pr
     <aside className="spine sticky top-0 h-dvh grid overflow-hidden" style={{ gridTemplateRows: 'auto auto 1fr auto auto' }}>
       {/* Logo */}
       <div className="h-16 flex items-center px-4 shrink-0">
-        <Link href="/" className="text-[20px] font-bold text-text tracking-tight">
+        <Link href="/" prefetch={false} className="text-[20px] font-bold text-text tracking-tight">
           Mindset
         </Link>
       </div>
@@ -83,6 +83,7 @@ export default function Spine({ sessions = [], engagementState = 'engaged' }: Pr
       <div className="px-3 shrink-0">
         <Link
           href="/user/reflection/today"
+          prefetch={false}
           className={`spine-item flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150 ${
             pathname === '/user/reflection/today'
               ? 'spine-item--active bg-primary-tint text-primary'
@@ -120,6 +121,7 @@ export default function Spine({ sessions = [], engagementState = 'engaged' }: Pr
                         <Link
                           key={s.id}
                           href={`/user/sessions/${s.id}`}
+                          prefetch={false}
                           className={`spine-item flex items-center gap-2.5 px-3 py-1.5 rounded-lg transition-colors duration-150 group ${
                             active
                               ? 'spine-item--active bg-primary-tint text-primary'
@@ -155,6 +157,7 @@ export default function Spine({ sessions = [], engagementState = 'engaged' }: Pr
               <Link
                 key={href}
                 href={href}
+                prefetch={false}
                 className={`spine-item flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-150 ${
                   active
                     ? 'spine-item--active bg-primary-tint text-primary'
@@ -173,6 +176,7 @@ export default function Spine({ sessions = [], engagementState = 'engaged' }: Pr
       <div className="px-3 pb-4 pt-2 shrink-0">
         <Link
           href="/user/profile"
+          prefetch={false}
           className="spine-item flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150 hover:bg-white/60"
         >
           {userImage ? (
