@@ -1,6 +1,6 @@
 'use client'
 
-import { signIn } from 'next-auth/react'
+import { signIn, getSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -96,9 +96,12 @@ function LoginForm() {
         return
       }
 
-      const sessionRes = await fetch('/api/auth/me')
-      const sessionData = await sessionRes.json()
-      const role = sessionData?.data?.role
+      // Read role from the freshly-issued JWT session instead of round-
+      // tripping /api/user/me. getSession() decodes the cookie via
+      // /api/auth/session which is JWT-only (no DB hit) and gets cached
+      // by the next-auth client after this call.
+      const session = await getSession()
+      const role = session?.user?.role
 
       if (callbackUrl) {
         router.push(callbackUrl)
