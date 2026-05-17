@@ -316,6 +316,28 @@ export default function OrdersPage() {
         </div>
       )}
 
+      <div className="mt-10 pt-6 border-t border-gray-100 text-center space-y-1">
+        <p className="text-[13px] text-text-muted">
+          Questions about an order?{' '}
+          <a
+            href="mailto:hello@mindset.org.in"
+            className="text-primary font-medium hover:underline"
+          >
+            hello@mindset.org.in
+          </a>
+          {' '}— we usually reply within 24 hours.
+        </p>
+        <p className="text-[12px] text-text-faint">
+          Returns and refunds →{' '}
+          <a
+            href="mailto:hello@mindset.org.in?subject=Return%20or%20refund%20request"
+            className="text-primary hover:underline"
+          >
+            email us
+          </a>
+        </p>
+      </div>
+
       {trackingOrderId && (
         <TrackingModal
           orderId={trackingOrderId}
