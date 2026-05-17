@@ -1,7 +1,7 @@
 'use client'
 
 import { signIn } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema } from '@/lib/validations/auth'
@@ -29,7 +29,6 @@ const OAUTH_ERROR_COPY: Record<string, string> = {
 }
 
 function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl')
   const message = searchParams.get('message')
@@ -100,14 +99,20 @@ function LoginForm() {
       const sessionData = await sessionRes.json()
       const role = sessionData?.data?.role
 
-      if (callbackUrl) {
-        router.push(callbackUrl)
-        return
-      }
-
-      if (role === 'ADMIN') router.push('/admin')
-      else if (role === 'DOCTOR') router.push('/doctor')
-      else router.push('/user')
+      // Hard navigation (not router.push) so the root layout re-executes
+      // server-side with the new session — that's how CartProvider gets
+      // its server-rendered initialItems and skips the post-mount
+      // /api/user/cart round-trip (~2s saved). Without a full reload the
+      // root layout is reused from the /login page render where the
+      // session was anonymous.
+      const dest = callbackUrl
+        ? callbackUrl
+        : role === 'ADMIN'
+          ? '/admin'
+          : role === 'DOCTOR'
+            ? '/doctor'
+            : '/user'
+      window.location.href = dest
     } catch {
       setError('Something went wrong. Please try again.')
     } finally {
