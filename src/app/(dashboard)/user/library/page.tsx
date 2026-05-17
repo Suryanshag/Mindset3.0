@@ -6,6 +6,21 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import PageHeader from '@/components/dashboard/page-header'
 
+/** "Today" / "Yesterday" / "3 days ago" / "Sep 12" — for "last opened" subtitle. */
+function formatLastOpened(d: Date): string {
+  const now = Date.now()
+  const diffMs = now - d.getTime()
+  const diffDays = Math.floor(diffMs / (24 * 60 * 60 * 1000))
+  if (diffDays <= 0) return 'Opened today'
+  if (diffDays === 1) return 'Opened yesterday'
+  if (diffDays < 7) return `Opened ${diffDays} days ago`
+  if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7)
+    return `Opened ${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`
+  }
+  return `Opened ${d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`
+}
+
 type StudyMaterial = {
   id: string
   title: string
@@ -106,8 +121,33 @@ export default async function LibraryPage() {
 
   // Library items = owned paid ebooks + free ebooks + digital products
   const ownedEbookIdsSet = new Set([...ownedEbookIds, ...freeEbooks.map((e) => e.id)])
-  const libraryEbooks = [...ownedEbooks, ...freeEbooks]
+  const libraryEbooksRaw = [...ownedEbooks, ...freeEbooks]
     .filter((e, i, arr) => arr.findIndex((x) => x.id === e.id) === i)
+
+  // Per-user reading state for the library items.
+  const accesses = libraryEbooksRaw.length > 0
+    ? await prisma.studyMaterialAccess.findMany({
+        where: {
+          userId,
+          materialId: { in: libraryEbooksRaw.map((e) => e.id) },
+        },
+        select: { materialId: true, lastOpenedAt: true },
+      })
+    : []
+  const accessMap = new Map(accesses.map((a) => [a.materialId, a.lastOpenedAt]))
+
+  // Sort: most-recently-opened first, then never-opened (lastOpenedAt = null) last.
+  const libraryEbooks = libraryEbooksRaw
+    .map((e) => ({ ...e, lastOpenedAt: accessMap.get(e.id) ?? null }))
+    .sort((a, b) => {
+      if (!a.lastOpenedAt && !b.lastOpenedAt) return 0
+      if (!a.lastOpenedAt) return 1
+      if (!b.lastOpenedAt) return -1
+      return b.lastOpenedAt.getTime() - a.lastOpenedAt.getTime()
+    })
+
+  const mostRecentEbookId =
+    libraryEbooks.find((e) => e.lastOpenedAt)?.id ?? null
 
   const hasLibraryItems = libraryEbooks.length > 0 || ownedDigitalProducts.length > 0
 
@@ -126,22 +166,32 @@ export default async function LibraryPage() {
               Your Library
             </p>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 lg:gap-4">
-              {libraryEbooks.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/user/library/${item.id}`}
-                  className="bg-bg-card rounded-2xl p-2.5 lg:p-3 transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
-                  style={{ border: '1px solid var(--color-border)' }}
-                >
-                  <MaterialCover item={item} />
-                  <p className="text-[13px] lg:text-[14px] font-medium text-text mt-2 line-clamp-2">
-                    {item.title}
-                  </p>
-                  <p className="text-[11px] lg:text-[12px] text-text-muted mt-0.5">
-                    {item.type === 'FREE' ? 'Free' : 'Purchased'}
-                  </p>
-                </Link>
-              ))}
+              {libraryEbooks.map((item) => {
+                const isMostRecent = item.id === mostRecentEbookId
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/user/library/${item.id}`}
+                    className="bg-bg-card rounded-2xl p-2.5 lg:p-3 transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
+                    style={{ border: '1px solid var(--color-border)' }}
+                  >
+                    <MaterialCover item={item} />
+                    <p className="text-[13px] lg:text-[14px] font-medium text-text mt-2 line-clamp-2">
+                      {item.title}
+                    </p>
+                    <p className="text-[11px] lg:text-[12px] text-text-faint mt-0.5">
+                      {item.lastOpenedAt
+                        ? formatLastOpened(item.lastOpenedAt)
+                        : 'Not opened yet'}
+                    </p>
+                    {isMostRecent && (
+                      <p className="text-[12px] font-medium text-primary mt-1.5">
+                        Continue reading →
+                      </p>
+                    )}
+                  </Link>
+                )
+              })}
               {ownedDigitalProducts.map((item) => (
                 <div
                   key={item.id}

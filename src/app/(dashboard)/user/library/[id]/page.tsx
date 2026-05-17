@@ -56,6 +56,19 @@ export default async function LibraryDetailPage({
   const isOwned = isFree || !!payment
   const price = Number(material.price ?? 0)
 
+  // Record this open so the library list can show "Last opened X" and
+  // sort by recency. Only track real opens — skip if the user can't
+  // actually access the material yet.
+  if (isOwned) {
+    await prisma.studyMaterialAccess
+      .upsert({
+        where: { userId_materialId: { userId: session.user.id, materialId: id } },
+        update: { lastOpenedAt: new Date() },
+        create: { userId: session.user.id, materialId: id, lastOpenedAt: new Date() },
+      })
+      .catch((err) => console.error('[LIBRARY] access upsert failed:', err))
+  }
+
   return (
     <div>
       <PageHeader title={material.title} back="/user/library" />
