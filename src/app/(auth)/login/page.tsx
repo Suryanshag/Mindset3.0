@@ -87,6 +87,7 @@ function LoginForm() {
               setError(
                 `Too many failed attempts. Try again in ${mins} minute${mins === 1 ? '' : 's'}.`
               )
+              setIsLoading(false)
               return
             }
           }
@@ -94,6 +95,7 @@ function LoginForm() {
           // Fall through to generic message
         }
         setError('Invalid email or password')
+        setIsLoading(false)
         return
       }
 
@@ -104,6 +106,10 @@ function LoginForm() {
       const session = await getSession()
       const role = session?.user?.role
 
+      // Don't reset isLoading on success — keep the loader visible until the
+      // component unmounts when the dashboard renders. router.push() is
+      // non-blocking so a finally{setIsLoading(false)} would flash the login
+      // page before navigation completes.
       if (callbackUrl) {
         router.push(callbackUrl)
         return
@@ -114,7 +120,6 @@ function LoginForm() {
       else router.push('/user')
     } catch {
       setError('Something went wrong. Please try again.')
-    } finally {
       setIsLoading(false)
     }
   }

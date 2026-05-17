@@ -75,6 +75,7 @@ function RegisterForm() {
 
       if (!res.ok) {
         setError(result.error || 'Registration failed')
+        setIsLoading(false)
         return
       }
 
@@ -95,10 +96,11 @@ function RegisterForm() {
         return
       }
 
+      // Don't reset isLoading on success — keep the loader visible until the
+      // component unmounts when the dashboard renders.
       router.push('/user')
     } catch {
       setError('Something went wrong. Please try again.')
-    } finally {
       setIsLoading(false)
     }
   }
