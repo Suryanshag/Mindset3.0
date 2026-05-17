@@ -29,11 +29,22 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | null>(null)
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
+export function CartProvider({
+  children,
+  initialItems,
+}: {
+  children: React.ReactNode
+  /**
+   * Server-rendered cart items for USER sessions. When provided, the
+   * provider skips its post-mount fetch and uses these as initial state —
+   * the spine cart count is correct on first paint with zero round-trips.
+   */
+  initialItems?: CartItem[]
+}) {
   const { data: session, status } = useSession()
-  const [items, setItems] = useState<CartItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const fetchedRef = useRef(false)
+  const [items, setItems] = useState<CartItem[]>(initialItems ?? [])
+  const [isLoading, setIsLoading] = useState(initialItems === undefined)
+  const fetchedRef = useRef(initialItems !== undefined)
 
   const isUser = session?.user?.role === 'USER'
 
@@ -80,6 +91,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (!isUser) {
       setItems([])
       setIsLoading(false)
+      // Reset so a future sign-in (without page reload) re-fetches.
       fetchedRef.current = false
     }
   }, [status, isUser, fetchCart])

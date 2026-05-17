@@ -6,6 +6,7 @@ import AuthSessionProvider from "@/components/providers/session-provider";
 import RecaptchaProvider from "@/components/providers/recaptcha-provider";
 import { CartProvider } from "@/lib/cart-context";
 import { auth } from "@/lib/auth";
+import { getInitialCartItems } from "@/lib/queries/cart";
 import { JsonLd, organizationLd, websiteLd } from "@/components/seo/json-ld";
 
 const nunito = Nunito({
@@ -100,6 +101,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
+  // Server-render the cart for USER sessions so CartProvider doesn't have
+  // to round-trip /api/user/cart on mount (~2s warm before this change).
+  // For non-USER roles + unauthenticated traffic this skips entirely.
+  const initialCartItems =
+    session?.user?.id && session.user.role === 'USER'
+      ? await getInitialCartItems(session.user.id).catch(() => [])
+      : undefined;
   return (
     <html lang="en">
       <head>
@@ -112,7 +120,7 @@ export default async function RootLayout({
       >
         <AuthSessionProvider session={session}>
           <RecaptchaProvider>
-            <CartProvider>
+            <CartProvider initialItems={initialCartItems}>
               <div className="wp-site-blocks">{children}</div>
               <Toaster
                 richColors
