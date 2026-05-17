@@ -12,6 +12,7 @@ import { ArrowRight, CheckCircle, Loader2 } from 'lucide-react'
 import PasswordInput from '@/components/auth/password-input'
 import AuthShell from '@/components/auth/auth-shell'
 import GoogleButton from '@/components/auth/google-button'
+import { MindsetLoader } from '@/components/auth/mindset-loader'
 
 type LoginFormData = z.infer<typeof loginSchema>
 
@@ -120,6 +121,8 @@ function LoginForm() {
 
   return (
     <div>
+      {isLoading && <MindsetLoader message="Signing you in…" />}
+
       <h2
         className="text-2xl sm:text-3xl font-bold mb-1"
         style={{ color: 'var(--navy)', fontFamily: 'var(--font-heading)' }}
