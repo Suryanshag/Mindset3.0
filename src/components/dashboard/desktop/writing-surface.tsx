@@ -1,11 +1,20 @@
 'use client'
 
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { useWriting } from './writing-context'
+import { logMoodCheckIn } from '@/lib/actions/mood'
+import MoodPicker from '@/components/dashboard/mood-picker'
+import type { MoodValue } from '@/lib/constants/mood'
 
-export default function WritingSurface() {
+type Props = {
+  initialMood: MoodValue | null
+}
+
+export default function WritingSurface({ initialMood }: Props) {
   const { title, setTitle, body, setBody } = useWriting()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [mood, setMood] = useState<MoodValue | null>(initialMood)
+  const [, startTransition] = useTransition()
 
   const todayStr = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -24,8 +33,21 @@ export default function WritingSurface() {
     autoGrow()
   }, [body, autoGrow])
 
+  function handleMood(next: MoodValue | null) {
+    setMood(next)
+    if (next === null) return
+    startTransition(async () => {
+      await logMoodCheckIn(next)
+    })
+  }
+
   return (
     <div className="max-w-[680px] mx-auto pt-16 pb-32">
+      {/* Mood picker — prominent, top of the surface (moved here from rail) */}
+      <div className="mb-10">
+        <MoodPicker value={mood} onChange={handleMood} />
+      </div>
+
       {/* Date */}
       <p className="text-[13px] text-text-muted mb-6">{todayStr}</p>
 

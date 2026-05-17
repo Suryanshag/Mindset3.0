@@ -52,14 +52,11 @@ export default async function TodayWritingPage() {
         initialAssignmentId={initialAssignmentId}
       >
         <div className="hidden lg:block">
-          <WritingSurface />
+          <WritingSurface initialMood={todaysMood?.mood ?? null} />
         </div>
         {!isEmptyUser && (
           <RailPortal>
-            <WritingRail
-              todaysMood={todaysMood}
-              pendingPrompt={pendingPrompt}
-            />
+            <WritingRail pendingPrompt={pendingPrompt} />
           </RailPortal>
         )}
       </WritingProvider>

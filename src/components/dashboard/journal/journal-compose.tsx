@@ -7,8 +7,8 @@ import {
   updateJournalEntry,
   publishDraft,
 } from '@/lib/actions/journal'
-import { MOODS } from '@/lib/constants/mood'
-import MoodFace from '@/components/dashboard/mood-face'
+import type { MoodValue } from '@/lib/constants/mood'
+import MoodPicker from '@/components/dashboard/mood-picker'
 
 const DRAFT_KEY = 'journal-draft'
 
@@ -142,40 +142,17 @@ export default function JournalCompose({
         </p>
       )}
 
-      {/* Date + mood strip on desktop */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-4">
-        <input
-          type="date"
-          value={entryDate}
-          onChange={(e) => setEntryDate(e.target.value)}
-          className="w-full lg:w-auto px-3 py-2 rounded-xl bg-bg-card text-[13px] text-text"
-          style={{ border: '1px solid var(--color-border)' }}
-        />
-        <div className="flex items-center gap-2">
-          <span className="text-[12px] text-text-faint mr-1">Mood:</span>
-          {MOODS.map((m) => {
-            const active = mood === m.value
-            return (
-              <button
-                key={m.value}
-                type="button"
-                onClick={() => setMood(active ? null : m.value)}
-                className="w-9 h-9 rounded-full flex items-center justify-center transition-all"
-                title={m.label}
-                style={{
-                  backgroundColor: m.tint,
-                  color: m.stroke,
-                  border: active
-                    ? '2px solid var(--color-primary)'
-                    : '2px solid transparent',
-                }}
-              >
-                <MoodFace mood={m.value} size={18} />
-              </button>
-            )
-          })}
-        </div>
-      </div>
+      {/* Mood picker — prominent, top of compose. */}
+      <MoodPicker value={mood as MoodValue | null} onChange={(v) => setMood(v)} />
+
+      {/* Date — small + quiet beside the title input */}
+      <input
+        type="date"
+        value={entryDate}
+        onChange={(e) => setEntryDate(e.target.value)}
+        className="w-full lg:w-auto px-3 py-2 rounded-xl bg-bg-card text-[13px] text-text"
+        style={{ border: '1px solid var(--color-border)' }}
+      />
 
       {/* Title — large and quiet on desktop */}
       <input

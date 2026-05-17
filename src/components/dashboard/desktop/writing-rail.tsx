@@ -1,10 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
 import { useWriting } from './writing-context'
-import { logMoodCheckIn } from '@/lib/actions/mood'
-import { MOODS } from '@/lib/constants/mood'
-import MoodFace from '@/components/dashboard/mood-face'
 
 function shortName(fullName: string): string {
   const parts = fullName.split(' ').filter(Boolean)
@@ -13,7 +9,6 @@ function shortName(fullName: string): string {
 }
 
 type WritingRailProps = {
-  todaysMood: { mood: 1 | 2 | 3 | 4 | 5 } | null
   pendingPrompt: {
     id: string
     title: string
@@ -23,10 +18,7 @@ type WritingRailProps = {
   } | null
 }
 
-export default function WritingRail({
-  todaysMood,
-  pendingPrompt,
-}: WritingRailProps) {
+export default function WritingRail({ pendingPrompt }: WritingRailProps) {
   const {
     saveStatus,
     wordCount,
@@ -40,8 +32,6 @@ export default function WritingRail({
 
   return (
     <div className="space-y-6">
-      <MoodSection todaysMood={todaysMood} />
-
       {pendingPrompt && assignmentId === pendingPrompt.id && (
         <PromptSection
           prompt={pendingPrompt}
@@ -62,65 +52,7 @@ export default function WritingRail({
   )
 }
 
-// ── Mood ──────────────────────────────────────────────────────────
-
-function MoodSection({
-  todaysMood,
-}: {
-  todaysMood: { mood: 1 | 2 | 3 | 4 | 5 } | null
-}) {
-  const [selected, setSelected] = useState<number | null>(
-    todaysMood?.mood ?? null
-  )
-  const [isPending, startTransition] = useTransition()
-
-  function handleSelect(value: number) {
-    setSelected(value)
-    startTransition(async () => {
-      await logMoodCheckIn(value)
-    })
-  }
-
-  return (
-    <div>
-      <p className="text-[13px] text-text-muted mb-3">How are you feeling?</p>
-      <div className="flex gap-2">
-        {MOODS.map((mood) => {
-          const isSelected = selected === mood.value
-          return (
-            <button
-              key={mood.value}
-              onClick={() => handleSelect(mood.value)}
-              className="flex flex-col items-center gap-1"
-            >
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center transition-all"
-                style={{
-                  backgroundColor: mood.tint,
-                  color: mood.stroke,
-                  border: isSelected
-                    ? '2px solid var(--color-primary)'
-                    : '2px solid transparent',
-                }}
-              >
-                <MoodFace mood={mood.value} size={16} />
-              </div>
-              <span className="text-[9px] text-text-faint">{mood.label}</span>
-            </button>
-          )
-        })}
-      </div>
-      {selected !== null && (
-        <p className="text-[11px] text-text-faint mt-2">
-          {isPending ? 'Saving\u2026' : 'Logged today'} \u00B7{' '}
-          {MOODS.find((m) => m.value === selected)?.label}
-        </p>
-      )}
-    </div>
-  )
-}
-
-// ── Assignment prompt ─────────────────────────────────────────────
+// ─ Assignment prompt ───────────────────────────
 
 function PromptSection({
   prompt,
@@ -152,7 +84,7 @@ function PromptSection({
           </p>
         )}
         <p className="text-[12px] text-text-faint mt-2">
-          {dueDateStr && `Due ${dueDateStr} \u00B7 `}From{' '}
+          {dueDateStr && `Due ${dueDateStr} · `}From{' '}
           {shortName(prompt.doctor.user.name)}
         </p>
       </div>
@@ -160,13 +92,13 @@ function PromptSection({
         onClick={onDismiss}
         className="text-[13px] text-primary mt-2 hover:underline transition-colors duration-150 bg-transparent border-0 p-0 cursor-pointer"
       >
-        Write something else instead {'\u2192'}
+        Write something else instead {'→'}
       </button>
     </div>
   )
 }
 
-// ── Privacy copy ──────────────────────────────────────────────────
+// ─ Privacy copy ───────────────────────────────
 
 function PrivacyCopy() {
   return (
@@ -176,7 +108,7 @@ function PrivacyCopy() {
   )
 }
 
-// ── Autosave indicator ────────────────────────────────────────────
+// ─ Autosave indicator ────────────────────────
 
 function AutosaveIndicator({
   saveStatus,
@@ -188,19 +120,19 @@ function AutosaveIndicator({
   return (
     <div className="flex items-center gap-2 text-[12px]">
       {saveStatus === 'saving' && (
-        <span className="text-text-faint">{'\u25CB'} Saving{'\u2026'}</span>
+        <span className="text-text-faint">{'○'} Saving{'…'}</span>
       )}
       {saveStatus === 'saved' && (
-        <span className="text-text-faint">{'\u2713'} Saved</span>
+        <span className="text-text-faint">{'✓'} Saved</span>
       )}
       {saveStatus === 'error' && (
         <span style={{ color: 'var(--color-accent)' }}>
-          Couldn{'\u2019'}t save {'\u2014'} check your connection
+          Couldn{'’'}t save {'—'} check your connection
         </span>
       )}
       {wordCount > 0 && (
         <span className="text-text-faint">
-          {saveStatus !== 'idle' && '\u00B7 '}
+          {saveStatus !== 'idle' && '· '}
           {wordCount} {wordCount === 1 ? 'word' : 'words'}
         </span>
       )}
@@ -208,7 +140,7 @@ function AutosaveIndicator({
   )
 }
 
-// ── Publish button ────────────────────────────────────────────────
+// ─ Publish button ────────────────────────────
 
 function PublishButton({
   disabled,
@@ -226,7 +158,7 @@ function PublishButton({
         disabled={disabled || isPublishing}
         className="w-full py-3 rounded-full bg-primary text-white text-[14px] font-medium disabled:opacity-40 transition-all duration-200"
       >
-        {isPublishing ? 'Publishing\u2026' : 'Publish entry'}
+        {isPublishing ? 'Publishing…' : 'Publish entry'}
       </button>
       {disabled && !isPublishing && (
         <p className="text-[11px] text-text-faint text-center mt-2">
