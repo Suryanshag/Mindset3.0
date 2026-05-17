@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { sendSessionBookingConfirmation, sendDoctorNewBookingNotification, sendPaymentFailed, sendEbookPurchased, sendOrderConfirmation } from '@/lib/email-service'
 import { createShipmentForOrder } from '@/lib/create-shipment-for-order'
+import { formatSessionDateLong } from '@/lib/format-date'
 
 // CRITICAL: Log every single step
 export async function POST(req: NextRequest) {
@@ -151,6 +152,20 @@ export async function POST(req: NextRequest) {
         if (payment.type === 'EBOOK') {
           console.log('[WEBHOOK] ✓ Ebook payment recorded')
         }
+
+        if (payment.type === 'WORKSHOP' && payment.workshopId) {
+          // Create the registration row only on successful capture. The
+          // pending Payment carries the workshopId since Task 1; only now
+          // do we materialize the WorkshopRegistration.
+          await tx.workshopRegistration.create({
+            data: {
+              userId: payment.userId,
+              workshopId: payment.workshopId,
+              paymentId: payment.id,
+            },
+          })
+          console.log('[WEBHOOK] ✓ Workshop registration created')
+        }
       }, { maxWait: 8000, timeout: 15000 })
 
       console.log('[WEBHOOK] ✓ Transaction complete')
@@ -296,6 +311,38 @@ export async function POST(req: NextRequest) {
           console.error('[WEBHOOK] Session booking emails failed for session', payment.sessionId, err)
         }
       }
+
+      // Post-transaction: paid workshop registration — in-app notification.
+      // The confirmation email is wired separately in Task 4 once the
+      // sendWorkshopRegistrationConfirmation service function exists.
+      if (payment.type === 'WORKSHOP' && payment.workshopId) {
+        try {
+          const workshop = await prisma.workshop.findUnique({
+            where: { id: payment.workshopId },
+            select: { id: true, title: true, startsAt: true },
+          })
+
+          if (workshop) {
+            await prisma.notification.create({
+              data: {
+                userId: payment.userId,
+                kind: 'WORKSHOP_REGISTRATION_CONFIRMED',
+                title: 'Workshop registration confirmed',
+                body: `You're in for "${workshop.title}" on ${formatSessionDateLong(workshop.startsAt)}. We'll send a meeting link before the session.`,
+                link: `/user/discover/workshops/${workshop.id}`,
+              },
+            }).catch((err) => {
+              console.error('[WEBHOOK] Workshop notification create failed:', err)
+            })
+          }
+        } catch (err) {
+          console.error(
+            '[WEBHOOK] Workshop notification failed for workshop',
+            payment.workshopId,
+            err
+          )
+        }
+      }
     }
 
     if (eventType === 'payment.failed') {
@@ -356,11 +403,14 @@ export async function POST(req: NextRequest) {
             SESSION: `${process.env.NEXT_PUBLIC_APP_URL}/user/sessions/book`,
             EBOOK: `${process.env.NEXT_PUBLIC_APP_URL}/study-materials`,
             PRODUCT: `${process.env.NEXT_PUBLIC_APP_URL}/products`,
+            WORKSHOP: failedPayment.workshopId
+              ? `${process.env.NEXT_PUBLIC_APP_URL}/user/discover/workshops/${failedPayment.workshopId}`
+              : `${process.env.NEXT_PUBLIC_APP_URL}/user/discover/workshops`,
           }
           sendPaymentFailed(failedPayment.user.email, {
             userName: failedPayment.user.name ?? 'there',
             amount: Number(failedPayment.amount),
-            type: failedPayment.type as 'SESSION' | 'EBOOK' | 'PRODUCT',
+            type: failedPayment.type as 'SESSION' | 'EBOOK' | 'PRODUCT' | 'WORKSHOP',
             retryUrl: retryUrls[failedPayment.type] ?? process.env.NEXT_PUBLIC_APP_URL!,
           })
         }

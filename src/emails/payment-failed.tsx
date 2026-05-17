@@ -6,7 +6,7 @@ import { SUPPORT_EMAIL } from '@/lib/email-config'
 interface PaymentFailedProps {
   userName: string
   amount: number
-  type: 'SESSION' | 'EBOOK' | 'PRODUCT'
+  type: 'SESSION' | 'EBOOK' | 'PRODUCT' | 'WORKSHOP'
   retryUrl: string
 }
 
@@ -14,6 +14,7 @@ const typeLabels: Record<string, string> = {
   SESSION: 'therapy session booking',
   EBOOK: 'study material purchase',
   PRODUCT: 'product order',
+  WORKSHOP: 'workshop registration',
 }
 
 export default function PaymentFailedEmail({

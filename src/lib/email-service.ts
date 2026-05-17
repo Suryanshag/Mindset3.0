@@ -215,7 +215,7 @@ export function sendPaymentFailed(
   props: {
     userName: string
     amount: number
-    type: 'SESSION' | 'EBOOK' | 'PRODUCT'
+    type: 'SESSION' | 'EBOOK' | 'PRODUCT' | 'WORKSHOP'
     retryUrl: string
   }
 ): void {
