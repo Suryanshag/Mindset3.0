@@ -45,3 +45,6 @@ screenshots/
 .code-review-graph/
 .claude/
 test-results/
+
+# Smoke-test screenshots
+tmp-*.png
