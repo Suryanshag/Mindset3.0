@@ -257,3 +257,30 @@ TOTAL perceived                               8541 ms
 /user/orders (slow) domContent 4368 ms   (outlier — Neon cold or shipping API slow)
 /user/sessions x2   domContent 4144 ms   networkidle 7304 ms  (cold function instance after rotation)
 ```
+
+---
+
+## Follow-up: Sprint Perf-2 Task 3 — `/user/orders` variance
+
+Re-investigated the `(slow obs.) 4 368 ms` outlier flagged above.
+No real bottleneck found:
+
+- `src/app/api/user/orders/route.ts` is a single `prisma.order.findMany`
+  with a nested `include` for orderItems → product fields. No N+1, no
+  per-order Shiprocket call.
+- `shippingStatus` / `awbCode` / `courierName` are read from the Order
+  row directly (set by the Shiprocket webhook on status transitions).
+- The "Track order" button on each row opens a `TrackingModal`, which
+  is the only place that calls Shiprocket — lazy, only on click, fetch
+  is `/api/user/orders/[id]/track`. Correctly deferred off the list
+  render.
+- `src/app/(dashboard)/user/orders/page.tsx` is a client component
+  that `fetch`es `/api/user/orders` from a `useEffect`. Each visit
+  therefore pays two round-trips (page HTML render + client fetch).
+
+The variance is the combined cost of the client-side data-fetch
+pattern + Neon cold-start jitter, not a single fixable bottleneck.
+Real next step would be converting the list page to a server
+component fetching directly via Prisma (saves one RTT) — deferred to
+a separate sprint since the page uses several client-only modals
+(tracking, resume-payment, Razorpay checkout).
