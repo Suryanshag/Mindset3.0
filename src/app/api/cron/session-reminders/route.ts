@@ -20,16 +20,20 @@ export async function GET(req: NextRequest) {
 
   try {
     const now = new Date()
-    // Find sessions 24 hours from now (within 1 hour window)
-    const windowStart = addHours(now, 23)
-    const windowEnd = addHours(now, 25)
+    // Daily-cron-compatible window: any CONFIRMED session starting in the
+    // next 24h that hasn't already been reminded. The reminderSent flag
+    // (existing on the Session model) provides idempotency — a session
+    // caught today won't re-fire if the cron is invoked again before its
+    // start, and the row is skipped for the rest of its lifetime once
+    // sent.
+    const next24h = addHours(now, 24)
 
     const upcomingSessions = await prisma.session.findMany({
       where: {
         status: 'CONFIRMED',
         date: {
-          gte: windowStart,
-          lte: windowEnd,
+          gte: now,
+          lte: next24h,
         },
         reminderSent: false,
       },
@@ -43,39 +47,45 @@ export async function GET(req: NextRequest) {
       },
     })
 
-    console.log(`[CRON] Found ${upcomingSessions.length} sessions to remind`)
+    console.log(`[CRON] Found ${upcomingSessions.length} sessions to remind in next 24h`)
 
     let successCount = 0
     let failCount = 0
 
     for (const session of upcomingSessions) {
       try {
+        const hoursUntil = Math.max(
+          1,
+          Math.round((session.date.getTime() - now.getTime()) / 3_600_000)
+        )
+
         sendSessionReminder(session.user.email, {
           userName: session.user.name ?? 'there',
           doctorName: session.doctor.user.name ?? 'your doctor',
           sessionDate: session.date,
           meetLink: session.meetLink,
-          hoursUntil: 24,
+          hoursUntil,
         })
 
         await prisma.notification.create({
           data: {
             userId: session.userId,
             kind: 'SESSION_REMINDER',
-            title: 'Session in 24 hours',
-            body: `Your session with ${session.doctor.user.name ?? 'your therapist'} is tomorrow.`,
+            title: 'Upcoming session',
+            body: `Your session with ${session.doctor.user.name ?? 'your therapist'} is in about ${hoursUntil} ${hoursUntil === 1 ? 'hour' : 'hours'}.`,
             link: `/user/sessions/${session.id}`,
           },
         }).catch((err) => {
           console.error(`[CRON] Notification create failed for session ${session.id}:`, err)
         })
 
-        // Mark reminder as sent
+        // Mark reminder as sent so a same-day re-trigger is a no-op.
         await prisma.session.update({
           where: { id: session.id },
           data: { reminderSent: true },
         })
 
+        console.log(`[CRON] Reminded session ${session.id} (${hoursUntil}h out)`)
         successCount++
       } catch (err) {
         console.error(
