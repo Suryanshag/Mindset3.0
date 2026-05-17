@@ -177,7 +177,8 @@ export default function BookSessionPage() {
               <Link
                 key={doc.id}
                 href={`/user/sessions/book?doctorId=${doc.id}`}
-                className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 lg:p-6 transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
+                className="bg-white rounded-xl shadow-sm p-5 lg:p-6 transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
+                style={{ border: '1px solid var(--color-border-strong)' }}
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-full overflow-hidden bg-gray-100 relative flex-shrink-0">

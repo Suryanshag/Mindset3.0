@@ -189,7 +189,8 @@ export default function OrdersPage() {
             return (
               <div
                 key={order.id}
-                className="bg-white rounded-xl border border-gray-100 shadow-sm"
+                className="bg-white rounded-xl shadow-sm"
+                style={{ border: '1px solid var(--color-border-strong)' }}
               >
                 <div className="p-5">
                   <div className="flex items-start justify-between gap-4">

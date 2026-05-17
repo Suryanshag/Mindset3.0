@@ -66,9 +66,10 @@
     --color-accent-deep:  #9A3412;
     --color-accent-tint:  #FBE9DD;
     --color-text:         #1A1A1A;
-    --color-text-muted:   #4A4742;
-    --color-text-faint:   #7A7670;
-    --color-border:       rgba(0,0,0,0.10);
+    --color-text-muted:   #3D3935;
+    --color-text-faint:   #6B6862;
+    --color-border:       rgba(0,0,0,0.14);
+    --color-border-strong: rgba(0,0,0,0.18);
     --color-purple-tint:  #E8E4F2;
     --color-tan-tint:     #F4E4D6;
 

@@ -143,7 +143,7 @@ async function UpcomingTab({ userId }: { userId: string }) {
             key={s.id}
             href={`/user/sessions/${s.id}`}
             className="flex items-center gap-3 lg:gap-4 bg-bg-card rounded-2xl p-3 lg:p-4 transition-colors duration-150 lg:hover:bg-white/80"
-            style={{ border: '1px solid var(--color-border)' }}
+            style={{ border: '1px solid var(--color-border-strong)' }}
           >
             <div className="w-9 h-9 lg:w-12 lg:h-12 rounded-full bg-primary-tint flex items-center justify-center shrink-0">
               <span className="text-xs lg:text-sm font-medium text-primary">
@@ -211,7 +211,7 @@ async function PastTab({ userId }: { userId: string }) {
             key={s.id}
             href={`/user/sessions/${s.id}`}
             className="flex items-start gap-3 lg:gap-4 bg-bg-card rounded-2xl p-3.5 lg:p-4 transition-colors duration-150 lg:hover:bg-white/80"
-            style={{ border: '1px solid var(--color-border)' }}
+            style={{ border: '1px solid var(--color-border-strong)' }}
           >
             <div className="w-9 h-9 lg:w-12 lg:h-12 rounded-full bg-primary-tint flex items-center justify-center shrink-0 mt-0.5">
               <span className="text-xs lg:text-sm font-medium text-primary">
@@ -278,7 +278,7 @@ async function AssignmentsTab({ userId }: { userId: string }) {
                 key={a.id}
                 href={`/user/sessions?tab=assignments`}
                 className="flex items-center gap-3 lg:gap-4 bg-bg-card rounded-2xl p-3.5 lg:p-4 transition-colors duration-150 lg:hover:bg-white/80"
-                style={{ border: '1px solid var(--color-border)' }}
+                style={{ border: '1px solid var(--color-border-strong)' }}
               >
                 <div className="w-8 h-8 rounded-full bg-accent-tint flex items-center justify-center shrink-0">
                   <span className="text-[11px] font-medium text-accent">
