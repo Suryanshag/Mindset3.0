@@ -77,11 +77,8 @@ export default async function OrderDetailPage({
   const payChip = PAYMENT_CHIP[order.paymentStatus] ?? PAYMENT_CHIP.PENDING
   const shipChip = SHIPPING_CHIP[order.shippingStatus] ?? SHIPPING_CHIP.PENDING
 
-  const hasShipment =
-    order.shippingStatus === 'SHIPPED' ||
-    order.shippingStatus === 'DELIVERED' ||
-    !!order.awbCode ||
-    !!order.shiprocketOrderId
+  const shouldShowDeliveryCard =
+    !!order.courierName || !!order.awbCode || !!order.shiprocketOrderId
 
   const trackingHref =
     order.trackingUrl ??
@@ -209,8 +206,9 @@ export default async function OrderDetailPage({
           </div>
         )}
 
-        {/* Delivery info */}
-        {hasShipment && (
+        {/* Delivery info — render a labeled card only if we actually have
+            shipping data to show; otherwise a quiet inline status line. */}
+        {shouldShowDeliveryCard ? (
           <div>
             <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px] mb-2">
               Delivery
@@ -242,7 +240,15 @@ export default async function OrderDetailPage({
               )}
             </div>
           </div>
-        )}
+        ) : order.paymentStatus === 'PAID' && order.shippingStatus === 'PENDING' ? (
+          <p className="text-[13px] text-text-muted">
+            Awaiting dispatch. We&apos;ll email you a tracking link when it ships.
+          </p>
+        ) : order.shippingStatus === 'DELIVERED' ? (
+          <p className="text-[13px] text-text-muted">
+            Delivered. Tracking details unavailable.
+          </p>
+        ) : null}
 
         {/* Payment info */}
         {order.payment && (
