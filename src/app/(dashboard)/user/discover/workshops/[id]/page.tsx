@@ -20,6 +20,7 @@ export default async function WorkshopDetailPage({
     where: { id },
     include: {
       _count: { select: { registrations: true } },
+      presenter: { select: { name: true } },
     },
   })
 
@@ -45,33 +46,34 @@ export default async function WorkshopDetailPage({
       <PageHeader title="Workshop" back="/user/discover/workshops" />
 
       <div className="space-y-3.5 pt-5 pb-24">
-        {/* Cover image — natural aspect ratio, no cropping */}
+        {/* Cover — real image when present, designed gradient hero otherwise */}
         {workshop.coverImageUrl ? (
-          <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden">
-            <Image
-              fill
-              src={workshop.coverImageUrl}
-              alt={workshop.title}
-              sizes="(max-width: 768px) 100vw, 600px"
-              className="object-cover"
-              unoptimized
-            />
-          </div>
+          <>
+            <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden">
+              <Image
+                fill
+                src={workshop.coverImageUrl}
+                alt={workshop.title}
+                sizes="(max-width: 768px) 100vw, 600px"
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+            <div className="-mt-0.5">
+              <h2 className="text-[20px] font-medium text-text">{workshop.title}</h2>
+              {(workshop.presenter?.name || workshop.instructorName) && (
+                <p className="text-[14px] text-text-muted mt-1">
+                  with {workshop.presenter?.name ?? workshop.instructorName}
+                </p>
+              )}
+            </div>
+          </>
         ) : (
-          <div className="rounded-2xl bg-accent-tint flex items-center justify-center aspect-[3/4]">
-            <Ticket size={48} className="text-accent" />
-          </div>
+          <WorkshopHeroFallback
+            title={workshop.title}
+            presenterName={workshop.presenter?.name ?? workshop.instructorName ?? null}
+          />
         )}
-
-        {/* Title + instructor */}
-        <div className="-mt-0.5">
-          <h2 className="text-[20px] font-medium text-text">{workshop.title}</h2>
-          {workshop.instructorName && (
-            <p className="text-[14px] text-text-muted mt-1">
-              with {workshop.instructorName}
-            </p>
-          )}
-        </div>
 
         {/* Info card — plain text, no icons */}
         <div
@@ -122,6 +124,42 @@ export default async function WorkshopDetailPage({
           whatsappUrl={workshop.whatsappGroupUrl}
           price={workshop.priceCents}
         />
+      </div>
+    </div>
+  )
+}
+
+function WorkshopHeroFallback({
+  title,
+  presenterName,
+}: {
+  title: string
+  presenterName: string | null
+}) {
+  const initial = presenterName?.trim().charAt(0).toUpperCase() ?? ''
+  return (
+    <div
+      className="relative rounded-2xl overflow-hidden aspect-[16/9] lg:min-h-[320px] flex items-center justify-center px-6 lg:px-10"
+      style={{
+        background:
+          'linear-gradient(135deg, var(--color-accent-tint) 0%, var(--color-primary-tint) 100%)',
+      }}
+    >
+      <Ticket size={20} className="absolute top-4 left-4 text-accent/60" />
+      <div className="text-center">
+        <h2 className="text-[24px] lg:text-[32px] font-medium text-text leading-tight">
+          {title}
+        </h2>
+        {presenterName && (
+          <div className="mt-4 inline-flex items-center gap-2 text-[14px] text-text-muted">
+            <span
+              className="w-7 h-7 rounded-full bg-white/70 flex items-center justify-center text-[12px] font-medium text-primary"
+            >
+              {initial}
+            </span>
+            <span>with {presenterName}</span>
+          </div>
+        )}
       </div>
     </div>
   )
