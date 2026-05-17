@@ -2,7 +2,7 @@
 
 import {
   createContext, useContext, useState,
-  useEffect, useCallback, useRef,
+  useCallback,
 } from 'react'
 import { useSession } from 'next-auth/react'
 
@@ -36,15 +36,19 @@ export function CartProvider({
   children: React.ReactNode
   /**
    * Server-rendered cart items for USER sessions. When provided, the
-   * provider skips its post-mount fetch and uses these as initial state —
-   * the spine cart count is correct on first paint with zero round-trips.
+   * provider uses these as starting state. When omitted, the provider
+   * starts empty — there is NO post-mount auto-fetch. Cart-relevant
+   * pages (/user/cart, /user/orders/checkout) call refresh() on mount
+   * to lazy-load the real cart. For every other page the empty initial
+   * state is silently correct for the common empty-cart user.
    */
   initialItems?: CartItem[]
 }) {
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
   const [items, setItems] = useState<CartItem[]>(initialItems ?? [])
-  const [isLoading, setIsLoading] = useState(initialItems === undefined)
-  const fetchedRef = useRef(initialItems !== undefined)
+  // No mount-time fetch ⇒ we are never "loading" from a non-user-action.
+  // refresh() flips this true/false around explicit calls.
+  const [isLoading, setIsLoading] = useState(false)
 
   const isUser = session?.user?.role === 'USER'
 
@@ -81,20 +85,6 @@ export function CartProvider({
       setIsLoading(false)
     }
   }, [isUser])
-
-  useEffect(() => {
-    if (status === 'loading') return
-    if (isUser && !fetchedRef.current) {
-      fetchedRef.current = true
-      fetchCart()
-    }
-    if (!isUser) {
-      setItems([])
-      setIsLoading(false)
-      // Reset so a future sign-in (without page reload) re-fetches.
-      fetchedRef.current = false
-    }
-  }, [status, isUser, fetchCart])
 
   const addItem = useCallback(
     async (productId: string, quantity = 1) => {

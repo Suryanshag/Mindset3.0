@@ -1,12 +1,19 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useCart } from '@/lib/cart-context'
 import { Minus, Plus, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
 export default function CartPage() {
-  const { items, isLoading, removeItem, updateQuantity, totalAmount } = useCart()
+  const { items, isLoading, removeItem, updateQuantity, totalAmount, refresh } = useCart()
+
+  // Lazy-load on mount. CartProvider no longer auto-fetches on every
+  // dashboard page mount — only cart-relevant routes pay the round-trip.
+  useEffect(() => {
+    refresh()
+  }, [refresh])
 
   if (isLoading) {
     return (

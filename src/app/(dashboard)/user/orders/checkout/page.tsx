@@ -43,7 +43,7 @@ interface SavedAddress {
 export default function CheckoutPage() {
   const router = useRouter()
   const { data: authSession, status: sessionStatus } = useSession()
-  const { items, isLoading: cartLoading, updateQuantity, removeItem, clearCart, totalAmount, totalItems } = useCart()
+  const { items, isLoading: cartLoading, updateQuantity, removeItem, clearCart, totalAmount, totalItems, refresh: refreshCart } = useCart()
 
   const [step, setStep] = useState(1)
   const [address, setAddress] = useState<ShippingAddress>({
@@ -93,6 +93,12 @@ export default function CheckoutPage() {
     script.async = true
     document.body.appendChild(script)
   }, [])
+
+  // Lazy-load the real cart on mount — CartProvider no longer auto-fetches
+  // on every dashboard page mount, only cart-relevant routes do.
+  useEffect(() => {
+    refreshCart()
+  }, [refreshCart])
 
   // Jump to payment step for digital-only carts
   useEffect(() => {
