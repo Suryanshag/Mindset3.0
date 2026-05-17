@@ -32,6 +32,12 @@ const HIDE_RAIL_REGEX = [
   /^\/user\/orders\/[^/]+$/,
 ]
 
+// Routes that benefit from a wider main column at large viewports —
+// list/grid pages that would otherwise drift to the left at 1920px+
+// or have visible content imbalance (cart, orders, notifications all
+// hide the rail too, so the freed space goes to a wider container).
+const WIDE_MAIN_EXACT = ['/user/cart', '/user/orders', '/user/notifications']
+
 export default function DesktopContent({
   spineSessions,
   engagementState,
@@ -54,6 +60,10 @@ export default function DesktopContent({
   const showRail =
     !forceHideRail && (upcomingItems.length > 0 || showFirstStepsFallback)
 
+  const mainMaxWidthCls = WIDE_MAIN_EXACT.includes(pathname)
+    ? 'max-w-[1200px]'
+    : 'max-w-[720px]'
+
   return (
     <div className={`desktop-shell min-h-dvh ${showRail ? 'with-rail' : 'no-rail'}`}>
       <Spine sessions={spineSessions} engagementState={engagementState} />
@@ -64,7 +74,7 @@ export default function DesktopContent({
             <VerifyEmailBanner />
           </div>
         )}
-        <div className="mx-auto max-w-[720px] px-8 py-8">{children}</div>
+        <div className={`mx-auto ${mainMaxWidthCls} px-8 py-8`}>{children}</div>
       </main>
 
       {showRail && (

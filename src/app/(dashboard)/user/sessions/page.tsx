@@ -208,6 +208,15 @@ async function UpcomingTab({ userId }: { userId: string }) {
   )
 }
 
+/** "Dr. Ananya" from "Dr. Ananya Sharma"; "Ananya" from "Ananya Sharma". */
+function bookButtonName(fullName: string): string {
+  const parts = fullName.split(' ').filter(Boolean)
+  if (parts.length >= 2 && /^Dr\.?$/i.test(parts[0])) {
+    return `Dr. ${parts[1]}`
+  }
+  return parts[0] ?? fullName
+}
+
 function BookAnotherCta({
   primaryDoctor,
 }: {
@@ -225,16 +234,16 @@ function BookAnotherCta({
         {primaryDoctor && (
           <Link
             href={`/user/sessions/book?doctorId=${primaryDoctor.doctorId}`}
-            className="inline-flex items-center px-4 py-2 rounded-full bg-primary text-white text-[13px] font-medium"
+            className="inline-flex items-center whitespace-nowrap px-4 py-2 rounded-full bg-primary text-white text-[13px] font-medium"
           >
-            Book with {primaryDoctor.doctor.user.name.split(' ')[0]}
+            Book with {bookButtonName(primaryDoctor.doctor.user.name)}
           </Link>
         )}
         <Link
           href="/user/sessions/book"
-          className={`inline-flex items-center px-4 py-2 rounded-full text-[13px] font-medium ${
+          className={`inline-flex items-center whitespace-nowrap px-4 py-2 rounded-full text-[13px] font-medium ${
             primaryDoctor
-              ? 'bg-bg-card text-text border-text-faint/30'
+              ? 'bg-bg-card text-text'
               : 'bg-primary text-white'
           }`}
           style={

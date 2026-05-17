@@ -51,7 +51,7 @@ export default function CartPage() {
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Cart items */}
-        <div className="flex-1 space-y-3">
+        <div className="flex-1 min-w-0 space-y-3">
           {items.map((item) => (
             <div
               key={item.productId}
@@ -115,7 +115,7 @@ export default function CartPage() {
         </div>
 
         {/* Order summary */}
-        <div className="w-full lg:w-72">
+        <div className="w-full lg:w-80 lg:shrink-0">
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 sticky top-4">
             <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--navy)' }}>
               Order Summary
