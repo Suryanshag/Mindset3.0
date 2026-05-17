@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import type { UpcomingItem } from '@/lib/queries/upcoming'
 import { formatSessionDateRelative } from '@/lib/format-date'
 import { joinWindowState } from '@/lib/session-window'
+import { getWorkshopWindowState, isWorkshopJoinable } from '@/lib/workshop-window'
 
 // ─── Date utilities ────────────────────────────────────────────────────────
 
@@ -77,9 +78,30 @@ function ItemCard({ item }: { item: UpcomingItem }) {
   // Dates may arrive as ISO strings depending on serialization edges — coerce defensively.
   const startsAt = item.startsAt instanceof Date ? item.startsAt : new Date(item.startsAt)
   const chip = CHIP[item.kind]
-  const winState = joinWindowState(startsAt, item.durationMin, item.status)
-  const canJoin = winState === 'open' && !!item.meetLink
-  const awaitingLink = winState === 'open' && !item.meetLink
+
+  // Sessions use the session-status enum (PENDING/CONFIRMED/...) which
+  // joinWindowState interprets directly. Workshops + circles use
+  // WorkshopStatus (SCHEDULED/LIVE/COMPLETED/CANCELLED) — joinWindowState
+  // doesn't know those, so route them through workshop-window instead.
+  // Before this branch, workshop cards literally never showed the Join
+  // button because joinWindowState's "open" branch requires status =
+  // 'CONFIRMED'.
+  let canJoin: boolean
+  let awaitingLink: boolean
+  if (item.kind === 'session') {
+    const winState = joinWindowState(startsAt, item.durationMin, item.status)
+    canJoin = winState === 'open' && !!item.meetLink
+    awaitingLink = winState === 'open' && !item.meetLink
+  } else {
+    if (item.status === 'CANCELLED') {
+      canJoin = false
+      awaitingLink = false
+    } else {
+      const winState = getWorkshopWindowState(startsAt, item.durationMin)
+      canJoin = isWorkshopJoinable(winState) && !!item.meetLink
+      awaitingLink = isWorkshopJoinable(winState) && !item.meetLink
+    }
+  }
 
   function handleCardClick(e: React.MouseEvent<HTMLDivElement>) {
     // Don't navigate if the click target is the Join button (anchor)
@@ -136,10 +158,14 @@ function ItemCard({ item }: { item: UpcomingItem }) {
             className="inline-flex items-center px-3 py-1.5 rounded-lg text-[13px] font-medium text-white"
             style={{ background: 'var(--color-primary, var(--coral))' }}
           >
-            Join
+            {item.kind === 'session' ? 'Join' : 'Join workshop'}
           </a>
         ) : awaitingLink ? (
-          <p className="text-[12px] text-amber-700">Awaiting Meet link from therapist</p>
+          <p className="text-[12px] text-amber-700">
+            {item.kind === 'session'
+              ? 'Awaiting Meet link from therapist'
+              : 'Meeting link not yet provided'}
+          </p>
         ) : (
           <p className="text-[12px] text-text-faint">{formatCountdown(startsAt)}</p>
         )}
