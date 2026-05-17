@@ -9,14 +9,11 @@ import { MOODS } from '@/lib/constants/mood'
 import { formatSessionDateRelative } from '@/lib/format-date'
 
 export default async function PracticeHubPage() {
-  // PERF-INVESTIGATION (temporary)
-  const __t0 = Date.now()
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
 
   const userId = session.user.id
 
-  const __tQ = Date.now()
   const [latestEntry, pendingCount, recentEntries, pendingAssignments] = await Promise.all([
     prisma.journalEntry
       .findFirst({
@@ -45,8 +42,6 @@ export default async function PracticeHubPage() {
       })
       .catch(() => []),
   ])
-  console.log(`[PERF] /user/practice Promise.all (4 queries) ${Date.now() - __tQ}ms`)
-  console.log(`[PERF] /user/practice TOTAL ${Date.now() - __t0}ms`)
 
   const sections = [
     {

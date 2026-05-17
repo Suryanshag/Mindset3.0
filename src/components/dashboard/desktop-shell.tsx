@@ -10,12 +10,9 @@ type Props = {
 }
 
 export default async function DesktopShell({ children, showVerifyBanner = false }: Props) {
-  // PERF-INVESTIGATION (temporary)
-  const __t0 = Date.now()
   const session = await auth()
   const userId = session?.user?.id
 
-  const __tQ = Date.now()
   const [spineSessions, engagementState, upcomingItems] = await Promise.all([
     userId ? getSpineSessions(userId).catch(() => []) : Promise.resolve([]),
     userId
@@ -23,8 +20,6 @@ export default async function DesktopShell({ children, showVerifyBanner = false 
       : Promise.resolve('empty' as const),
     userId ? getUpcomingItems(userId).catch(() => []) : Promise.resolve([]),
   ])
-  console.log(`[PERF] DesktopShell Promise.all (3 helpers) ${Date.now() - __tQ}ms`)
-  console.log(`[PERF] DesktopShell TOTAL ${Date.now() - __t0}ms`)
 
   return (
     <DesktopContent

@@ -149,8 +149,6 @@ function SessionCard({ s }: { s: UpcomingSession }) {
 }
 
 async function UpcomingTab({ userId }: { userId: string }) {
-  // PERF-INVESTIGATION (temporary)
-  const __t0 = Date.now()
   const now = new Date()
   const [sessions, primaryDoctor] = await Promise.all([
     prisma.session.findMany({
@@ -180,7 +178,6 @@ async function UpcomingTab({ userId }: { userId: string }) {
       },
     }),
   ])
-  console.log(`[PERF] /user/sessions UpcomingTab (2 queries) ${Date.now() - __t0}ms`)
 
   if (sessions.length === 0) {
     return (

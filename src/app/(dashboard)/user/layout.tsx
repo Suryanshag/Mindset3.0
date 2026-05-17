@@ -16,11 +16,7 @@ export default async function UserDashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  // PERF-INVESTIGATION (temporary, remove after data collected)
-  const __tLayout0 = Date.now()
-  const __tAuth = Date.now()
   const session = await auth()
-  console.log(`[PERF] layout.auth() ${Date.now() - __tAuth}ms`)
 
   if (!session?.user) {
     redirect('/login')
@@ -31,14 +27,11 @@ export default async function UserDashboardLayout({
     redirect(ROLE_HOME[role] ?? '/')
   }
 
-  const __tUser = Date.now()
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { emailVerified: true },
   })
-  console.log(`[PERF] layout.user.findUnique ${Date.now() - __tUser}ms`)
   const showVerifyBanner = !user?.emailVerified
-  console.log(`[PERF] layout TOTAL ${Date.now() - __tLayout0}ms`)
 
   return (
     <>

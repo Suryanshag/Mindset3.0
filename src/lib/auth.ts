@@ -49,14 +49,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        // PERF-INVESTIGATION (temporary, remove after data collected)
-        const __t0 = Date.now()
         const parsed = loginSchema.safeParse(credentials)
         if (!parsed.success) return null
 
         const { email, password } = parsed.data
 
-        const __tFindStart = Date.now()
         const user = await prisma.user.findUnique({
           where: { email: email.toLowerCase().trim() },
           select: {
@@ -69,7 +66,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             lockedUntil: true,
           },
         })
-        console.log(`[PERF] auth.findUnique ${Date.now() - __tFindStart}ms`)
 
         // No user OR no password (Google-only account). Same response so no enumeration.
         if (!user || !user.password) return null
@@ -111,15 +107,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         // Success — reset counter, bump lastLoginAt
-        const __tUpdStart = Date.now()
         await prisma.user.update({
           where: { id: user.id },
           data: { failedLoginAttempts: 0, lastLoginAt: new Date() },
         })
-        console.log(`[PERF] auth.update ${Date.now() - __tUpdStart}ms`)
         await logAuthEvent({ userId: user.id, kind: 'LOGIN_SUCCESS' })
 
-        console.log(`[PERF] auth.authorize TOTAL ${Date.now() - __t0}ms`)
         return {
           id: user.id,
           email: user.email,
