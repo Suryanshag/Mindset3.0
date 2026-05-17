@@ -11,6 +11,16 @@ import RazorpayCheckout from '@/components/payments/razorpay-checkout'
 import SlotsCalendar, { type CalendarSlot } from '@/components/ui/slots-calendar'
 import { formatSessionDateLong } from '@/lib/format-date'
 
+// TODO: wire to specialization data — filter pills are visual scaffolding only.
+const FILTER_PILLS = [
+  'All therapists',
+  'Anxiety',
+  'Depression',
+  'Relationships',
+  'Student & Academic',
+  'Family',
+] as const
+
 interface Doctor {
   id: string
   slug: string
@@ -37,6 +47,8 @@ export default function BookSessionPage() {
   const [selectedSlot, setSelectedSlot] = useState<CalendarSlot | null>(null)
   const [loading, setLoading] = useState(true)
   const [booking, setBooking] = useState(false)
+  const [activeFilter, setActiveFilter] = useState<(typeof FILTER_PILLS)[number]>('All therapists')
+  const [bioExpanded, setBioExpanded] = useState(false)
 
   // Payment state
   const [paymentData, setPaymentData] = useState<{
@@ -165,7 +177,52 @@ export default function BookSessionPage() {
         <h1 className="text-2xl font-bold mb-6 text-text">
           Book a Session
         </h1>
-        <p className="text-gray-500 mb-6">Choose a doctor to book a session with:</p>
+
+        {/* First-time framing — friendly, not overbearing */}
+        <section
+          className="mx-auto max-w-[720px] rounded-2xl p-5 mb-6"
+          style={{
+            background: 'var(--color-bg-rail)',
+            border: '1px solid var(--color-border-strong)',
+          }}
+        >
+          <h2 className="text-[16px] font-medium text-text">First time booking?</h2>
+          <p className="text-[14px] text-text-muted leading-relaxed mt-1.5">
+            Here&apos;s what to expect: pick a therapist based on what you need,
+            choose a date and time that works, pay via Razorpay, then receive a
+            Google Meet link from your therapist before the session.
+          </p>
+          <p className="text-[13px] text-text-faint mt-2">
+            All our therapists are RCI-registered. Sessions are completely
+            confidential.
+          </p>
+        </section>
+
+        {/* Filter pills — visual scaffolding only, no filter logic yet. */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {FILTER_PILLS.map((label) => {
+            const active = activeFilter === label
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setActiveFilter(label)}
+                className={`py-2 px-4 rounded-full text-[13px] font-medium transition-colors ${
+                  active
+                    ? 'bg-primary text-white'
+                    : 'bg-bg-card text-text hover:bg-white/80'
+                }`}
+                style={
+                  active
+                    ? undefined
+                    : { border: '1px solid var(--color-border-strong)' }
+                }
+              >
+                {label}
+              </button>
+            )
+          })}
+        </div>
 
         {doctors.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-100 p-12 text-center text-gray-500">
@@ -250,19 +307,77 @@ export default function BookSessionPage() {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-base lg:text-lg truncate" style={{ color: 'var(--navy)' }}>
+                <p className="font-bold text-base lg:text-lg truncate text-text">
                   {selectedDoctor.user.name}
                 </p>
                 <p className="text-sm text-gray-500 truncate">{selectedDoctor.designation}</p>
               </div>
               <div className="text-right flex-shrink-0">
-                <p className="text-2xl lg:text-3xl font-bold" style={{ color: 'var(--navy)' }}>
+                <p className="text-2xl lg:text-3xl font-bold text-text">
                   &#8377;{Number(selectedDoctor.sessionPrice).toLocaleString('en-IN')}
                 </p>
                 <p className="text-xs text-gray-500">per session</p>
               </div>
             </div>
           </div>
+
+          {/* About Dr. X — expandable */}
+          <div
+            className="bg-bg-card rounded-2xl p-5 mb-6"
+            style={{ border: '1px solid var(--color-border)' }}
+          >
+            <p className="text-[11px] font-medium text-text-faint uppercase tracking-[0.6px] mb-2">
+              About {selectedDoctor.user.name}
+            </p>
+            {(() => {
+              const bioText =
+                selectedDoctor.bio?.trim() ||
+                `${selectedDoctor.user.name} specializes in ${selectedDoctor.specialization}. Detailed bio coming soon.`
+              return (
+                <>
+                  <p
+                    className={`text-[14px] text-text leading-relaxed whitespace-pre-wrap ${
+                      bioExpanded ? '' : 'line-clamp-2'
+                    }`}
+                  >
+                    {bioText}
+                  </p>
+                  {bioExpanded && (
+                    <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-[13px]">
+                      <div>
+                        <dt className="text-text-faint">Qualification</dt>
+                        <dd className="text-text mt-0.5">{selectedDoctor.qualification}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-text-faint">Experience</dt>
+                        <dd className="text-text mt-0.5">
+                          {selectedDoctor.experience}{' '}
+                          {selectedDoctor.experience === 1 ? 'year' : 'years'}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-text-faint">Specialization</dt>
+                        <dd className="text-text mt-0.5">{selectedDoctor.specialization}</dd>
+                      </div>
+                    </dl>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setBioExpanded((v) => !v)}
+                    className="text-[13px] text-primary font-medium mt-3 hover:underline"
+                  >
+                    {bioExpanded ? 'Show less' : 'Read more →'}
+                  </button>
+                </>
+              )
+            })()}
+          </div>
+
+          {/* Reassurance line above the calendar */}
+          <p className="text-[13px] text-text-muted text-center mb-4">
+            Your first session is just a conversation. No pressure to commit to
+            anything beyond that.
+          </p>
 
           {/* Razorpay Checkout */}
           {paymentData && authSession?.user && (
