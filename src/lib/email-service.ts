@@ -18,6 +18,7 @@ import PasswordResetEmail from '@/emails/password-reset'
 import EmailVerificationEmail from '@/emails/email-verification'
 import OrderShippedEmail from '@/emails/order-shipped'
 import OrderDeliveredEmail from '@/emails/order-delivered'
+import WorkshopRegistrationConfirmationEmail from '@/emails/workshop-registration-confirmation'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -369,5 +370,26 @@ export function sendNgoJoinConfirmation(
     `You're registered for the ${props.ngoName} visit!`,
     render(NgoJoinConfirmationEmail(props)),
     'ngo-join-confirmation'
+  )
+}
+
+// 15. Workshop registration confirmed (free OR paid — both routes call this)
+export function sendWorkshopRegistrationConfirmation(
+  to: string,
+  props: {
+    userName: string
+    workshopTitle: string
+    startsAt: Date
+    durationMin: number
+    presenterName: string
+    amount: number
+    workshopId: string
+  }
+): void {
+  sendEmail(
+    to,
+    `You're registered for "${props.workshopTitle}"`,
+    render(WorkshopRegistrationConfirmationEmail(props)),
+    'workshop-registration-confirmation'
   )
 }

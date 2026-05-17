@@ -3,6 +3,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { sendWorkshopRegistrationConfirmation } from '@/lib/email-service'
 
 export async function registerForWorkshop(workshopId: string) {
   const session = await auth()
@@ -15,6 +16,7 @@ export async function registerForWorkshop(workshopId: string) {
       where: { id: workshopId },
       include: {
         _count: { select: { registrations: true } },
+        presenter: { select: { name: true } },
       },
     })
 
@@ -44,15 +46,18 @@ export async function registerForWorkshop(workshopId: string) {
     })
 
     return {
-      success: true,
+      success: true as const,
       whatsappUrl: workshop.whatsappGroupUrl ?? null,
       title: workshop.title,
+      startsAt: workshop.startsAt,
+      durationMin: workshop.durationMin,
+      presenterName: workshop.presenter?.name ?? workshop.instructorName ?? 'Mindset',
     }
   }, { maxWait: 8000, timeout: 15000 })
 
   if ('error' in result) return result
 
-  // Post-transaction: engagement event + notification (non-blocking)
+  // Post-transaction: engagement event + notification + email (non-blocking)
   await prisma.engagementEvent.create({
     data: {
       userId,
@@ -64,12 +69,35 @@ export async function registerForWorkshop(workshopId: string) {
   await prisma.notification.create({
     data: {
       userId,
-      kind: 'WORKSHOP',
+      kind: 'WORKSHOP_REGISTRATION_CONFIRMED',
       title: "You're in!",
       body: `You've registered for ${result.title}`,
       link: `/user/discover/workshops/${workshopId}`,
     },
   }).catch(() => {})
+
+  // Email — retrofit per the audit. Free flow used to silently send nothing;
+  // now it shares the same template the paid flow uses (amount=0 hides the
+  // "Amount paid" row in the email body).
+  try {
+    const userRow = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, email: true },
+    })
+    if (userRow) {
+      sendWorkshopRegistrationConfirmation(userRow.email, {
+        userName: userRow.name ?? 'there',
+        workshopTitle: result.title,
+        startsAt: result.startsAt,
+        durationMin: result.durationMin,
+        presenterName: result.presenterName,
+        amount: 0,
+        workshopId,
+      })
+    }
+  } catch (err) {
+    console.error('[WORKSHOP_FREE] Confirmation email failed:', err)
+  }
 
   revalidatePath(`/user/discover/workshops/${workshopId}`)
   revalidatePath('/user/discover/workshops')

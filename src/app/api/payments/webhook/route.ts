@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
-import { sendSessionBookingConfirmation, sendDoctorNewBookingNotification, sendPaymentFailed, sendEbookPurchased, sendOrderConfirmation } from '@/lib/email-service'
+import { sendSessionBookingConfirmation, sendDoctorNewBookingNotification, sendPaymentFailed, sendEbookPurchased, sendOrderConfirmation, sendWorkshopRegistrationConfirmation } from '@/lib/email-service'
 import { createShipmentForOrder } from '@/lib/create-shipment-for-order'
 import { formatSessionDateLong } from '@/lib/format-date'
 
@@ -312,17 +312,36 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Post-transaction: paid workshop registration — in-app notification.
-      // The confirmation email is wired separately in Task 4 once the
-      // sendWorkshopRegistrationConfirmation service function exists.
+      // Post-transaction: paid workshop registration — confirmation email +
+      // in-app notification. The registration row is already created inside
+      // the transaction above.
       if (payment.type === 'WORKSHOP' && payment.workshopId) {
         try {
-          const workshop = await prisma.workshop.findUnique({
-            where: { id: payment.workshopId },
-            select: { id: true, title: true, startsAt: true },
-          })
+          const [workshop, userDetails] = await Promise.all([
+            prisma.workshop.findUnique({
+              where: { id: payment.workshopId },
+              include: { presenter: { select: { name: true } } },
+            }),
+            prisma.user.findUnique({
+              where: { id: payment.userId },
+              select: { name: true, email: true },
+            }),
+          ])
 
-          if (workshop) {
+          if (workshop && userDetails) {
+            const presenterName =
+              workshop.presenter?.name ?? workshop.instructorName ?? 'Mindset'
+
+            sendWorkshopRegistrationConfirmation(userDetails.email, {
+              userName: userDetails.name ?? 'there',
+              workshopTitle: workshop.title,
+              startsAt: workshop.startsAt,
+              durationMin: workshop.durationMin,
+              presenterName,
+              amount: Number(payment.amount),
+              workshopId: workshop.id,
+            })
+
             await prisma.notification.create({
               data: {
                 userId: payment.userId,
@@ -337,7 +356,7 @@ export async function POST(req: NextRequest) {
           }
         } catch (err) {
           console.error(
-            '[WEBHOOK] Workshop notification failed for workshop',
+            '[WEBHOOK] Workshop registration emails failed for workshop',
             payment.workshopId,
             err
           )
