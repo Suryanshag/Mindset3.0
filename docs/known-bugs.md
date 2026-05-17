@@ -115,3 +115,38 @@ The `/user/practice` hub previously rendered a disabled "Mindfulness — Coming 
 **Resolution:** Mindfulness entry removed from the `sections` array in `src/app/(dashboard)/user/practice/page.tsx`. The 2-card grid (Journal + Assignments) now uses `lg:grid-cols-2` so the remaining cards take more horizontal space.
 
 The route `/user/practice/mindfulness` still 404s but no UI links to it. Revisit when the feature is actually built.
+
+---
+
+## Pending — feature gap
+
+### Presenter "new registration" email — blocked on schema
+
+Sprint Workshops-Paid Task 6 was to email the workshop presenter when someone registers ("Hi {presenter}, {user} just signed up for {workshop}"). Skipped because the **`Presenter` model has no `email` field**.
+
+Current schema (`prisma/schema.prisma:204`):
+
+```prisma
+model Presenter {
+  id           String         @id @default(cuid())
+  name         String
+  title        String
+  bio          String?        @db.Text
+  linkedinUrl  String?        @map("linkedin_url")
+  tier         PresenterTier
+  upi          String?
+  ...                              // payout fields, no email
+}
+```
+
+The two call sites that would invoke `sendPresenterNewRegistration` are marked with `TODO(presenter-notifications)` comments:
+- `src/app/api/payments/webhook/route.ts` (paid path, inside the workshop post-tx block)
+- `src/lib/actions/workshops.ts` (free path, inside `registerForWorkshop`)
+
+**To unblock:**
+1. `prisma/schema.prisma` — add `email String?` (or required, your call) to `Presenter`, plus `prisma db push`.
+2. Backfill the existing Presenter row (currently 1: "muski") via Prisma Studio or a one-shot script.
+3. Implement `sendPresenterNewRegistration` in `src/lib/email-service.ts` + a template at `src/emails/presenter-new-registration.tsx`.
+4. Replace the two TODO comments with actual `sendPresenterNewRegistration(presenter.email, { … })` calls.
+
+No urgency for launch — presenters currently get notified manually (or via shared Google Sheet of registrations); this is a quality-of-life add.

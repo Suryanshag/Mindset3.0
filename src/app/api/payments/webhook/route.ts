@@ -353,6 +353,10 @@ export async function POST(req: NextRequest) {
             }).catch((err) => {
               console.error('[WEBHOOK] Workshop notification create failed:', err)
             })
+
+            // TODO(presenter-notifications): when Presenter model gains an
+            // `email` field, send a "new registration" email here using
+            // workshop.presenter — see docs/known-bugs.md.
           }
         } catch (err) {
           console.error(

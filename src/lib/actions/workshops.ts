@@ -76,6 +76,10 @@ export async function registerForWorkshop(workshopId: string) {
     },
   }).catch(() => {})
 
+  // TODO(presenter-notifications): when Presenter model gains an `email`
+  // field, also send a "new registration" email to the presenter here.
+  // Blocked on schema — see docs/known-bugs.md.
+
   // Email — retrofit per the audit. Free flow used to silently send nothing;
   // now it shares the same template the paid flow uses (amount=0 hides the
   // "Amount paid" row in the email body).
