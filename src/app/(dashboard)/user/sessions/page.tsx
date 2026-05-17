@@ -3,10 +3,14 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { Video, ChevronRight, CheckCircle } from 'lucide-react'
+import Image from 'next/image'
+import { ChevronRight, CheckCircle } from 'lucide-react'
 import TabControl from '@/components/dashboard/sessions/tab-control'
 import PageHeader from '@/components/dashboard/page-header'
 import { formatSessionDateRelative, formatSessionDate } from '@/lib/format-date'
+import { joinWindowState } from '@/lib/session-window'
+
+const SESSION_DURATION_MIN = 60
 
 const doctorSelect = {
   designation: true,
@@ -42,127 +46,207 @@ export default async function SessionsPage({
   )
 }
 
+type UpcomingSession = {
+  id: string
+  date: Date
+  meetLink: string | null
+  status: string
+  doctorId: string
+  doctor: { designation: string | null; photo: string | null; user: { name: string } }
+}
+
+/** "Join in 3 days" / "Join in 5 hours" / "Join in 25 min" */
+function formatJoinIn(date: Date): string {
+  const ms = date.getTime() - Date.now()
+  if (ms <= 0) return 'Join now'
+  const minutes = Math.floor(ms / 60000)
+  if (minutes < 60) return `Join in ${minutes} min`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `Join in ${hours} ${hours === 1 ? 'hour' : 'hours'}`
+  const days = Math.floor(hours / 24)
+  return `Join in ${days} ${days === 1 ? 'day' : 'days'}`
+}
+
+function StatusBadge({ session }: { session: UpcomingSession }) {
+  const state = joinWindowState(session.date, SESSION_DURATION_MIN, session.status)
+
+  if (state === 'cancelled') {
+    return (
+      <span className="text-[12px] font-medium px-3 py-1 rounded-full bg-red-100 text-red-700 shrink-0">
+        Cancelled
+      </span>
+    )
+  }
+
+  if (state === 'open') {
+    if (!session.meetLink) {
+      return (
+        <span className="text-[12px] font-medium px-3 py-1 rounded-full bg-amber-100 text-amber-800 shrink-0">
+          Awaiting Meet link
+        </span>
+      )
+    }
+    return (
+      <span className="text-[12px] font-medium px-3 py-1 rounded-full bg-primary-tint text-primary shrink-0">
+        Join now
+      </span>
+    )
+  }
+
+  if (state === 'ended') {
+    return (
+      <span className="text-[12px] font-medium px-3 py-1 rounded-full bg-bg-app text-text-muted shrink-0">
+        Ended
+      </span>
+    )
+  }
+
+  // too_early — show countdown
+  return (
+    <span className="text-[12px] font-medium px-3 py-1 rounded-full bg-primary-tint text-primary shrink-0">
+      {formatJoinIn(session.date)}
+    </span>
+  )
+}
+
+function SessionCard({ s }: { s: UpcomingSession }) {
+  const initials = s.doctor.user.name
+    .split(' ')
+    .map((w: string) => w[0])
+    .join('')
+    .slice(0, 2)
+
+  return (
+    <Link
+      href={`/user/sessions/${s.id}`}
+      className="flex items-center gap-3 lg:gap-4 bg-bg-card rounded-2xl p-4 transition-colors duration-150 lg:hover:bg-white/80"
+      style={{ border: '1px solid var(--color-border-strong)' }}
+    >
+      {s.doctor.photo ? (
+        <Image
+          src={s.doctor.photo}
+          alt={s.doctor.user.name}
+          width={48}
+          height={48}
+          className="w-10 h-10 lg:w-12 lg:h-12 rounded-full object-cover shrink-0"
+        />
+      ) : (
+        <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-primary-tint flex items-center justify-center shrink-0">
+          <span className="text-[13px] font-medium text-primary">{initials}</span>
+        </div>
+      )}
+      <div className="flex-1 min-w-0">
+        <p className="text-[16px] font-medium text-text truncate">
+          {s.doctor.user.name}
+        </p>
+        <p className="text-[13px] text-text-muted">
+          {formatSessionDateRelative(s.date)}
+        </p>
+      </div>
+      <StatusBadge session={s} />
+    </Link>
+  )
+}
+
 async function UpcomingTab({ userId }: { userId: string }) {
   const now = new Date()
-  const sessions = await prisma.session.findMany({
-    where: {
-      userId,
-      date: { gte: now },
-      status: { in: ['PENDING', 'CONFIRMED'] },
-    },
-    select: {
-      id: true,
-      date: true,
-      meetLink: true,
-      status: true,
-      notes: true,
-      doctor: { select: doctorSelect },
-    },
-    orderBy: { date: 'asc' },
-  })
+  const [sessions, primaryDoctor] = await Promise.all([
+    prisma.session.findMany({
+      where: {
+        userId,
+        date: { gte: now },
+        status: { in: ['PENDING', 'CONFIRMED'] },
+      },
+      select: {
+        id: true,
+        date: true,
+        meetLink: true,
+        status: true,
+        doctorId: true,
+        doctor: { select: doctorSelect },
+      },
+      orderBy: { date: 'asc' },
+    }),
+    // Primary therapist = the doctor on the user's most-recent session
+    // (upcoming or past). Used by the "Book another" CTA below.
+    prisma.session.findFirst({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        doctorId: true,
+        doctor: { select: { user: { select: { name: true } } } },
+      },
+    }),
+  ])
 
   if (sessions.length === 0) {
     return (
-      <div className="flex flex-col items-center py-16">
-        <p className="text-[14px] text-text-muted">No upcoming sessions</p>
-        <Link
-          href="/doctors"
-          className="mt-3 px-4 py-2 rounded-full bg-primary text-white text-[13px] font-medium"
-        >
-          Find a therapist
-        </Link>
+      <div>
+        <div className="flex flex-col items-center py-16">
+          <p className="text-[14px] text-text-muted">No upcoming sessions</p>
+          <Link
+            href="/user/sessions/book"
+            className="mt-3 px-4 py-2 rounded-full bg-primary text-white text-[13px] font-medium"
+          >
+            Find a therapist
+          </Link>
+        </div>
+        <BookAnotherCta primaryDoctor={primaryDoctor} />
       </div>
     )
   }
 
   return (
-    <div className="space-y-2.5">
-      {sessions.map((s, i) => {
-        const isFirst = i === 0
-        const initials = s.doctor.user.name
-          .split(' ')
-          .map((w: string) => w[0])
-          .join('')
-          .slice(0, 2)
-
-        if (isFirst) {
-          // Hero card — same style as NextSessionCard.
-          // Card-wide Link is an absolute overlay so the inner Join anchor
-          // stays usable (anchors can't be nested in HTML).
-          return (
-            <div
-              key={s.id}
-              className="relative overflow-hidden rounded-2xl bg-primary p-4 transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
-            >
-              <Link
-                href={`/user/sessions/${s.id}`}
-                aria-label={`View session with ${s.doctor.user.name}`}
-                className="absolute inset-0 z-0 rounded-2xl"
-              />
-              <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-primary-soft opacity-40 pointer-events-none" />
-              <div className="relative z-10 pointer-events-none">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center shrink-0">
-                    <span className="text-xs font-medium text-white">
-                      {initials}
-                    </span>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[14px] font-medium text-white truncate">
-                      {s.doctor.user.name}
-                    </p>
-                    <p className="text-[12px] text-white/60">
-                      {s.doctor.designation}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between mt-3">
-                  <p className="text-[13px] text-white/80">
-                    {formatSessionDateRelative(s.date)}
-                  </p>
-                  {s.status === 'CONFIRMED' && s.meetLink && (
-                    <a
-                      href={s.meetLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-accent text-white text-[13px] font-medium relative z-20 pointer-events-auto"
-                    >
-                      <Video size={14} />
-                      Join
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-          )
-        }
-
-        // Compact card
-        return (
-          <Link
-            key={s.id}
-            href={`/user/sessions/${s.id}`}
-            className="flex items-center gap-3 lg:gap-4 bg-bg-card rounded-2xl p-3 lg:p-4 transition-colors duration-150 lg:hover:bg-white/80"
-            style={{ border: '1px solid var(--color-border-strong)' }}
-          >
-            <div className="w-9 h-9 lg:w-12 lg:h-12 rounded-full bg-primary-tint flex items-center justify-center shrink-0">
-              <span className="text-xs lg:text-sm font-medium text-primary">
-                {initials}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] lg:text-[15px] font-medium text-text truncate">
-                {s.doctor.user.name}
-              </p>
-              <p className="text-[12px] lg:text-[13px] text-text-muted">
-                {formatSessionDateRelative(s.date)}
-              </p>
-            </div>
-            <ChevronRight size={16} className="text-text-faint shrink-0" />
-          </Link>
-        )
-      })}
+    <div>
+      <div className="space-y-2.5">
+        {sessions.map((s) => (
+          <SessionCard key={s.id} s={s} />
+        ))}
+      </div>
+      <BookAnotherCta primaryDoctor={primaryDoctor} />
     </div>
+  )
+}
+
+function BookAnotherCta({
+  primaryDoctor,
+}: {
+  primaryDoctor: { doctorId: string; doctor: { user: { name: string } } } | null
+}) {
+  return (
+    <section className="mt-10">
+      <p className="text-[15px] font-medium text-text">Want to book your next one?</p>
+      <p className="text-[13px] text-text-muted mt-1">
+        {primaryDoctor
+          ? 'Continue with your current therapist or browse all therapists.'
+          : 'Browse our therapists and find someone who fits.'}
+      </p>
+      <div className="flex flex-wrap items-center gap-3 mt-3">
+        {primaryDoctor && (
+          <Link
+            href={`/user/sessions/book?doctorId=${primaryDoctor.doctorId}`}
+            className="inline-flex items-center px-4 py-2 rounded-full bg-primary text-white text-[13px] font-medium"
+          >
+            Book with {primaryDoctor.doctor.user.name.split(' ')[0]}
+          </Link>
+        )}
+        <Link
+          href="/user/sessions/book"
+          className={`inline-flex items-center px-4 py-2 rounded-full text-[13px] font-medium ${
+            primaryDoctor
+              ? 'bg-bg-card text-text border-text-faint/30'
+              : 'bg-primary text-white'
+          }`}
+          style={
+            primaryDoctor
+              ? { border: '1px solid var(--color-border-strong)' }
+              : undefined
+          }
+        >
+          Browse all therapists
+        </Link>
+      </div>
+    </section>
   )
 }
 
@@ -205,24 +289,40 @@ async function PastTab({ userId }: { userId: string }) {
           .map((w: string) => w[0])
           .join('')
           .slice(0, 2)
+        const statusLabel =
+          s.status === 'CANCELLED' ? 'Cancelled' :
+          s.status === 'COMPLETED' ? 'Completed' :
+          'Ended'
+        const statusCls =
+          s.status === 'CANCELLED'
+            ? 'bg-red-100 text-red-700'
+            : 'bg-bg-app text-text-muted'
 
         return (
           <Link
             key={s.id}
             href={`/user/sessions/${s.id}`}
-            className="flex items-start gap-3 lg:gap-4 bg-bg-card rounded-2xl p-3.5 lg:p-4 transition-colors duration-150 lg:hover:bg-white/80"
+            className="flex items-start gap-3 lg:gap-4 bg-bg-card rounded-2xl p-4 transition-colors duration-150 lg:hover:bg-white/80"
             style={{ border: '1px solid var(--color-border-strong)' }}
           >
-            <div className="w-9 h-9 lg:w-12 lg:h-12 rounded-full bg-primary-tint flex items-center justify-center shrink-0 mt-0.5">
-              <span className="text-xs lg:text-sm font-medium text-primary">
-                {initials}
-              </span>
-            </div>
+            {s.doctor.photo ? (
+              <Image
+                src={s.doctor.photo}
+                alt={s.doctor.user.name}
+                width={48}
+                height={48}
+                className="w-10 h-10 lg:w-12 lg:h-12 rounded-full object-cover shrink-0 mt-0.5"
+              />
+            ) : (
+              <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-primary-tint flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-[13px] font-medium text-primary">{initials}</span>
+              </div>
+            )}
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] lg:text-[15px] font-medium text-text truncate">
+              <p className="text-[16px] font-medium text-text truncate">
                 {s.doctor.user.name}
               </p>
-              <p className="text-[12px] lg:text-[13px] text-text-muted">
+              <p className="text-[13px] text-text-muted">
                 {formatSessionDate(s.date)}
               </p>
               {s.notes && (
@@ -231,7 +331,9 @@ async function PastTab({ userId }: { userId: string }) {
                 </p>
               )}
             </div>
-            <ChevronRight size={16} className="text-text-faint shrink-0 mt-1" />
+            <span className={`text-[12px] font-medium px-3 py-1 rounded-full shrink-0 ${statusCls}`}>
+              {statusLabel}
+            </span>
           </Link>
         )
       })}
@@ -256,7 +358,7 @@ async function AssignmentsTab({ userId }: { userId: string }) {
     return (
       <div className="flex flex-col items-center py-16">
         <p className="text-[14px] text-text-muted">
-          Your therapist hasn't shared any exercises yet
+          Your therapist hasn&apos;t shared any exercises yet
         </p>
       </div>
     )
@@ -296,7 +398,7 @@ async function AssignmentsTab({ userId }: { userId: string }) {
                   <p className="text-[12px] text-text-muted">
                     from {a.doctor.user.name}
                     {a.dueDate &&
-                      ` \u00b7 Due ${new Date(a.dueDate).toLocaleDateString(
+                      ` · Due ${new Date(a.dueDate).toLocaleDateString(
                         'en-US',
                         { month: 'short', day: 'numeric' }
                       )}`}
