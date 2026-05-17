@@ -202,6 +202,19 @@ export async function POST(req: NextRequest) {
               deliveryCharge: Number(orderDetails.deliveryCharge),
               courierName: orderDetails.selectedCourierName ?? undefined,
             })
+
+            const orderLabel = orderDetails.orderNumber ?? `#${orderDetails.id.slice(-8).toUpperCase()}`
+            await prisma.notification.create({
+              data: {
+                userId: payment.userId,
+                kind: 'ORDER',
+                title: `Order ${orderLabel} confirmed`,
+                body: `We're packing your order. We'll let you know when it ships.`,
+                link: `/user/orders/${orderDetails.id}`,
+              },
+            }).catch((err) => {
+              console.error('[WEBHOOK] Order notification create failed:', err)
+            })
           }
         } catch (err) {
           console.error('[WEBHOOK] Order confirmation email error:', err)
@@ -265,6 +278,18 @@ export async function POST(req: NextRequest) {
               sessionDate: fullSession.date,
               durationMin: 60,
               sessionId: fullSession.id,
+            })
+
+            await prisma.notification.create({
+              data: {
+                userId: payment.userId,
+                kind: 'SESSION_REMINDER',
+                title: 'Session confirmed',
+                body: `Your session with ${fullSession.doctor.user.name ?? 'your therapist'} is booked. We'll remind you 24 hours before.`,
+                link: `/user/sessions/${fullSession.id}`,
+              },
+            }).catch((err) => {
+              console.error('[WEBHOOK] Session-booked notification failed:', err)
             })
           }
         } catch (err) {

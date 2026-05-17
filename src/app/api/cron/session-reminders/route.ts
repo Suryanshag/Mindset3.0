@@ -58,6 +58,18 @@ export async function GET(req: NextRequest) {
           hoursUntil: 24,
         })
 
+        await prisma.notification.create({
+          data: {
+            userId: session.userId,
+            kind: 'SESSION_REMINDER',
+            title: 'Session in 24 hours',
+            body: `Your session with ${session.doctor.user.name ?? 'your therapist'} is tomorrow.`,
+            link: `/user/sessions/${session.id}`,
+          },
+        }).catch((err) => {
+          console.error(`[CRON] Notification create failed for session ${session.id}:`, err)
+        })
+
         // Mark reminder as sent
         await prisma.session.update({
           where: { id: session.id },
@@ -112,6 +124,18 @@ export async function GET(req: NextRequest) {
           userName: pastSession.user.name ?? 'there',
           doctorName: pastSession.doctor.user.name ?? 'your doctor',
           sessionDate: pastSession.date,
+        })
+
+        await prisma.notification.create({
+          data: {
+            userId: pastSession.userId,
+            kind: 'REVIEW_PROMPT',
+            title: 'How was your session?',
+            body: `A short reflection helps you get more out of your time with ${pastSession.doctor.user.name ?? 'your therapist'}.`,
+            link: `/user/sessions/${pastSession.id}`,
+          },
+        }).catch((err) => {
+          console.error(`[CRON] Follow-up notification failed for session ${pastSession.id}:`, err)
         })
 
         await prisma.session.update({

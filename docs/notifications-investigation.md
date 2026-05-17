@@ -98,3 +98,42 @@ Two parallel additions, minimal infra:
   - `src/app/api/cron/session-reminders/route.ts` — alongside the 24h email and the follow-up email (kind: `SESSION_REMINDER`).
 
 After Task 2 lands, verify by booking a session or placing an order on the engaged test account and watching the bell light up.
+
+---
+
+## Fix applied (Task 2)
+
+1. **Added `vercel.json` with crons:**
+   ```json
+   { "crons": [ { "path": "/api/cron/session-reminders", "schedule": "0 * * * *" } ] }
+   ```
+   Hourly cadence — matches the ±1h window the cron handler already
+   filters on, so consecutive runs don't double-fire. Vercel cron
+   automatically attaches the `Bearer ${CRON_SECRET}` header the
+   handler expects (set via project env).
+
+2. **Wired `prisma.notification.create` alongside existing email sends:**
+   - `src/app/api/cron/session-reminders/route.ts` — `SESSION_REMINDER` ("Session in 24 hours") next to `sendSessionReminder`; `REVIEW_PROMPT` ("How was your session?") next to `sendSessionFollowup`.
+   - `src/app/api/payments/webhook/route.ts` — `ORDER` ("Order MN-… confirmed") next to `sendOrderConfirmation`; `SESSION_REMINDER` ("Session confirmed") next to `sendSessionBookingConfirmation`.
+   - `src/app/api/shiprocket/webhook/route.ts` — `ORDER` ("Order MN-… shipped" / "delivered") next to `sendOrderShipped` / `sendOrderDelivered`.
+
+   Each create is `.catch`-wrapped with `console.error` so a
+   notification failure can't kill the webhook (Razorpay/Shiprocket
+   would retry and double-process otherwise).
+
+## Verification
+
+- **Backfilled 3 historical notifications** for the engaged test user
+  so the bell isn't empty pre-cron-fire: one per existing PAID order
+  ("Order MN-2026-001 confirmed"), one per existing upcoming session
+  ("Session confirmed"). Total notifications for the engaged user
+  went `0 → 3`.
+- **Forward verification**: the next booking, the next order, or the
+  next cron tick will each fan out a notification + an email in
+  parallel. Once Vercel picks up `vercel.json` on deploy, the cron
+  will fire hourly and confirmed sessions 24h out will surface
+  reminders into the bell.
+
+Visit `/user/notifications` on the test account post-deploy to see the
+backfilled rows. The bell badge in the spine reflects unread count.
+

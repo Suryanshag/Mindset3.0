@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
           where: { id: order.id },
           select: {
             id: true,
+            userId: true,
             orderNumber: true,
             awbCode: true,
             courierName: true,
@@ -110,6 +111,7 @@ export async function POST(req: NextRequest) {
           },
         })
         if (fullOrder?.user) {
+          const orderLabel = fullOrder.orderNumber ?? `#${fullOrder.id.slice(-8).toUpperCase()}`
           if (newStatus === 'SHIPPED') {
             sendOrderShipped(fullOrder.user.email, {
               userName: fullOrder.user.name ?? 'there',
@@ -119,11 +121,35 @@ export async function POST(req: NextRequest) {
               awbCode: fullOrder.awbCode,
               trackingUrl: fullOrder.trackingUrl,
             })
+            await prisma.notification.create({
+              data: {
+                userId: fullOrder.userId,
+                kind: 'ORDER',
+                title: `Order ${orderLabel} shipped`,
+                body: fullOrder.courierName
+                  ? `Your order is on its way via ${fullOrder.courierName}.`
+                  : `Your order is on its way.`,
+                link: `/user/orders/${fullOrder.id}`,
+              },
+            }).catch((err) => {
+              console.error('[SR_WEBHOOK] Shipped notification failed:', err)
+            })
           } else {
             sendOrderDelivered(fullOrder.user.email, {
               userName: fullOrder.user.name ?? 'there',
               orderId: fullOrder.id,
               orderNumber: fullOrder.orderNumber,
+            })
+            await prisma.notification.create({
+              data: {
+                userId: fullOrder.userId,
+                kind: 'ORDER',
+                title: `Order ${orderLabel} delivered`,
+                body: `Your order has arrived. Hope you love it.`,
+                link: `/user/orders/${fullOrder.id}`,
+              },
+            }).catch((err) => {
+              console.error('[SR_WEBHOOK] Delivered notification failed:', err)
             })
           }
         }
