@@ -9,7 +9,6 @@ import {
   CreditCard,
   HelpCircle,
   Info,
-  ExternalLink,
   ChevronRight,
 } from 'lucide-react'
 import AvatarUpload from '@/components/dashboard/avatar-upload'
@@ -22,7 +21,6 @@ const settingsItems = [
   { label: 'Payments', href: '/user/profile/payments', Icon: CreditCard },
   { label: 'Help & support', href: '/user/profile/help', Icon: HelpCircle },
   { label: 'About', href: '/user/profile/about', Icon: Info },
-  { label: 'Visit website', href: '/', Icon: ExternalLink },
 ]
 
 export default async function ProfilePage() {
@@ -124,7 +122,7 @@ export default async function ProfilePage() {
             </div>
             <Link
               href={`/user/sessions/book${therapist.doctorId ? `?doctorId=${therapist.doctorId}` : ''}`}
-              className="px-3 py-1.5 rounded-full bg-primary text-white text-[12px] font-medium shrink-0"
+              className="px-5 py-2.5 rounded-full bg-primary text-white text-[14px] font-medium shrink-0 transition-colors hover:bg-primary-soft"
             >
               Book session
             </Link>
