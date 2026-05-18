@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { CheckCircle, Loader2, MessageCircle } from 'lucide-react'
 import { registerForWorkshop } from '@/lib/actions/workshops'
-import RazorpayCheckout from '@/components/payments/razorpay-checkout'
+import RazorpayCheckout, {
+  type RazorpayResponse,
+} from '@/components/payments/razorpay-checkout'
 
 type Props = {
   workshopId: string
@@ -29,23 +31,22 @@ type PaymentSession = {
 //   idle       — user hasn't clicked yet, button visible
 //   opening    — POST /api/payments/create-order in flight
 //   paying     — Razorpay modal mounted (autoOpen)
-//   confirming — Razorpay handler fired, polling webhook for Payment.status
-//   confirmed  — webhook flipped to PAID; router.refresh triggered the page
+//   verifying  — Razorpay handler fired, POSTing /api/payments/verify
+//                (signature check + DB updates + email all synchronous)
+//   confirmed  — verify succeeded; router.refresh triggered the page
 //                to re-render into the isRegistered branch
-//   pending    — 30s polling timeout; payment captured but webhook hasn't
-//                flipped status yet
-//   error      — payment failed at Razorpay or registration errored
+//   pending    — verify failed mid-network but Razorpay captured client-
+//                side. Payment was received; webhook backup will confirm
+//                async. User told to check email / refresh.
+//   error      — payment failed at Razorpay or signature mismatch
 type FlowState =
   | 'idle'
   | 'opening'
   | 'paying'
-  | 'confirming'
+  | 'verifying'
   | 'confirmed'
   | 'pending'
   | 'error'
-
-const POLL_INTERVAL_MS = 1500
-const POLL_TIMEOUT_MS = 30_000
 
 export default function WorkshopRegisterButton({
   workshopId,
@@ -75,42 +76,50 @@ export default function WorkshopRegisterButton({
   const stateRef = useRef(state)
   useEffect(() => { stateRef.current = state }, [state])
 
-  // Poll Payment.status until CONFIRMED/FAILED or timeout. Triggered by the
-  // Razorpay success handler.
-  const pollPaymentStatus = async (paymentId: string) => {
-    const startedAt = Date.now()
-    while (Date.now() - startedAt < POLL_TIMEOUT_MS) {
-      try {
-        const res = await fetch(`/api/payments/${paymentId}/status`, {
-          cache: 'no-store',
-        })
-        if (res.ok) {
-          const json = await res.json()
-          const status = json?.data?.status
-          if (status === 'PAID') {
-            setState('confirmed')
-            // Refresh so the server component re-runs and hits the
-            // isRegistered branch.
-            router.refresh()
-            return
-          }
-          if (status === 'FAILED') {
-            setState('error')
-            setError(
-              'Payment was reversed. If you were charged, the refund ' +
-              'will appear in 5-7 business days. Try again or contact support.'
-            )
-            return
-          }
-        }
-      } catch {
-        // Transient network error during polling — keep trying.
+  // Razorpay handler fires this. POSTs to /api/payments/verify which
+  // signature-checks the response and synchronously creates the
+  // WorkshopRegistration row + sends email + writes notification — so
+  // the user is "in" within ~200ms of payment, not 1-30s of polling.
+  // Webhook still runs as backup (idempotent on both sides) for the
+  // rare cases where this fetch fails after Razorpay captured.
+  async function verifyPayment(response: RazorpayResponse) {
+    setState('verifying')
+    try {
+      const res = await fetch('/api/payments/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          razorpayOrderId: response.razorpay_order_id,
+          razorpayPaymentId: response.razorpay_payment_id,
+          razorpaySignature: response.razorpay_signature,
+        }),
+      })
+
+      if (res.ok) {
+        // Either freshly verified or alreadyPaid=true (webhook arrived
+        // first). Either way, the registration row exists now.
+        setState('confirmed')
+        router.refresh()
+        return
       }
-      await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS))
+
+      // 4xx / 5xx from verify — registration may not exist. But the
+      // user's card was charged; webhook backup may still confirm.
+      // Show "pending" so they don't think the payment vanished.
+      setError(
+        'Payment received but confirmation pending. Check your email in a moment, or refresh this page. Order ID: ' +
+        response.razorpay_order_id
+      )
+      setState('pending')
+    } catch {
+      // Network error talking to our own verify route after Razorpay
+      // already captured. Same outcome as a 5xx — defer to webhook +
+      // tell user the payment landed.
+      setError(
+        'Network issue while confirming. Your payment was received — refresh in a moment.'
+      )
+      setState('pending')
     }
-    // Timeout — payment was captured client-side but webhook hasn't
-    // flipped Payment.status yet (slow webhook, or transient outage).
-    setState('pending')
   }
 
   async function handlePaidRegister() {
@@ -158,17 +167,11 @@ export default function WorkshopRegisterButton({
     })
   }
 
-  function handlePaymentSuccess() {
-    // Razorpay captured client-side. The webhook will create the
-    // WorkshopRegistration row + flip Payment.status server-side; poll
-    // until that lands so the UI doesn't lie to the user.
-    if (!payment) {
-      setState('error')
-      setError('Lost track of payment context — please refresh.')
-      return
-    }
-    setState('confirming')
-    pollPaymentStatus(payment.paymentId)
+  function handlePaymentSuccess(response: RazorpayResponse) {
+    // Razorpay captured client-side. Verify the signature server-side
+    // (which also writes the registration row + sends the email), so
+    // the user is fully in by the time we flip to 'confirmed'.
+    verifyPayment(response)
   }
 
   function handlePaymentDismiss() {
@@ -235,7 +238,7 @@ export default function WorkshopRegisterButton({
 
   // ─── Paid flow in-flight states (mid-transaction UI) ────────────────
 
-  if (state === 'confirming') {
+  if (state === 'verifying') {
     return (
       <div
         className="flex items-center justify-center gap-2 w-full h-[48px] rounded-full bg-primary-tint text-primary text-[14px] font-medium"
