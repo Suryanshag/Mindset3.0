@@ -107,12 +107,26 @@ export async function POST(req: NextRequest) {
       console.log('[WEBHOOK] Payment type:', payment?.type)
 
       if (!payment) {
-        console.log('[WEBHOOK] ERROR: Payment not found for order:', razorpayOrderId)
+        // SILENT-DROP path that caused the May 16/17 stuck payments:
+        // Razorpay captured + delivered the event, but no DB Payment
+        // row exists for that order id. We return 200 (otherwise
+        // Razorpay retries indefinitely on a permanent error), but
+        // log loudly so the next time it happens the admin reconcile
+        // page (/admin/reconcile-payments) and the Vercel log search
+        // catch it within minutes.
+        console.error(
+          '[WEBHOOK] [SILENT_DROP] no Payment row for razorpayOrderId:',
+          razorpayOrderId,
+          'razorpayPaymentId:', razorpayPaymentId,
+          'amount:', paymentEntity.amount,
+          'method:', paymentEntity.method,
+          '— check /admin/reconcile-payments OR reconcile manually'
+        )
         return NextResponse.json({ received: true })
       }
 
       if (payment.status === 'PAID') {
-        console.log('[WEBHOOK] Payment already processed, skipping')
+        console.log('[WEBHOOK] payment', payment.id, 'already PAID — verify already processed, skipping')
         return NextResponse.json({ received: true })
       }
 
