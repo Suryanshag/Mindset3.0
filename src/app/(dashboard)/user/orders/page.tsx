@@ -320,17 +320,17 @@ export default function OrdersPage() {
         <p className="text-[13px] text-text-muted">
           Questions about an order?{' '}
           <a
-            href="mailto:hello@mindset.org.in"
+            href="mailto:mindset.org.connect@gmail.com"
             className="text-primary font-medium hover:underline"
           >
-            hello@mindset.org.in
+            mindset.org.connect@gmail.com
           </a>
           {' '}— we usually reply within 24 hours.
         </p>
         <p className="text-[12px] text-text-faint">
           Returns and refunds →{' '}
           <a
-            href="mailto:hello@mindset.org.in?subject=Return%20or%20refund%20request"
+            href="mailto:mindset.org.connect@gmail.com?subject=Return%20or%20refund%20request"
             className="text-primary hover:underline"
           >
             email us

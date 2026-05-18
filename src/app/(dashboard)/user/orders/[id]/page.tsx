@@ -21,7 +21,7 @@ const SHIPPING_CHIP: Record<string, { label: string; cls: string }> = {
   RETURNED: { label: 'Returned', cls: 'bg-red-100 text-red-700' },
 }
 
-const SUPPORT_EMAIL = 'support@mindset.health'
+const SUPPORT_EMAIL = 'mindset.org.connect@gmail.com'
 
 interface ShippingAddressJSON {
   name?: string

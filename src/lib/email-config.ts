@@ -9,10 +9,10 @@
  *   That fallback bug is what silently broke booking-confirmation delivery
  *   during the case 1 smoke runs.
  * - Single source for the support email rendered in every template footer.
- *   Templates previously referenced `support@mindset.com` (wrong domain).
+ *   Templates previously referenced `mindset.org.connect@gmail.com` (wrong domain).
  */
 
-const FALLBACK_FROM = 'Mindset <hello@mindset.org.in>'
+const FALLBACK_FROM = 'Mindset <mindset.org.connect@gmail.com>'
 
 export const FROM_EMAIL: string = (() => {
   // FROM_EMAIL is only ever used server-side (inside resend.emails.send).
@@ -44,7 +44,7 @@ export const FROM_EMAIL: string = (() => {
   return env
 })()
 
-export const SUPPORT_EMAIL = 'hello@mindset.org.in'
+export const SUPPORT_EMAIL = 'mindset.org.connect@gmail.com'
 
 /**
  * Canonical app base URL used inside server-rendered email bodies.

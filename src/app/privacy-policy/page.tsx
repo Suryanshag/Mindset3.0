@@ -169,7 +169,7 @@ export default function PrivacyPolicyPage() {
       </p>
       <ul>
         <li><strong>Name:</strong> [To be appointed before launch]</li>
-        <li><strong>Email:</strong> grievance@mindset.example</li>
+        <li><strong>Email:</strong> mindset.org.connect@gmail.com</li>
         <li><strong>Address:</strong> [Your registered office address]</li>
       </ul>
       <p>We aim to acknowledge complaints within 48 hours and resolve them within 30 days.</p>
@@ -177,7 +177,7 @@ export default function PrivacyPolicyPage() {
       <h2>14. Contact</h2>
       <p>
         For anything else &mdash; questions, requests, feedback &mdash; reach us at{' '}
-        <a href="mailto:hello@mindset.example">hello@mindset.example</a>.
+        <a href="mailto:mindset.org.connect@gmail.com">mindset.org.connect@gmail.com</a>.
       </p>
 
       <div className="callout" style={{ marginTop: '3rem' }}>

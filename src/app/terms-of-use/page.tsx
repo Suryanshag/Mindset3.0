@@ -167,7 +167,7 @@ export default function TermsOfUsePage() {
       <h2>16. Contact</h2>
       <p>
         Questions about these Terms? Write to{' '}
-        <a href="mailto:hello@mindset.example">hello@mindset.example</a> or use our{' '}
+        <a href="mailto:mindset.org.connect@gmail.com">mindset.org.connect@gmail.com</a> or use our{' '}
         <a href="/contact">contact form</a>.
       </p>
 

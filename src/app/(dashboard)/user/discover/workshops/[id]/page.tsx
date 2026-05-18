@@ -147,8 +147,8 @@ export default async function WorkshopDetailPage({
               >
                 <p className="text-[14px] text-amber-700">
                   Meeting link not yet provided. Contact{' '}
-                  <a href="mailto:hello@mindset.org.in" className="underline">
-                    hello@mindset.org.in
+                  <a href="mailto:mindset.org.connect@gmail.com" className="underline">
+                    mindset.org.connect@gmail.com
                   </a>{' '}
                   if the workshop starts soon.
                 </p>
