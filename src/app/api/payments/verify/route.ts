@@ -3,7 +3,11 @@ import crypto from 'crypto'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
-import { sendWorkshopRegistrationConfirmation } from '@/lib/email-service'
+import {
+  sendWorkshopRegistrationConfirmation,
+  sendSessionBookingConfirmation,
+  sendDoctorNewBookingNotification,
+} from '@/lib/email-service'
 import { formatSessionDateLong } from '@/lib/format-date'
 
 /**
@@ -175,6 +179,61 @@ export async function POST(req: NextRequest) {
         console.error(
           '[VERIFY] Workshop confirmation post-processing failed for',
           payment.workshopId,
+          err
+        )
+      }
+    }
+
+    // Mirror webhook's SESSION post-tx: confirmation email to user,
+    // "please add a Meet link" email to doctor, in-app notification.
+    // Fire-and-forget. Webhook's same block is gated on the alreadyPaid
+    // early-return so it doesn't double-fire.
+    if (payment.type === 'SESSION' && payment.sessionId) {
+      try {
+        const fullSession = await prisma.session.findUnique({
+          where: { id: payment.sessionId },
+          include: {
+            user: { select: { name: true, email: true } },
+            doctor: {
+              select: {
+                user: { select: { name: true, email: true } },
+              },
+            },
+          },
+        })
+        if (fullSession) {
+          sendSessionBookingConfirmation(fullSession.user.email, {
+            userName: fullSession.user.name ?? 'there',
+            doctorName: fullSession.doctor.user.name ?? 'your doctor',
+            sessionDate: fullSession.date,
+            durationMin: 60,
+            meetLink: fullSession.meetLink,
+            sessionId: fullSession.id,
+          })
+          sendDoctorNewBookingNotification(fullSession.doctor.user.email, {
+            doctorName: fullSession.doctor.user.name ?? 'Doctor',
+            userName: fullSession.user.name ?? 'A patient',
+            sessionDate: fullSession.date,
+            durationMin: 60,
+            sessionId: fullSession.id,
+          })
+
+          await prisma.notification.create({
+            data: {
+              userId: payment.userId,
+              kind: 'SESSION_REMINDER',
+              title: 'Session confirmed',
+              body: `Your session with ${fullSession.doctor.user.name ?? 'your therapist'} is booked. We'll remind you 24 hours before.`,
+              link: `/user/sessions/${fullSession.id}`,
+            },
+          }).catch((err) => {
+            console.error('[VERIFY] Session notification create failed:', err)
+          })
+        }
+      } catch (err) {
+        console.error(
+          '[VERIFY] Session confirmation post-processing failed for',
+          payment.sessionId,
           err
         )
       }

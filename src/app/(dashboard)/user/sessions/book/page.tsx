@@ -7,7 +7,9 @@ import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import RazorpayCheckout from '@/components/payments/razorpay-checkout'
+import RazorpayCheckout, {
+  type RazorpayResponse,
+} from '@/components/payments/razorpay-checkout'
 import SlotsCalendar, { type CalendarSlot } from '@/components/ui/slots-calendar'
 import { formatSessionDateLong } from '@/lib/format-date'
 
@@ -139,11 +141,46 @@ export default function BookSessionPage() {
     }
   }
 
-  function handlePaymentSuccess() {
+  async function handlePaymentSuccess(response: RazorpayResponse) {
+    // Razorpay captured client-side. Synchronously confirm via /api/
+    // payments/verify so the Session.status flip happens before we
+    // navigate the user to /user/sessions (where they expect to see
+    // a CONFIRMED session). Webhook still runs as backup.
     setPaymentData(null)
-    toast.success('Payment successful! Your session is confirmed.')
-    setSelectedSlot(null)
-    setTimeout(() => router.push('/user/sessions'), 2000)
+
+    try {
+      const res = await fetch('/api/payments/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          razorpayOrderId: response.razorpay_order_id,
+          razorpayPaymentId: response.razorpay_payment_id,
+          razorpaySignature: response.razorpay_signature,
+        }),
+      })
+
+      if (res.ok) {
+        toast.success('Payment successful! Your session is confirmed.')
+        setSelectedSlot(null)
+        setTimeout(() => router.push('/user/sessions'), 1500)
+        return
+      }
+
+      // Verify rejected. Most common: signature mismatch or server
+      // error. Razorpay charged the card; webhook backup may still
+      // land. Tell the user the payment went through and ask them to
+      // refresh.
+      toast.error(
+        'Payment received but confirmation pending. Refresh /user/sessions in a moment, or check your email.'
+      )
+      setSelectedSlot(null)
+      setTimeout(() => router.push('/user/sessions'), 3000)
+    } catch {
+      toast.error(
+        'Network issue while confirming. Your payment was received — check /user/sessions in a moment.'
+      )
+      setTimeout(() => router.push('/user/sessions'), 3000)
+    }
   }
 
   function handlePaymentDismiss() {
