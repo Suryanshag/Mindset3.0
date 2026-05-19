@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth'
 import Image from 'next/image'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -11,6 +12,11 @@ export const metadata = {
 }
 
 export default async function NgoVisitsPage() {
+  const session = await auth()
+  const joinHref = session?.user?.id
+    ? '/user/discover/ngo-visits'
+    : '/login?callbackUrl=%2Fuser%2Fdiscover%2Fngo-visits'
+
   const visits = await prisma.ngoVisit.findMany({
     where: { isPublished: true },
     select: {
@@ -183,7 +189,7 @@ export default async function NgoVisitsPage() {
             mental health awareness to communities that need it.
           </p>
           <Link
-            href="/ngo-visits/join"
+            href={joinHref}
             className="btn-primary inline-flex items-center gap-2"
           >
             Join Now

@@ -1,62 +1,30 @@
-import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { ngoJoinSchema } from '@/lib/validations/ngo'
-import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
-import { sendNgoJoinConfirmation } from '@/lib/email-service'
-import { formLimiter } from '@/lib/arcjet'
-import { handleArcjetDenial } from '@/lib/arcjet-protect'
+import { NextResponse } from 'next/server'
 
-export async function POST(req: NextRequest) {
-  try {
-    const decision = await formLimiter.protect(req)
-    const denied = handleArcjetDenial(decision)
-    if (denied) return denied
+// Endpoint deprecated 2026-05-19 (Sprint NGO-Dashboard). The public form
+// that called this is now a redirect to the authenticated dashboard at
+// /user/discover/ngo-visits. We keep the URL responding so anything still
+// in flight during the deploy transition sees a clear deprecation signal
+// instead of a confusing 404.
+//
+// New flow: the dashboard calls the registerForNgoVisit server action in
+// src/lib/actions/ngo.ts — there is no public POST replacement.
 
-    const body = await req.json()
+export async function POST() {
+  return NextResponse.json(
+    {
+      success: false,
+      error: 'This endpoint has moved. Please register from /user/discover/ngo-visits.',
+    },
+    { status: 410 },
+  )
+}
 
-    const parsed = ngoJoinSchema.safeParse(body)
-    if (!parsed.success) {
-      return errorResponse(parsed.error.issues[0].message, 400)
-    }
-
-    const { name, email, phone, age, interest } = parsed.data
-
-    await prisma.ngoJoinRequest.create({
-      data: { name, email, phone, age, interest },
-    })
-
-    const whatsappLink = await prisma.whatsappLink.findFirst({
-      select: { link: true, label: true },
-    })
-
-    // Send confirmation email (non-blocking)
-    // NGO join is a public form — use the submitted email/name
-    try {
-      // Get a recent upcoming NGO visit for context
-      const upcomingVisit = await prisma.ngoVisit.findFirst({
-        where: { isPublished: true },
-        orderBy: { visitDate: 'desc' },
-      })
-      if (upcomingVisit) {
-        sendNgoJoinConfirmation(email, {
-          userName: name,
-          ngoName: upcomingVisit.ngoName,
-          visitDate: upcomingVisit.visitDate,
-          location: upcomingVisit.location,
-          whatsappLink: whatsappLink?.link ?? null,
-        })
-      }
-    } catch (err) {
-      console.error('[NGO] Join email failed:', err)
-    }
-
-    return successResponse({
-      message: 'Registration successful',
-      whatsappLink: whatsappLink?.link ?? null,
-      whatsappLabel: whatsappLink?.label ?? null,
-    }, 201)
-  } catch (error) {
-    console.error('[NGO_JOIN_ERROR]', error)
-    return serverErrorResponse()
-  }
+export async function GET() {
+  return NextResponse.json(
+    {
+      success: false,
+      error: 'This endpoint has moved. Please register from /user/discover/ngo-visits.',
+    },
+    { status: 410 },
+  )
 }

@@ -6,6 +6,31 @@ not bugs.
 
 ---
 
+## NGO visit registration (post-2026-05-19)
+
+The public form at `/ngo-visits/join` and its API at `POST /api/ngo/join`
+are **deprecated** as of Sprint NGO-Dashboard.
+
+- `/ngo-visits/join` is a server redirect — logged-out users go to
+  `/login?callbackUrl=/user/discover/ngo-visits`, signed-in users go
+  straight to `/user/discover/ngo-visits`.
+- `POST /api/ngo/join` returns **410 Gone** with a body pointing to the
+  new dashboard path. Kept around so anything still in flight during
+  the deploy transition sees a clear signal rather than a 404.
+
+New registrations land via the `registerForNgoVisit` server action in
+`src/lib/actions/ngo.ts`, populated from the authenticated user's
+profile. Each row has `userId` + `ngoVisitId` set; legacy rows from
+the old public form have both columns NULL and show as "Guest" in the
+admin Join Requests view.
+
+The `NgoJoinRequest.city` column was dropped in the same sprint — one
+legacy row lost its city value. If we ever need city for outreach
+planning, capture it on `User` (signup or profile) rather than per
+registration.
+
+---
+
 ## Session Meet links
 
 Meet links are **not** auto-generated. After a user pays:
