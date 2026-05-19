@@ -19,6 +19,7 @@ export default function PersonalInfoPage() {
   const [saving, startSave] = useTransition()
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [originalPhone, setOriginalPhone] = useState('')
   const [form, setForm] = useState<ProfileData>({
     name: '',
     phone: '',
@@ -33,9 +34,11 @@ export default function PersonalInfoPage() {
       .then((res) => {
         if (res.success) {
           const u = res.data
+          const phone = u.phone ?? ''
+          setOriginalPhone(phone)
           setForm({
             name: u.name ?? '',
-            phone: u.phone ?? '',
+            phone,
             dateOfBirth: u.dateOfBirth
               ? new Date(u.dateOfBirth).toISOString().split('T')[0]
               : '',
@@ -50,13 +53,29 @@ export default function PersonalInfoPage() {
   function handleSave() {
     setError(null)
     setSuccess(false)
+
+    // Bug 3 (Option B): phone is sticky-required. Once a user has a phone
+    // on file, the edit form blocks clearing it. They can change it (zod
+    // validates the new value) but not blank it from here. The other
+    // optional fields are freely clearable.
+    if (originalPhone && !form.phone.trim()) {
+      setError('Phone cannot be cleared. To remove it, contact support.')
+      return
+    }
+
     startSave(async () => {
       try {
-        const body: Record<string, unknown> = { name: form.name }
-        if (form.phone) body.phone = form.phone
-        if (form.dateOfBirth) body.dateOfBirth = form.dateOfBirth
-        if (form.preferredLanguage) body.preferredLanguage = form.preferredLanguage
-        if (form.emergencyContact) body.emergencyContact = form.emergencyContact
+        // Always send the clearable fields, even when empty — the zod schema
+        // turns '' into null for these so blanking actually persists.
+        const body: Record<string, unknown> = {
+          name: form.name,
+          dateOfBirth: form.dateOfBirth,
+          preferredLanguage: form.preferredLanguage,
+          emergencyContact: form.emergencyContact,
+        }
+        // Phone is only sent when non-empty; absence preserves the existing
+        // value, which is what we want for the sticky-required policy.
+        if (form.phone.trim()) body.phone = form.phone.trim()
 
         const res = await fetch('/api/user/profile', {
           method: 'PATCH',
@@ -65,6 +84,11 @@ export default function PersonalInfoPage() {
         })
         const data = await res.json()
         if (!data.success) throw new Error(data.error ?? 'Failed to save')
+
+        // Refresh originalPhone from the response so a subsequent edit in
+        // the same session honors the new sticky value.
+        if (data.data?.phone) setOriginalPhone(data.data.phone)
+
         setSuccess(true)
         setTimeout(() => setSuccess(false), 3000)
         router.refresh()
@@ -105,7 +129,7 @@ export default function PersonalInfoPage() {
           />
           <div className="lg:grid lg:grid-cols-2 lg:gap-4 space-y-4 lg:space-y-0">
             <Field
-              label="Phone number"
+              label={originalPhone ? 'Phone number (required)' : 'Phone number'}
               value={form.phone}
               onChange={(v) => setForm({ ...form, phone: v })}
               placeholder="9876543210"
