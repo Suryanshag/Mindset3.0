@@ -23,13 +23,17 @@ const nextConfig: NextConfig = {
     const isProd = process.env.NODE_ENV === "production";
     const csp = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://*.razorpay.com",
+      // reCAPTCHA v3 (Sprint Pre-Launch C3): api.js comes from www.google.com,
+      // anchor + invisible iframe assets from www.gstatic.com, the verification
+      // iframe lives at www.google.com/recaptcha, and challenge XHRs go back to
+      // www.google.com. All four buckets need entries.
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://*.razorpay.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' data: https://fonts.gstatic.com",
       "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://via.placeholder.com https://*.razorpay.com",
       "media-src 'self' https://res.cloudinary.com",
-      "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://*.razorpay.com https://api.cloudinary.com https://script.google.com https://script.googleusercontent.com",
-      "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.razorpay.com",
+      "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://*.razorpay.com https://api.cloudinary.com https://script.google.com https://script.googleusercontent.com https://www.google.com/recaptcha/",
+      "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.razorpay.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
