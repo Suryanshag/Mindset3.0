@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { LegalLayout } from '@/components/legal/legal-layout'
+import { OpenCookiePreferencesButton } from '@/components/legal/open-cookie-preferences-button'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
@@ -151,8 +152,12 @@ export default function PrivacyPolicyPage() {
       <h2>11. Cookies</h2>
       <p>
         We use a small number of essential cookies for sign-in and preferences, and we may use
-        first-party analytics to understand how the site is used in aggregate. You can control
-        cookies through your browser settings.
+        first-party analytics to understand how the site is used in aggregate. You can read more
+        in our <a href="/cookies">Cookie Policy</a>, or change or withdraw your consent at any
+        time using the button below.
+      </p>
+      <p>
+        <OpenCookiePreferencesButton />
       </p>
 
       <h2>12. Changes to this policy</h2>

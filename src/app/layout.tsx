@@ -8,6 +8,7 @@ import { CartProvider } from "@/lib/cart-context";
 import { auth } from "@/lib/auth";
 import { getInitialCartItems } from "@/lib/queries/cart";
 import { JsonLd, organizationLd, websiteLd } from "@/components/seo/json-ld";
+import CookieBanner from "@/components/legal/cookie-banner";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -132,6 +133,7 @@ export default async function RootLayout({
             </CartProvider>
           </RecaptchaProvider>
         </AuthSessionProvider>
+        <CookieBanner />
       </body>
     </html>
   );
