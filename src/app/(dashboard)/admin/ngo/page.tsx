@@ -18,10 +18,13 @@ interface JoinRequest {
   name: string
   email: string
   phone: string
-  city: string
-  age: number
+  age: number | null
   interest: string
   createdAt: string
+  userId: string | null
+  ngoVisitId: string | null
+  user: { id: string; name: string; email: string } | null
+  ngoVisit: { id: string; ngoName: string; visitDate: string } | null
 }
 
 interface WhatsappLink {
@@ -105,9 +108,13 @@ export default function AdminNgoPage() {
         Name: r.name,
         Email: r.email,
         Phone: r.phone,
-        City: r.city,
-        Age: r.age,
+        Age: r.age ?? '',
         Interest: r.interest,
+        Visit: r.ngoVisit
+          ? `${r.ngoVisit.ngoName} (${new Date(r.ngoVisit.visitDate).toLocaleDateString('en-IN')})`
+          : 'Public form (legacy)',
+        Source: r.userId ? 'Dashboard' : 'Guest',
+        UserAccount: r.user?.email ?? '',
         Date: new Date(r.createdAt).toLocaleDateString('en-IN'),
       })),
       'ngo-join-requests'
@@ -208,22 +215,63 @@ export default function AdminNgoPage() {
                   <th className="text-left py-3 px-4 font-medium text-gray-500">Name</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-500">Email</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-500">Phone</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">City</th>
                   <th className="text-right py-3 px-4 font-medium text-gray-500">Age</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">Interest</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-500">Visit</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-500">User</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-500">Date</th>
                 </tr>
               </thead>
               <tbody>
                 {requests.map((r) => (
-                  <tr key={r.id} className="border-b border-gray-50">
+                  <tr key={r.id} className="border-b border-gray-50 align-top">
                     <td className="py-3 px-4 font-medium text-gray-900">{r.name}</td>
                     <td className="py-3 px-4 text-gray-600">{r.email}</td>
                     <td className="py-3 px-4 text-gray-600">{r.phone}</td>
-                    <td className="py-3 px-4 text-gray-600">{r.city}</td>
-                    <td className="py-3 px-4 text-right text-gray-700">{r.age}</td>
-                    <td className="py-3 px-4 text-gray-600 max-w-xs truncate">{r.interest}</td>
-                    <td className="py-3 px-4 text-gray-600">{new Date(r.createdAt).toLocaleDateString('en-IN')}</td>
+                    <td className="py-3 px-4 text-right text-gray-700">{r.age ?? '—'}</td>
+                    <td className="py-3 px-4 text-gray-700 max-w-[200px]">
+                      {r.ngoVisit ? (
+                        <Link
+                          href={`/admin/ngo/visits/${r.ngoVisit.id}`}
+                          className="hover:underline"
+                        >
+                          <div className="font-medium text-gray-900 line-clamp-1">
+                            {r.ngoVisit.ngoName}
+                          </div>
+                          <div className="text-[11px] text-gray-500">
+                            {new Date(r.ngoVisit.visitDate).toLocaleDateString('en-IN')}
+                          </div>
+                        </Link>
+                      ) : (
+                        <span className="text-[11px] italic text-gray-400">
+                          Public form (legacy)
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-gray-700 max-w-[200px]">
+                      {r.user ? (
+                        <Link
+                          href={`/admin/users/${r.user.id}`}
+                          className="hover:underline"
+                        >
+                          <div className="font-medium text-gray-900 line-clamp-1">
+                            {r.user.name}
+                          </div>
+                          <div className="text-[11px] text-gray-500 line-clamp-1">
+                            {r.user.email}
+                          </div>
+                        </Link>
+                      ) : (
+                        <span
+                          title="Submitted via the deprecated public form before 2026-05-19"
+                          className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600"
+                        >
+                          Guest
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-gray-600 whitespace-nowrap">
+                      {new Date(r.createdAt).toLocaleDateString('en-IN')}
+                    </td>
                   </tr>
                 ))}
               </tbody>

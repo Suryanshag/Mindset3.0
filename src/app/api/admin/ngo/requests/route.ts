@@ -18,6 +18,10 @@ export async function GET(req: NextRequest) {
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+          ngoVisit: { select: { id: true, ngoName: true, visitDate: true } },
+        },
       }),
       prisma.ngoJoinRequest.count(),
     ])
