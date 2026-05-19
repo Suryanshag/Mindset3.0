@@ -15,19 +15,6 @@ type Workshop = {
   date: string;
 };
 
-type NgoVisit = {
-  id: string;
-  ngoName: string;
-  location: string;
-  description: string;
-  photos: string[];
-  visitDate: string;
-};
-
-type SelectedItem =
-  | { kind: "workshop"; data: Workshop }
-  | { kind: "ngo"; data: NgoVisit };
-
 const NAV_LINKS = `
   <li class="menu-item"><a href="/">Home</a></li>
   <li class="menu-item"><a href="/doctors">Doctors</a></li>
@@ -44,8 +31,8 @@ const staticHTML = `
       <section class="block-blog-hero">
         <div class="block-blog-hero__container container">
           <div class="block-blog-hero__heading-wrapper">
-            <h1 class="block-blog-hero__heading">Workshops &amp; NGO Visits</h1>
-            <h2 class="block-blog-hero__subheading">Events, learning sessions &amp; community outreach</h2>
+            <h1 class="block-blog-hero__heading">Workshops</h1>
+            <h2 class="block-blog-hero__subheading">Live, small-group sessions led by RCI-registered facilitators</h2>
           </div>
         </div>
         <div class="block-blog-hero__shapes">
@@ -84,9 +71,7 @@ const staticHTML = `
               <div class="block-blog-listing__categories">
                 <h3 class="block-blog-listing__categories-title">Filter</h3>
                 <div class="block-blog-listing__categories-list">
-                  <button class="block-blog-listing__category-item block-blog-listing__category-item--active" data-category-filter="all">All</button>
-                  <button class="block-blog-listing__category-item" data-category-filter="WORKSHOP">Workshops</button>
-                  <button class="block-blog-listing__category-item" data-category-filter="NGO">NGO Visits</button>
+                  <button class="block-blog-listing__category-item block-blog-listing__category-item--active" data-category-filter="all">All workshops</button>
                 </div>
               </div>
             </div>
@@ -184,8 +169,6 @@ function fmtDate(iso: string) {
   };
 }
 
-const mapPinSVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
-
 // ── Card builders ──────────────────────────────────────────────────────────
 
 function buildWorkshopCard(w: Workshop): string {
@@ -195,6 +178,11 @@ function buildWorkshopCard(w: Workshop): string {
   const img = w.image
     ? `<img width="600" height="849" src="${w.image}" alt="${w.title}" loading="lazy">`
     : `<div class="ws-card__img-fallback ws-card__img-fallback--workshop"><span>${w.title.charAt(0)}</span></div>`;
+
+  // /login auto-redirects already-authed users to the callbackUrl, so this
+  // single href works for both auth states — no client-side session check
+  // needed inside an HTML-string-built card.
+  const registerHref = `/login?callbackUrl=/user/discover/workshops/${w.id}`;
 
   return `
     <article class="block-blog-listing__post" data-post-id="w-${w.id}" data-categories="WORKSHOP">
@@ -212,35 +200,10 @@ function buildWorkshopCard(w: Workshop): string {
         <div class="block-blog-listing__post-content">
           <h3 class="block-blog-listing__post-title">${w.title}</h3>
           <p class="block-blog-listing__post-description">${shortDesc}</p>
-        </div>
-      </div>
-    </article>`;
-}
-
-function buildNgoCard(v: NgoVisit): string {
-  const { day, month } = fmtDate(v.visitDate);
-  const shortDesc = v.description.length > 100 ? v.description.slice(0, 100) + "…" : v.description;
-  const img = v.photos.length > 0
-    ? `<img width="600" height="400" src="${v.photos[0]}" alt="${v.ngoName}" loading="lazy">`
-    : `<div class="ws-card__img-fallback ws-card__img-fallback--ngo"><span>${v.ngoName.charAt(0)}</span></div>`;
-
-  return `
-    <article class="block-blog-listing__post" data-post-id="n-${v.id}" data-categories="NGO">
-      <div class="block-blog-listing__post-link">
-        <div class="block-blog-listing__post-image ws-card__img-wrap">
-          ${img}
-          <div class="ws-card__date-chip">
-            <span class="ws-card__date-day">${day}</span>
-            <span class="ws-card__date-month">${month}</span>
+          <div class="ws-card__actions">
+            <span class="ws-card__learn-more">Learn more →</span>
+            <a class="ws-card__register-btn" href="${registerHref}" data-register-cta>Register</a>
           </div>
-        </div>
-        <div class="block-blog-listing__post-categories">
-          <span class="block-blog-listing__post-category block-blog-listing__post-category--green">NGO Visit</span>
-        </div>
-        <div class="block-blog-listing__post-content">
-          <h3 class="block-blog-listing__post-title">${v.ngoName}</h3>
-          <p class="block-blog-listing__post-description ws-card__location">${mapPinSVG} ${v.location}</p>
-          <p class="block-blog-listing__post-description">${shortDesc}</p>
         </div>
       </div>
     </article>`;
@@ -254,11 +217,14 @@ function buildWorkshopDetail(w: Workshop): string {
     ? `<img src="${w.image}" alt="${w.title}" />`
     : `<div class="ws-card__img-fallback ws-card__img-fallback--workshop ws-detail__fallback"><span>${w.title.charAt(0)}</span></div>`;
 
+  // Same href strategy as the card CTA — /login auto-redirects authed users.
+  const registerHref = `/login?callbackUrl=/user/discover/workshops/${w.id}`;
+
   return `
     <div class="product-detail">
       <button class="doctor-detail__back" data-back-btn>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
-        All Events
+        All Workshops
       </button>
 
       <div class="product-detail__hero">
@@ -269,8 +235,8 @@ function buildWorkshopDetail(w: Workshop): string {
         <div class="product-detail__info">
           <p class="ws-detail__date">${full}</p>
           <h1 class="product-detail__name">${w.title}</h1>
-          <a href="/#apply-now" class="doctor-detail__book-btn">
-            Register Interest
+          <a href="${registerHref}" class="doctor-detail__book-btn">
+            Register for this workshop
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </a>
         </div>
@@ -281,59 +247,6 @@ function buildWorkshopDetail(w: Workshop): string {
           <h2 class="doctor-detail__section-title">About this Workshop</h2>
           <div class="doctor-detail__section-text">${w.description}</div>
         </div>
-      </div>
-    </div>`;
-}
-
-function buildNgoDetail(v: NgoVisit): string {
-  const { full } = fmtDate(v.visitDate);
-  const heroImg = v.photos.length > 0
-    ? `<img src="${v.photos[0]}" alt="${v.ngoName}" />`
-    : `<div class="ws-card__img-fallback ws-card__img-fallback--ngo ws-detail__fallback"><span>${v.ngoName.charAt(0)}</span></div>`;
-
-  const extraPhotos = v.photos.length > 1
-    ? `<div class="doctor-detail__section">
-        <h2 class="doctor-detail__section-title">Photos</h2>
-        <div class="ws-detail__photos">
-          ${v.photos.slice(1).map((p, i) =>
-            `<div class="ws-detail__photo-wrap"><img src="${p}" alt="${v.ngoName} photo ${i + 2}" loading="lazy" /></div>`
-          ).join("")}
-        </div>
-      </div>`
-    : "";
-
-  return `
-    <div class="product-detail">
-      <button class="doctor-detail__back" data-back-btn>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
-        All Events
-      </button>
-
-      <div class="product-detail__hero">
-        <div class="product-detail__image-wrap">
-          ${heroImg}
-          <span class="block-blog-listing__post-category block-blog-listing__post-category--green product-detail__stock-badge">NGO Visit</span>
-        </div>
-        <div class="product-detail__info">
-          <p class="ws-detail__date">${full}</p>
-          <h1 class="product-detail__name">${v.ngoName}</h1>
-          <div class="product-detail__stock-row">
-            ${mapPinSVG}
-            <span>${v.location}</span>
-          </div>
-          <a href="/#apply-now" class="doctor-detail__book-btn">
-            Join Our Next Drive
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </a>
-        </div>
-      </div>
-
-      <div class="doctor-detail__body">
-        <div class="doctor-detail__section">
-          <h2 class="doctor-detail__section-title">About the Visit</h2>
-          <p class="doctor-detail__section-text">${v.description.replace(/\n/g, "<br/>")}</p>
-        </div>
-        ${extraPhotos}
       </div>
     </div>`;
 }
@@ -359,11 +272,10 @@ export default function WorkshopsPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const postsRef = useRef<HTMLElement | null>(null);
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
-  const [ngoVisits, setNgoVisits] = useState<NgoVisit[]>([]);
   const [ready, setReady] = useState(false);
   const [fetchError, setFetchError] = useState(false);
   const [view, setView] = useState<"list" | "detail">("list");
-  const [selected, setSelected] = useState<SelectedItem | null>(null);
+  const [selected, setSelected] = useState<Workshop | null>(null);
 
   const showDetailRef = useRef<(postId: string) => void>(() => {});
   const goBackRef = useRef<() => void>(() => {});
@@ -377,17 +289,10 @@ export default function WorkshopsPage() {
 
   useEffect(() => {
     showDetailRef.current = (postId: string) => {
-      let item: SelectedItem | null = null;
-      if (postId.startsWith("w-")) {
-        const id = postId.slice(2);
-        const found = workshops.find((w) => w.id === id);
-        if (found) item = { kind: "workshop", data: found };
-      } else if (postId.startsWith("n-")) {
-        const id = postId.slice(2);
-        const found = ngoVisits.find((v) => v.id === id);
-        if (found) item = { kind: "ngo", data: found };
-      }
-      setSelected(item);
+      if (!postId.startsWith("w-")) return;
+      const id = postId.slice(2);
+      const found = workshops.find((w) => w.id === id);
+      setSelected(found ?? null);
       setView("detail");
       document.querySelector<HTMLElement>(".block-blog-listing")?.scrollIntoView({ behavior: "smooth", block: "start" });
     };
@@ -397,29 +302,23 @@ export default function WorkshopsPage() {
       setSelected(null);
       const container = containerRef.current;
       if (container) {
-        container.querySelectorAll("[data-category-filter]").forEach((b) => {
-          b.classList.toggle("block-blog-listing__category-item--active", b.getAttribute("data-category-filter") === "all");
-        });
         const si = container.querySelector<HTMLInputElement>("[data-search-input]");
         if (si) si.value = "";
       }
     };
-  }, [workshops, ngoVisits]);
+  }, [workshops]);
 
-  // Fetch both in parallel (retry once on failure — handles Neon cold start)
+  // Fetch workshops only (NGO visits live at /ngo-visits since Sprint
+  // Pre-Launch-Fixes C2). Retry once on failure to handle Neon cold start.
   useEffect(() => {
     let cancelled = false;
     async function load(attempt = 0) {
       try {
-        const [wsRes, ngoRes] = await Promise.all([
-          fetch("/api/workshops"),
-          fetch("/api/ngo-visits"),
-        ]);
-        const [ws, ngo] = await Promise.all([wsRes.json(), ngoRes.json()]);
+        const wsRes = await fetch("/api/workshops");
+        const ws = await wsRes.json();
         if (cancelled) return;
-        if (Array.isArray(ws) && Array.isArray(ngo)) {
+        if (Array.isArray(ws)) {
           setWorkshops(ws);
-          setNgoVisits(ngo);
           setReady(true);
           setFetchError(false);
         } else if (attempt < 1) {
@@ -452,10 +351,7 @@ export default function WorkshopsPage() {
 
     if (view === "detail") {
       if (!selected) { postsContainer.innerHTML = buildLoadingHTML(); return; }
-      postsContainer.innerHTML =
-        selected.kind === "workshop"
-          ? buildWorkshopDetail(selected.data)
-          : buildNgoDetail(selected.data);
+      postsContainer.innerHTML = buildWorkshopDetail(selected);
       postsContainer.querySelector<HTMLElement>("[data-back-btn]")
         ?.addEventListener("click", () => goBackRef.current());
       return;
@@ -478,24 +374,14 @@ export default function WorkshopsPage() {
     }
     if (!ready) return;
 
-    // Sort all items by date descending
-    type AnyItem = { postId: string; date: number; html: string; category: string; title: string };
-    const all: AnyItem[] = [
-      ...workshops.map((w) => ({
+    // Sort workshops by date descending
+    const all = workshops
+      .map((w) => ({
         postId: `w-${w.id}`,
         date: new Date(w.date).getTime(),
         html: buildWorkshopCard(w),
-        category: "WORKSHOP",
-        title: w.title,
-      })),
-      ...ngoVisits.map((v) => ({
-        postId: `n-${v.id}`,
-        date: new Date(v.visitDate).getTime(),
-        html: buildNgoCard(v),
-        category: "NGO",
-        title: v.ngoName,
-      })),
-    ].sort((a, b) => b.date - a.date);
+      }))
+      .sort((a, b) => b.date - a.date);
 
     const remainder = all.length % 3;
     const placeholders =
@@ -506,40 +392,23 @@ export default function WorkshopsPage() {
             .join("");
     postsContainer.innerHTML = all.map((i) => i.html).join("") + placeholders;
 
-    // Click handlers
+    // Click handlers — card click opens in-place detail, but skip if the
+    // click originated inside the Register CTA so the link navigates normally.
     const realCards = postsContainer.querySelectorAll<HTMLElement>(
       ".block-blog-listing__post:not(.block-blog-listing__post-placeholder)"
     );
     realCards.forEach((card) => {
-      card.addEventListener("click", () => {
+      card.addEventListener("click", (e) => {
+        if ((e.target as Element).closest("[data-register-cta]")) return;
         const id = card.getAttribute("data-post-id");
         if (id) showDetailRef.current(id);
       });
     });
 
-    // Filter
-    const categoryButtons = container.querySelectorAll<HTMLElement>("[data-category-filter]");
     const posts = postsContainer.querySelectorAll<HTMLElement>(
       ".block-blog-listing__post:not(.block-blog-listing__post-placeholder)"
     );
     const placeholderEls = postsContainer.querySelectorAll<HTMLElement>(".block-blog-listing__post-placeholder");
-
-    categoryButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        categoryButtons.forEach((b) => b.classList.remove("block-blog-listing__category-item--active"));
-        btn.classList.add("block-blog-listing__category-item--active");
-        const filter = btn.getAttribute("data-category-filter");
-        if (filter === "all") {
-          posts.forEach((p) => { p.style.display = ""; });
-          placeholderEls.forEach((p) => { p.style.display = ""; });
-        } else {
-          placeholderEls.forEach((p) => { p.style.display = "none"; });
-          posts.forEach((post) => {
-            post.style.display = post.getAttribute("data-categories") === filter ? "" : "none";
-          });
-        }
-      });
-    });
 
     // Search
     const searchInput = container.querySelector<HTMLInputElement>("[data-search-input]");
@@ -553,7 +422,7 @@ export default function WorkshopsPage() {
         });
       });
     }
-  }, [view, workshops, ngoVisits, selected, ready, fetchError]);
+  }, [view, workshops, selected, ready, fetchError]);
 
   // GSAP / Lenis
   useEffect(() => {

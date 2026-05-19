@@ -6207,6 +6207,42 @@ body .wp-site-blocks .ws-card__img-wrap--poster {
     stroke: #2e7d32;
 }
 
+/* Workshop card actions row (Learn more + Register) — Sprint Pre-Launch C2 */
+.ws-card__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 0.85rem;
+}
+
+.ws-card__learn-more {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6b4830;
+    letter-spacing: 0.01em;
+}
+
+.ws-card__register-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0.95rem;
+    border-radius: 999px;
+    background: #2D5A4F;
+    color: #ffffff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+}
+
+.ws-card__register-btn:hover {
+    background: #244A41;
+    color: #ffffff;
+}
+
 /* Date label in detail hero */
 .ws-detail__date {
     font-family: var(--wp--preset--font-family--stabil-grotesk);

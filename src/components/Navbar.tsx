@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { href: '/team', label: 'Team' },
   { href: '/doctors', label: 'Doctors' },
   { href: '/workshops', label: 'Workshops' },
+  { href: '/ngo-visits', label: 'NGO Visits' },
   { href: '/products', label: 'Products' },
   { href: '/study-materials', label: 'Study Materials' },
   { href: '/contact', label: 'Contact' },
