@@ -1,0 +1,372 @@
+[
+  {
+    "phase": "Phase 1",
+    "step": "route /",
+    "url": "https://mindset-ten.vercel.app/",
+    "consoleErrors": [
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http"
+    ],
+    "networkErrors": [],
+    "notes": [
+      "title: Mindset — Mental Health Care, Made Accessible"
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/",
+    "screenshot": "p1-home.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "route /about",
+    "url": "https://mindset-ten.vercel.app/about",
+    "consoleErrors": [
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http"
+    ],
+    "networkErrors": [],
+    "notes": [
+      "title: About Us — Mindset | Mindset"
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/about",
+    "screenshot": "p1-about.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "route /doctors",
+    "url": "https://mindset-ten.vercel.app/doctors",
+    "consoleErrors": [
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http"
+    ],
+    "networkErrors": [],
+    "notes": [
+      "title: Find a Therapist | Mindset"
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/doctors",
+    "screenshot": "p1-doctors.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "route /products",
+    "url": "https://mindset-ten.vercel.app/products",
+    "consoleErrors": [
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http"
+    ],
+    "networkErrors": [],
+    "notes": [
+      "title: Wellness Products | Mindset"
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/products",
+    "screenshot": "p1-products.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "route /study-materials",
+    "url": "https://mindset-ten.vercel.app/study-materials",
+    "consoleErrors": [
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http"
+    ],
+    "networkErrors": [],
+    "notes": [
+      "title: Study Materials | Mindset"
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/study-materials",
+    "screenshot": "p1-study-materials.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "route /workshops",
+    "url": "https://mindset-ten.vercel.app/workshops",
+    "consoleErrors": [
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http"
+    ],
+    "networkErrors": [],
+    "notes": [
+      "title: Workshops & Events | Mindset"
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/workshops",
+    "screenshot": "p1-workshops.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "route /ngo-visits",
+    "url": "https://mindset-ten.vercel.app/ngo-visits",
+    "consoleErrors": [
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http"
+    ],
+    "networkErrors": [],
+    "notes": [
+      "title: NGO Visits — Mindset | Mindset"
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/ngo-visits",
+    "screenshot": "p1-ngo-visits.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "route /ngo-visits/join",
+    "url": "https://mindset-ten.vercel.app/ngo-visits/join",
+    "consoleErrors": [
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http",
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http"
+    ],
+    "networkErrors": [],
+    "notes": [
+      "title: Mindset — Mental Health Care, Made Accessible"
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/login?callbackUrl=%2Fuser%2Fdiscover%2Fngo-visits",
+    "screenshot": "p1-ngo-join-redirect.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "route /team",
+    "url": "https://mindset-ten.vercel.app/team",
+    "consoleErrors": [
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http"
+    ],
+    "networkErrors": [],
+    "notes": [
+      "title: Our Team | Mindset"
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/team",
+    "screenshot": "p1-team.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "route /privacy-policy",
+    "url": "https://mindset-ten.vercel.app/privacy-policy",
+    "consoleErrors": [
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http"
+    ],
+    "networkErrors": [],
+    "notes": [
+      "title: Privacy Policy | Mindset"
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/privacy-policy",
+    "screenshot": "p1-privacy-policy.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "route /terms-of-use",
+    "url": "https://mindset-ten.vercel.app/terms-of-use",
+    "consoleErrors": [
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http"
+    ],
+    "networkErrors": [],
+    "notes": [
+      "title: Terms of Use | Mindset"
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/terms-of-use",
+    "screenshot": "p1-terms-of-use.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "route /cookies",
+    "url": "https://mindset-ten.vercel.app/cookies",
+    "consoleErrors": [
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http"
+    ],
+    "networkErrors": [],
+    "notes": [
+      "title: Cookie Policy | Mindset"
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/cookies",
+    "screenshot": "p1-cookies.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "route /refund-policy",
+    "url": "https://mindset-ten.vercel.app/refund-policy",
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 ()",
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http"
+    ],
+    "networkErrors": [
+      "404 https://mindset-ten.vercel.app/refund-policy"
+    ],
+    "notes": [
+      "title: Page Not Found | Mindset"
+    ],
+    "status": 404,
+    "finalUrl": "https://mindset-ten.vercel.app/refund-policy",
+    "screenshot": "p1-refund-policy.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "route /contact",
+    "url": "https://mindset-ten.vercel.app/contact",
+    "consoleErrors": [
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http"
+    ],
+    "networkErrors": [],
+    "notes": [
+      "title: Contact Us | Mindset"
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/contact",
+    "screenshot": "p1-contact.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "route /login",
+    "url": "https://mindset-ten.vercel.app/login",
+    "consoleErrors": [
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http"
+    ],
+    "networkErrors": [],
+    "notes": [
+      "title: Mindset — Mental Health Care, Made Accessible"
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/login",
+    "screenshot": "p1-login.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "route /register",
+    "url": "https://mindset-ten.vercel.app/register",
+    "consoleErrors": [
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http"
+    ],
+    "networkErrors": [],
+    "notes": [
+      "title: Mindset — Mental Health Care, Made Accessible"
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/register",
+    "screenshot": "p1-register.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "route /robots.txt",
+    "url": "https://mindset-ten.vercel.app/robots.txt",
+    "consoleErrors": [],
+    "networkErrors": [],
+    "notes": [
+      "title: "
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/robots.txt",
+    "screenshot": "p1-robots.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "route /sitemap.xml",
+    "url": "https://mindset-ten.vercel.app/sitemap.xml",
+    "consoleErrors": [],
+    "networkErrors": [],
+    "notes": [
+      "title: "
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/sitemap.xml",
+    "screenshot": "p1-sitemap.png"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "/ngo-visits \"Join Now\" CTA href (logged out)",
+    "consoleErrors": [],
+    "networkErrors": [],
+    "notes": [
+      "href: /login?callbackUrl=%2Fuser%2Fdiscover%2Fngo-visits"
+    ],
+    "verdict": "ok"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "/workshops card count",
+    "consoleErrors": [],
+    "networkErrors": [],
+    "notes": [
+      "cards found: 52"
+    ],
+    "verdict": "ok"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "/workshops register/join button",
+    "consoleErrors": [],
+    "networkErrors": [],
+    "notes": [
+      "no register/join button found on /workshops"
+    ],
+    "verdict": "note"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "cookie banner appears on first visit",
+    "consoleErrors": [],
+    "networkErrors": [],
+    "notes": [
+      "banner visible: true"
+    ],
+    "screenshot": "p1-cookie-banner-fresh.png",
+    "verdict": "ok"
+  },
+  {
+    "phase": "Phase 1",
+    "step": "cookie Customize opens modal",
+    "consoleErrors": [],
+    "networkErrors": [],
+    "notes": [
+      "modal visible: true"
+    ],
+    "screenshot": "p1-cookie-customize-modal.png",
+    "verdict": "ok"
+  },
+  {
+    "phase": "Phase 2",
+    "step": "wrong password — error shown",
+    "consoleErrors": [],
+    "networkErrors": [],
+    "notes": [
+      "error message: Invalid email or password"
+    ],
+    "screenshot": "p2-wrong-password.png",
+    "verdict": "ok"
+  },
+  {
+    "phase": "Phase 2",
+    "step": "invalid email — error shown",
+    "consoleErrors": [],
+    "networkErrors": [],
+    "notes": [
+      "error message: (none captured)"
+    ],
+    "screenshot": "p2-invalid-email.png",
+    "verdict": "warn"
+  },
+  {
+    "phase": "Phase 2",
+    "step": "/register page loads with form",
+    "consoleErrors": [],
+    "networkErrors": [],
+    "notes": [
+      "form count: 1"
+    ],
+    "screenshot": "p2-register-page.png",
+    "verdict": "ok"
+  },
+  {
+    "phase": "Phase 2",
+    "step": "/forgot-password",
+    "url": "https://mindset-ten.vercel.app/forgot-password",
+    "consoleErrors": [
+      "Loading the script 'https://www.google.com/recaptcha/api.js?render=6Lc0HVMsAAAAAFTcpb_VTrK1_mQRQ1-MxqR3xiIZ' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval' http"
+    ],
+    "networkErrors": [],
+    "notes": [
+      "title: Mindset — Mental Health Care, Made Accessible"
+    ],
+    "status": 200,
+    "finalUrl": "https://mindset-ten.vercel.app/forgot-password",
+    "screenshot": "p2-forgot-password.png"
+  }
+]

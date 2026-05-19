@@ -1,0 +1,147 @@
+{
+  "findings": [
+    {
+      "phase": "Phase 4",
+      "step": "preferred-language save persists",
+      "consoleErrors": [],
+      "networkErrors": [],
+      "notes": [
+        "wrote: audit-1779210219339",
+        "read back: audit-1779210219339"
+      ],
+      "verdict": "ok"
+    },
+    {
+      "phase": "Phase 4",
+      "step": "preferred-language clear persists",
+      "consoleErrors": [],
+      "networkErrors": [],
+      "notes": [
+        "read back: \"\""
+      ],
+      "verdict": "ok"
+    },
+    {
+      "phase": "Phase 4",
+      "step": "blanking phone surfaces sticky-required error",
+      "consoleErrors": [],
+      "networkErrors": [],
+      "notes": [
+        "original phone: 9718812356",
+        "error message visible: true"
+      ],
+      "screenshot": "p4-phone-blank-error.png",
+      "verdict": "ok"
+    },
+    {
+      "phase": "Phase 4",
+      "step": "journal new save navigates away (suggests persisted)",
+      "consoleErrors": [],
+      "networkErrors": [],
+      "notes": [
+        "url before: https://mindset-ten.vercel.app/user/practice/journal/new",
+        "url after: https://mindset-ten.vercel.app/user/practice/journal/cmpcvudqc000004l5gteg1ihp",
+        "entry text: Audit 1779210247212: persistence check."
+      ],
+      "screenshot": "p4-journal-after-save.png",
+      "verdict": "ok"
+    },
+    {
+      "phase": "Phase 5",
+      "step": "session slot picker",
+      "consoleErrors": [],
+      "networkErrors": [],
+      "notes": [
+        "no time slot buttons visible"
+      ],
+      "verdict": "broken"
+    },
+    {
+      "phase": "Phase 5",
+      "step": "workshop register button",
+      "consoleErrors": [],
+      "networkErrors": [],
+      "notes": [
+        "no register/pay/join button on workshop detail (may be already registered or free)"
+      ],
+      "verdict": "note"
+    },
+    {
+      "phase": "Phase 6",
+      "step": "spine bell present + badge state",
+      "consoleErrors": [],
+      "networkErrors": [],
+      "notes": [
+        "bell visible: 1",
+        "badge visible: true"
+      ],
+      "screenshot": "p6-bell.png",
+      "verdict": "ok"
+    },
+    {
+      "phase": "Phase 6",
+      "step": "bell click lands on notifications",
+      "consoleErrors": [],
+      "networkErrors": [],
+      "notes": [
+        "final url: https://mindset-ten.vercel.app/user/notifications"
+      ],
+      "screenshot": "p6-notifications.png",
+      "verdict": "ok"
+    },
+    {
+      "phase": "Phase 6",
+      "step": "badge after mark-as-read",
+      "consoleErrors": [],
+      "networkErrors": [],
+      "notes": [
+        "badge still visible: true"
+      ],
+      "verdict": "warn"
+    },
+    {
+      "phase": "Phase 7",
+      "step": "robots.txt",
+      "consoleErrors": [],
+      "networkErrors": [],
+      "notes": [
+        "len: 348",
+        "has Sitemap directive: true",
+        "disallow /user: true",
+        "disallow /verify-email: true",
+        "host: Host: https://mindset-ten.vercel.app",
+        "sitemap url: Sitemap: https://mindset-ten.vercel.app/sitemap.xml"
+      ],
+      "verdict": "ok"
+    },
+    {
+      "phase": "Phase 7",
+      "step": "sitemap.xml",
+      "consoleErrors": [],
+      "networkErrors": [],
+      "notes": [
+        "url count: 13",
+        "lists /refund-policy (404 in Phase 1): false",
+        "lists /cookies: true",
+        "lists /ngo-visits/join (deprecated redirect): true"
+      ],
+      "verdict": "ok"
+    },
+    {
+      "phase": "Phase 7",
+      "step": "/api/auth/session shape",
+      "consoleErrors": [],
+      "networkErrors": [],
+      "notes": [
+        "len: 162",
+        "contains \"role\": true",
+        "body preview: {\"user\":{\"name\":\"Suryansh Agarwal\",\"email\":\"choudharysuryansh1111@gmail.com\",\"id\":\"cmp46znjl000005l5qc9m3rg9\",\"role\":\"USER\"},\"expires\":\"2026-06-18T17:04:41.750Z\"}"
+      ],
+      "verdict": "ok"
+    }
+  ],
+  "dbRowsCreated": [
+    "JournalEntry — Suryansh, 2026-05-19T17:04:11.887Z"
+  ],
+  "nonRecaptchaConsoleErrors": []
+}
