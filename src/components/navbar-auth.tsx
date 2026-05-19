@@ -19,9 +19,14 @@ export function NavbarAuthDesktop() {
   if (session?.user) {
     const href = ROLE_HOME[session.user.role ?? ''] ?? '/user'
     return (
-      <Link href={href} className="btn-primary nav-cta">
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="btn-primary nav-cta"
+      >
         Dashboard
-      </Link>
+      </a>
     )
   }
 
@@ -42,9 +47,14 @@ export function NavbarAuthMobile() {
   if (session?.user) {
     const href = ROLE_HOME[session.user.role ?? ''] ?? '/user'
     return (
-      <Link href={href} className="btn-primary nav-cta-mobile">
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="btn-primary nav-cta-mobile"
+      >
         Dashboard
-      </Link>
+      </a>
     )
   }
 
@@ -65,9 +75,14 @@ export function NavbarAuthFloating() {
   if (session?.user) {
     const href = ROLE_HOME[session.user.role ?? ''] ?? '/user'
     return (
-      <Link href={href} className="btn-primary nav-cta">
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="btn-primary nav-cta"
+      >
         Dashboard
-      </Link>
+      </a>
     )
   }
 
