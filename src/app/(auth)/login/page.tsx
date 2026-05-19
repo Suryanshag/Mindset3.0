@@ -1,6 +1,6 @@
 'use client'
 
-import { signIn, getSession } from 'next-auth/react'
+import { signIn, getSession, useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -29,6 +29,8 @@ const OAUTH_ERROR_COPY: Record<string, string> = {
   AccessDenied: 'You cancelled the Google sign-in.',
 }
 
+const ROLE_HOME: Record<string, string> = { ADMIN: '/admin', DOCTOR: '/doctor', USER: '/user' }
+
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -37,6 +39,15 @@ function LoginForm() {
   const oauthError = searchParams.get('error')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const { data: existingSession, status } = useSession()
+
+  // Already signed in — redirect to dashboard immediately
+  useEffect(() => {
+    if (status === 'authenticated' && existingSession?.user) {
+      const dest = callbackUrl ?? ROLE_HOME[existingSession.user.role ?? ''] ?? '/user'
+      router.replace(dest)
+    }
+  }, [status, existingSession, callbackUrl, router])
 
   const initialError = useMemo(() => {
     if (!oauthError) return null

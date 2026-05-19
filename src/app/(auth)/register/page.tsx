@@ -1,6 +1,6 @@
 'use client'
 
-import { signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -28,6 +28,8 @@ const OAUTH_ERROR_COPY: Record<string, string> = {
   OAuthAccountNotLinked: 'Google sign-in failed. Try again or use email.',
 }
 
+const ROLE_HOME: Record<string, string> = { ADMIN: '/admin', DOCTOR: '/doctor', USER: '/user' }
+
 function RegisterForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -35,6 +37,14 @@ function RegisterForm() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const honeypotRef = useRef<HTMLInputElement>(null)
+  const { data: existingSession, status } = useSession()
+
+  // Already signed in — redirect to dashboard immediately
+  useEffect(() => {
+    if (status === 'authenticated' && existingSession?.user) {
+      router.replace(ROLE_HOME[existingSession.user.role ?? ''] ?? '/user')
+    }
+  }, [status, existingSession, router])
 
   const initialError = useMemo(() => {
     if (!oauthError) return null

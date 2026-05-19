@@ -119,7 +119,7 @@ export default function Navbar({ light = false }: { light?: boolean }) {
               {status === 'loading' ? (
                 <span className="block-header__auth-placeholder" />
               ) : (
-                <Link href={authHref} className="block-header__auth-btn" style={isLoggedIn ? { display: 'flex', alignItems: 'center', gap: '8px' } : undefined}>
+                <Link href={authHref} className="block-header__auth-btn" style={isLoggedIn ? { display: 'flex', alignItems: 'center', gap: '8px' } : undefined} {...(!isLoggedIn && { target: '_blank', rel: 'noreferrer' })}>
                   {isLoggedIn && (
                     userImage ? (
                       <Image src={userImage} alt="" width={24} height={24} style={{ borderRadius: '50%', objectFit: 'cover' }} unoptimized />
@@ -193,7 +193,7 @@ export default function Navbar({ light = false }: { light?: boolean }) {
                 {status === 'loading' ? (
                   <span className="block-header__auth-placeholder" />
                 ) : (
-                  <Link href={authHref} className="block-header__auth-btn">
+                  <Link href={authHref} className="block-header__auth-btn" {...(!isLoggedIn && { target: '_blank', rel: 'noreferrer' })}>
                     {authLabel}
                   </Link>
                 )}
@@ -273,7 +273,7 @@ export default function Navbar({ light = false }: { light?: boolean }) {
                 {totalItems > 0 && <span className="block-header__overlay-cart-count">{totalItems > 9 ? '9+' : totalItems}</span>}
               </Link>
             )}
-            <Link href={authHref} className="block-header__overlay-auth-btn" onClick={closeOverlay}>
+            <Link href={authHref} className="block-header__overlay-auth-btn" onClick={closeOverlay} {...(!isLoggedIn && { target: '_blank', rel: 'noreferrer' })}>
               {status === 'loading' ? '...' : authLabel}
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
