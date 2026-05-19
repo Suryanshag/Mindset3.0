@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Ticket, BookOpen, ShoppingBag, ChevronRight } from 'lucide-react'
+import { Ticket, BookOpen, ShoppingBag, ChevronRight, HeartHandshake } from 'lucide-react'
 import { getNextWorkshop } from '@/lib/queries/dashboard'
 import PageHeader from '@/components/dashboard/page-header'
 import { formatSessionDateRelative } from '@/lib/format-date'
@@ -16,6 +16,7 @@ export default async function DiscoverHubPage() {
     nextWorkshopFull,
     libraryPreview,
     shopPreview,
+    nextNgoVisit,
   ] = await Promise.all([
     getNextWorkshop().catch(() => null),
     prisma.studyMaterial
@@ -74,6 +75,13 @@ export default async function DiscoverHubPage() {
         select: { id: true, name: true, price: true, image: true },
       })
       .catch(() => []),
+    prisma.ngoVisit
+      .findFirst({
+        where: { isPublished: true, visitDate: { gte: new Date() } },
+        orderBy: { visitDate: 'asc' },
+        select: { id: true, ngoName: true, location: true, visitDate: true },
+      })
+      .catch(() => null),
   ])
 
   const sections = [
@@ -289,6 +297,36 @@ export default async function DiscoverHubPage() {
           </Link>
         </section>
       )}
+
+      {/* Section D — Community (NGO visits) */}
+      <section className="mt-10">
+        <p className="text-[11px] font-medium text-text-faint uppercase tracking-wider mb-2.5">
+          Community
+        </p>
+        <Link
+          href="/user/discover/ngo-visits"
+          className="block bg-bg-card rounded-2xl p-5 transition-colors duration-150 lg:hover:bg-white/80"
+          style={{
+            border: '1px solid var(--color-border)',
+            borderLeft: '3px solid var(--color-accent)',
+          }}
+        >
+          <div className="flex items-start gap-4">
+            <div className="w-11 h-11 rounded-xl bg-accent-tint flex items-center justify-center shrink-0">
+              <HeartHandshake size={20} className="text-accent" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[16px] font-medium text-text">NGO Visits</p>
+              <p className="text-[13px] text-text-muted mt-0.5">
+                {nextNgoVisit
+                  ? `Next: ${nextNgoVisit.ngoName} · ${formatSessionDateRelative(nextNgoVisit.visitDate)}`
+                  : 'Volunteer with us on community outreach drives'}
+              </p>
+            </div>
+            <ChevronRight size={16} className="text-text-faint shrink-0 self-center" />
+          </div>
+        </Link>
+      </section>
     </div>
   )
 }
