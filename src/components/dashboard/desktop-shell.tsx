@@ -1,6 +1,6 @@
 import { auth } from '@/lib/auth'
 import { getSpineSessions } from '@/lib/queries/reflection'
-import { getUserEngagementState } from '@/lib/queries/dashboard'
+import { getUserEngagementState, getUnreadNotificationCount } from '@/lib/queries/dashboard'
 import { getUpcomingItems } from '@/lib/queries/upcoming'
 import DesktopContent from '@/components/dashboard/desktop-content'
 
@@ -13,12 +13,13 @@ export default async function DesktopShell({ children, showVerifyBanner = false 
   const session = await auth()
   const userId = session?.user?.id
 
-  const [spineSessions, engagementState, upcomingItems] = await Promise.all([
+  const [spineSessions, engagementState, upcomingItems, unreadNotificationCount] = await Promise.all([
     userId ? getSpineSessions(userId).catch(() => []) : Promise.resolve([]),
     userId
       ? getUserEngagementState(userId).catch(() => 'empty' as const)
       : Promise.resolve('empty' as const),
     userId ? getUpcomingItems(userId).catch(() => []) : Promise.resolve([]),
+    userId ? getUnreadNotificationCount(userId).catch(() => 0) : Promise.resolve(0),
   ])
 
   return (
@@ -26,6 +27,7 @@ export default async function DesktopShell({ children, showVerifyBanner = false 
       spineSessions={spineSessions}
       engagementState={engagementState}
       upcomingItems={upcomingItems}
+      unreadNotificationCount={unreadNotificationCount}
       showVerifyBanner={showVerifyBanner}
     >
       {children}

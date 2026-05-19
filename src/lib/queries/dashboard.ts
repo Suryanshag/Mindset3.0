@@ -162,13 +162,17 @@ export async function getTodaysMoodCheckIn(userId: string): Promise<{ mood: 1|2|
 }
 
 /**
- * Count of unread notifications for a user.
+ * Count of unread notifications for a user. Cached per-request so the
+ * Spine (DesktopShell), the mobile Header, and /user/page.tsx don't
+ * each hit the DB separately on a single render.
  */
-export async function getUnreadNotificationCount(userId: string): Promise<number> {
-  return prisma.notification.count({
-    where: { userId, readAt: null },
-  })
-}
+export const getUnreadNotificationCount = cache(
+  async (userId: string): Promise<number> => {
+    return prisma.notification.count({
+      where: { userId, readAt: null },
+    })
+  }
+)
 
 /**
  * Determine user engagement state for reflection mode.

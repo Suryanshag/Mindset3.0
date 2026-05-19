@@ -12,6 +12,7 @@ import {
   ShoppingCart,
   UserCircle,
   PenLine,
+  Bell,
 } from 'lucide-react'
 import type { SpineSession } from '@/lib/queries/reflection'
 import type { EngagementState } from '@/lib/queries/dashboard'
@@ -23,12 +24,14 @@ const SPACES = [
   { href: '/user/discover', label: 'Discover', Icon: Compass },
   { href: '/user/shop', label: 'Shop', Icon: ShoppingBag },
   { href: '/user/cart', label: 'Cart', Icon: ShoppingCart },
+  { href: '/user/notifications', label: 'Notifications', Icon: Bell },
   { href: '/user/profile', label: 'Profile', Icon: UserCircle },
 ]
 
 type Props = {
   sessions?: SpineSession[]
   engagementState?: EngagementState
+  unreadNotificationCount?: number
 }
 
 /** Group sessions by "Month Year" key (IST calendar). */
@@ -42,7 +45,11 @@ function groupByMonth(sessions: SpineSession[]) {
   return groups
 }
 
-export default function Spine({ sessions = [], engagementState = 'engaged' }: Props) {
+export default function Spine({
+  sessions = [],
+  engagementState = 'engaged',
+  unreadNotificationCount = 0,
+}: Props) {
   const pathname = usePathname()
   const { data: authSession } = useSession()
 
@@ -153,6 +160,9 @@ export default function Spine({ sessions = [], engagementState = 'engaged' }: Pr
         <nav className="space-y-0.5">
           {SPACES.map(({ href, label, Icon }) => {
             const active = isSpaceActive(href)
+            const isNotifications = href === '/user/notifications'
+            const showBadge = isNotifications && unreadNotificationCount > 0
+            const badgeLabel = unreadNotificationCount > 9 ? '9+' : String(unreadNotificationCount)
             return (
               <Link
                 key={href}
@@ -164,7 +174,17 @@ export default function Spine({ sessions = [], engagementState = 'engaged' }: Pr
                     : 'text-text hover:bg-white/60'
                 }`}
               >
-                <Icon size={18} className={active ? 'text-primary' : 'text-text-muted'} />
+                <span className="relative shrink-0">
+                  <Icon size={18} className={active ? 'text-primary' : 'text-text-muted'} />
+                  {showBadge && (
+                    <span
+                      aria-label={`${unreadNotificationCount} unread`}
+                      className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full bg-accent text-[9px] font-medium text-white flex items-center justify-center"
+                    >
+                      {badgeLabel}
+                    </span>
+                  )}
+                </span>
                 <span className="text-[14px] font-medium">{label}</span>
               </Link>
             )

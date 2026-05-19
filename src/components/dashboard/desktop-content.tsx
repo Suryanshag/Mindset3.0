@@ -12,6 +12,7 @@ type Props = {
   spineSessions: SpineSession[]
   engagementState: EngagementState
   upcomingItems: UpcomingItem[]
+  unreadNotificationCount: number
   showVerifyBanner?: boolean
   children: React.ReactNode
 }
@@ -42,6 +43,7 @@ export default function DesktopContent({
   spineSessions,
   engagementState,
   upcomingItems,
+  unreadNotificationCount,
   showVerifyBanner = false,
   children,
 }: Props) {
@@ -66,7 +68,11 @@ export default function DesktopContent({
 
   return (
     <div className={`desktop-shell min-h-dvh ${showRail ? 'with-rail' : 'no-rail'}`}>
-      <Spine sessions={spineSessions} engagementState={engagementState} />
+      <Spine
+        sessions={spineSessions}
+        engagementState={engagementState}
+        unreadNotificationCount={unreadNotificationCount}
+      />
 
       <main className="bg-bg-app overflow-y-auto">
         {showVerifyBanner && (
