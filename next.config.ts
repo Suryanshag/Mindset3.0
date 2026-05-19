@@ -17,6 +17,17 @@ const nextConfig: NextConfig = {
       { source: '/user/shop/cart', destination: '/user/cart', permanent: true },
       { source: '/user/shop/orders', destination: '/user/orders', permanent: true },
       { source: '/user/addresses', destination: '/user/profile', permanent: true },
+      // Sprint Pre-Launch H1: /ngo-visits/join was a server component that
+      // called redirect() — Next streaming SSR turned that into 200+RSC+
+      // meta-refresh, not a true HTTP redirect. A config-level redirect runs
+      // before any page logic and emits a real 308. /login auto-redirects
+      // already-authed users to the callbackUrl so this single rule handles
+      // both auth states without needing a server auth check.
+      {
+        source: '/ngo-visits/join',
+        destination: '/login?callbackUrl=/user/discover/ngo-visits',
+        permanent: true,
+      },
     ]
   },
   async headers() {
