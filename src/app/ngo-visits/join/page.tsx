@@ -162,14 +162,6 @@ export default function NgoJoinPage() {
           </div>
 
           <div>
-            <label htmlFor="city" className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--navy)' }}>
-              City
-            </label>
-            <input id="city" type="text" {...register('city')} className={inputClassName} />
-            {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city.message}</p>}
-          </div>
-
-          <div>
             <label htmlFor="age" className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--navy)' }}>
               Age
             </label>

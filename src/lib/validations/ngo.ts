@@ -4,8 +4,7 @@ export const ngoJoinSchema = z.object({
   name: z.string().min(2).max(100),
   email: z.string().email(),
   phone: z.string().regex(/^[6-9]\d{9}$/),
-  city: z.string().min(2).max(100),
-  age: z.number().int().min(13).max(100),
+  age: z.number().int().min(13).max(100).optional(),
   interest: z.string().min(10).max(1000),
 })
 

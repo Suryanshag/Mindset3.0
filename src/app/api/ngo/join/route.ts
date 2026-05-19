@@ -19,10 +19,10 @@ export async function POST(req: NextRequest) {
       return errorResponse(parsed.error.issues[0].message, 400)
     }
 
-    const { name, email, phone, city, age, interest } = parsed.data
+    const { name, email, phone, age, interest } = parsed.data
 
     await prisma.ngoJoinRequest.create({
-      data: { name, email, phone, city, age, interest },
+      data: { name, email, phone, age, interest },
     })
 
     const whatsappLink = await prisma.whatsappLink.findFirst({

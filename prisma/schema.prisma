@@ -43,6 +43,7 @@ model User {
   authEvents             AuthEvent[]
   emailVerificationTokens EmailVerificationToken[]
   studyMaterialAccesses   StudyMaterialAccess[]
+  ngoRegistrations       NgoJoinRequest[]
 }
 
 enum Role {
@@ -280,17 +281,26 @@ model NgoVisit {
   visitDate   DateTime
   isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
+
+  registrations NgoJoinRequest[]
 }
 
 model NgoJoinRequest {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  phone     String
-  city      String
-  age       Int
-  interest  String   @db.Text
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  phone      String
+  age        Int?
+  interest   String   @db.Text
+  createdAt  DateTime @default(now())
+
+  userId     String?
+  ngoVisitId String?
+
+  user     User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  ngoVisit NgoVisit? @relation(fields: [ngoVisitId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, ngoVisitId])
 }
 
 model WhatsappLink {
