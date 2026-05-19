@@ -1,9 +1,8 @@
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
 import Image from 'next/image'
-import Link from 'next/link'
 import { format } from 'date-fns'
-import { MapPin, ArrowRight } from 'lucide-react'
+import { MapPin } from 'lucide-react'
+import { NgoJoinCta } from './join-cta'
 
 export const metadata = {
   title: 'NGO Visits — Mindset',
@@ -12,11 +11,6 @@ export const metadata = {
 }
 
 export default async function NgoVisitsPage() {
-  const session = await auth()
-  const joinHref = session?.user?.id
-    ? '/user/discover/ngo-visits'
-    : '/login?callbackUrl=%2Fuser%2Fdiscover%2Fngo-visits'
-
   const visits = await prisma.ngoVisit.findMany({
     where: { isPublished: true },
     select: {
@@ -188,13 +182,7 @@ export default async function NgoVisitsPage() {
             Want to make a difference? Volunteer with us and help bring
             mental health awareness to communities that need it.
           </p>
-          <Link
-            href={joinHref}
-            className="btn-primary inline-flex items-center gap-2"
-          >
-            Join Now
-            <ArrowRight size={18} />
-          </Link>
+          <NgoJoinCta />
         </section>
       </div>
     </div>
