@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://mindset.example'
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://mindset.org.in'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date()
@@ -18,5 +18,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/contact`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE_URL}/privacy-policy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
     { url: `${BASE_URL}/terms-of-use`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${BASE_URL}/cookies`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
   ]
 }

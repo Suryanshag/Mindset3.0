@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://mindset.example'
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://mindset.org.in'
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -20,6 +20,7 @@ export default function robots(): MetadataRoute.Robots {
           '/register',
           '/forgot-password',
           '/reset-password',
+          '/verify-email',
         ],
       },
     ],

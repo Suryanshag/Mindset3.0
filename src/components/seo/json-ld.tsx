@@ -15,7 +15,7 @@ export function JsonLd({ data }: { data: Record<string, JsonLdValue | undefined>
   )
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://mindset.example'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://mindset.org.in'
 
 export const organizationLd = {
   '@context': 'https://schema.org',
@@ -23,11 +23,26 @@ export const organizationLd = {
   '@id': `${APP_URL}/#organization`,
   name: 'Mindset',
   url: APP_URL,
-  logo: `${APP_URL}/images/icons/Logo.webp`,
+  // Logo as ImageObject (with dimensions) is preferred by Google's logo rich result.
+  logo: {
+    '@type': 'ImageObject',
+    url: `${APP_URL}/images/icons/Logo.webp`,
+    width: 512,
+    height: 512,
+  },
   description:
     'Online therapy, counseling, and mental wellness workshops — accessible, affordable, and stigma-free.',
-  medicalSpecialty: ['Psychiatric', 'Psychology'],
+  // 'Psychiatric' is a valid MedicalSpecialty enum; 'Psychology' is not — use knowsAbout for it.
+  medicalSpecialty: ['Psychiatric'],
+  knowsAbout: ['Psychotherapy', 'Counseling', 'Mental Health', 'Mindfulness'],
   areaServed: { '@type': 'Country', name: 'India' },
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'customer support',
+    email: 'mindset.org.connect@gmail.com',
+    availableLanguage: ['English', 'Hindi'],
+    areaServed: 'IN',
+  },
   sameAs: [],
 }
 
