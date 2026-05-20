@@ -25,7 +25,14 @@ if (process.env.NODE_ENV !== 'test') {
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   adapter: PrismaAdapter(prisma),
-  session: { strategy: 'jwt' },
+  // 60-day idle window balances returning-user UX (wellness app users may
+  // skip a month or more between therapy session blocks) against security
+  // posture (the JWT carries only id + role, no privileged scope). Increased
+  // from NextAuth's default of 30d. updateAge stays at the 24h default so
+  // active users get continuous refresh; the 60-day floor only matters for
+  // genuinely inactive users returning after a long gap.
+  // Reviewed: 2026-05-20. See docs/phase-1/session-investigation.md.
+  session: { strategy: 'jwt', maxAge: 60 * 24 * 60 * 60 },
   pages: {
     signIn: '/login',
     error: '/login',
