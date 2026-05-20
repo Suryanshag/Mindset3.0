@@ -105,7 +105,32 @@ Every restyled mobile form in Phases 2–5 inherits the following from sub-phase
 2. **Visible focus-visible ring** (WCAG 2.4.7 — Focus Visible). Every interactive element must show a visible focus indicator when reached by keyboard. `<MobileField>` composes a 2px `--primary` ring into its box-shadow on focus; `<MobileBackButton>` uses a `focus-visible:outline` in `--primary`. New components that introduce additional interactive surfaces (e.g., the Phase 6 SOS button, the mood face buttons in the home check-in sheet) must follow the same pattern. Pure `:hover` styling does not satisfy this requirement.
 3. **Form fits + scrolls above the soft keyboard** at iPhone SE width (375×667 for the current 3rd-gen SE; Playwright defaults to 1st-gen 320×568 which is a stricter test). When a field is focused on a real device, the focused input must be visible above the keyboard. Mobile browsers handle this automatically when the page is naturally scrollable; restyles that lock the AuthShell or layout to `min-h-screen` + `items-center` can break this by pushing top content off-screen. The current `AuthShell` mobile layout is unchanged and acceptable; future surfaces with form chrome must verify on a real device during 1.5 and subsequent phase QA.
 
-The new mobile auth primitives in `src/components/auth/` (`mobile-field.tsx`, `mobile-back-button.tsx`, `password-strength-bars.tsx`) ship this baseline by construction. Reuse them where possible; copy the pattern (44×44 + focus-visible + scrollable) when introducing new interactive chrome elsewhere.
+The new mobile auth primitives in `src/components/auth/` (`mobile-field.tsx`, `mobile-back-button.tsx`, `password-strength-bars.tsx`) ship this baseline by construction. Reuse them where possible; copy the pattern (44×44 + focus-visible + scrollable) when introducing new interactive chrome elsewhere. `MobileField`'s trailing slot auto-wraps interactive children (button / role="button" / onClick) in a 44×44 min container, so new callers don't have to remember.
+
+**Minimum verification viewport — iPhone SE 320×568**, not iPhone 14 (390×664). Every restyle screenshot pass captures both. The owner originally referenced 3rd-gen SE (375×667); Playwright's `devices['iPhone SE']` defaults to 1st-gen 320×568, which is a stricter test. If the form survives 320×568, the wider 375×667 is implicit. `scripts/screenshot-mobile.mjs` takes a `DEVICE` env var; `DEVICE='iPhone SE' node scripts/screenshot-mobile.mjs ...` runs the SE pass.
+
+### 2026-05-20 — INVARIANT — React-key on conditional step wrappers
+
+When a route renders different content in different states via conditional `<div>` blocks of the **same type**, React reconciles them as the same DOM position and reuses underlying form input nodes across the transition. The user's typed value from step N then leaks into step N+1's first input even though the React form state (RHF, controlled props) treats them as different fields. Discovered while smoke-testing `/register` step 1 → step 2: an "Aanya" typed into the Name field surfaced as `input[name="email"].value === "Aanya"` after `setStep(1)`.
+
+**Fix pattern:** attach explicit `key="step-N"` props to each conditional wrapper. React then treats them as distinct subtrees and fully unmounts/remounts.
+
+```tsx
+{step === 0 ? (
+  <div key="step-0">…name field…</div>
+) : (
+  <div key="step-1">…credentials fields…</div>
+)}
+```
+
+Applies to every multi-step / multi-state mobile form coming later:
+- Phase 3: session booking flow (therapist → slot → payment review)
+- Phase 4: BREATHING assignment timer (pre / during / done)
+- Phase 5: 3-step checkout (cart → address+delivery → payment)
+- Phase 6: account-delete 4-step flow (reason → confirm → password → done)
+- Anywhere a route uses local `useState` to swap between visual stages with uncontrolled or RHF-registered inputs underneath.
+
+The bug is silent — no React warning, no console error. It surfaces only at the user's eyes ("why is my name in the email box?"). Diff passes for restyles that introduce multi-step forms should explicitly grep for the `step === N ? … : …` pattern and verify each branch has a `key` prop.
 
 ---
 
