@@ -2,12 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { X, PhoneCall } from 'lucide-react'
-
-const HELPLINES = [
-  { name: 'iCall', number: '9152987821', detail: 'Mon–Sat, 8 am – 10 pm' },
-  { name: 'Vandrevala Foundation', number: '1860-266-2345', detail: '24×7, multilingual' },
-  { name: 'KIRAN (Govt. of India)', number: '1800-599-0019', detail: '24×7, toll-free' },
-] as const
+import { HELPLINES } from '@/lib/safety/helplines'
 
 interface HelplineModalProps {
   open: boolean
@@ -70,9 +65,9 @@ export default function HelplineModal({ open, onClose }: HelplineModalProps) {
 
         <ul className="space-y-2.5">
           {HELPLINES.map((h) => (
-            <li key={h.name}>
+            <li key={h.id}>
               <a
-                href={`tel:${h.number.replace(/[-\s]/g, '')}`}
+                href={`tel:${h.phone}`}
                 className="flex items-center justify-between gap-3 p-3 rounded-xl transition-all duration-150"
                 style={{ background: 'var(--cream)', color: 'var(--navy)' }}
                 onMouseEnter={(e) => {
@@ -85,12 +80,12 @@ export default function HelplineModal({ open, onClose }: HelplineModalProps) {
                 <div>
                   <p className="text-sm font-semibold">{h.name}</p>
                   <p className="text-xs" style={{ color: 'rgba(30,68,92,0.55)' }}>
-                    {h.detail}
+                    {h.hours}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 font-semibold text-sm" style={{ color: 'var(--teal)' }}>
                   <PhoneCall className="w-4 h-4" />
-                  {h.number}
+                  {h.display}
                 </div>
               </a>
             </li>
