@@ -2,17 +2,19 @@
 
 import { signIn, getSession, useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useForm } from 'react-hook-form'
+import { useForm, type UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema } from '@/lib/validations/auth'
 import { z } from 'zod'
 import { Suspense, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, CheckCircle, Loader2 } from 'lucide-react'
+import { ArrowRight, CheckCircle, Loader2, Mail, Lock } from 'lucide-react'
 import PasswordInput from '@/components/auth/password-input'
 import AuthShell from '@/components/auth/auth-shell'
 import GoogleButton from '@/components/auth/google-button'
 import { MindsetLoader } from '@/components/auth/mindset-loader'
+import MobileField from '@/components/auth/mobile-field'
+import MobileBackButton from '@/components/auth/mobile-back-button'
 
 type LoginFormData = z.infer<typeof loginSchema>
 
@@ -31,17 +33,102 @@ const OAUTH_ERROR_COPY: Record<string, string> = {
 
 const ROLE_HOME: Record<string, string> = { ADMIN: '/admin', DOCTOR: '/doctor', USER: '/user' }
 
-function LoginForm() {
+// Shared submit flow. Each viewport variant (mobile / desktop) instantiates
+// its own RHF form and calls back into this on submit so they don't have to
+// share useForm() state (which would force a single field's value to flow
+// through both DOM trees and create RHF ref-collision footguns).
+//
+// Lockout policy: an inline error is rendered now as the user-visible fallback;
+// the redirect to /account-locked is wired up in the same turn that builds
+// that route — see PORT_LOG.md.
+type SubmitContext = {
+  setError: (msg: string | null) => void
+  setIsLoading: (v: boolean) => void
+  router: ReturnType<typeof useRouter>
+  callbackUrl: string | null
+}
+
+async function submitLogin(data: LoginFormData, ctx: SubmitContext): Promise<void> {
+  ctx.setIsLoading(true)
+  ctx.setError(null)
+
+  try {
+    const result = await signIn('credentials', {
+      email: data.email,
+      password: data.password,
+      redirect: false,
+    })
+
+    if (result?.error) {
+      try {
+        const lockRes = await fetch('/api/auth/check-lock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: data.email }),
+        })
+        if (lockRes.ok) {
+          const lockData = (await lockRes.json()) as {
+            locked: boolean
+            until?: string
+          }
+          if (lockData.locked && lockData.until) {
+            const mins = Math.max(
+              1,
+              Math.ceil((new Date(lockData.until).getTime() - Date.now()) / 60000)
+            )
+            ctx.setError(
+              `Too many failed attempts. Try again in ${mins} minute${mins === 1 ? '' : 's'}.`
+            )
+            ctx.setIsLoading(false)
+            return
+          }
+        }
+      } catch {
+        // Fall through to generic message
+      }
+      ctx.setError('Invalid email or password')
+      ctx.setIsLoading(false)
+      return
+    }
+
+    // Read role from the freshly-issued JWT session instead of round-
+    // tripping /api/user/me. getSession() decodes the cookie via
+    // /api/auth/session which is JWT-only (no DB hit) and gets cached
+    // by the next-auth client after this call.
+    const session = await getSession()
+    const role = session?.user?.role
+
+    // Don't reset isLoading on success — keep the loader visible until the
+    // component unmounts when the dashboard renders. router.push() is
+    // non-blocking so a finally{setIsLoading(false)} would flash the login
+    // page before navigation completes.
+    if (ctx.callbackUrl) {
+      ctx.router.push(ctx.callbackUrl)
+      return
+    }
+
+    if (role === 'ADMIN') ctx.router.push('/admin')
+    else if (role === 'DOCTOR') ctx.router.push('/doctor')
+    else ctx.router.push('/user')
+  } catch {
+    ctx.setError('Something went wrong. Please try again.')
+    ctx.setIsLoading(false)
+  }
+}
+
+// Shared header logic — redirect already-signed-in users, decode the OAuth
+// error param. Returns the form-shaped state both variants consume.
+function useLoginState() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl')
   const message = searchParams.get('message')
   const oauthError = searchParams.get('error')
+
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const { data: existingSession, status } = useSession()
 
-  // Already signed in — redirect to dashboard immediately
   useEffect(() => {
     if (status === 'authenticated' && existingSession?.user) {
       const dest = callbackUrl ?? ROLE_HOME[existingSession.user.role ?? ''] ?? '/user'
@@ -58,86 +145,212 @@ function LoginForm() {
     if (initialError) setError(initialError)
   }, [initialError])
 
+  return {
+    router,
+    callbackUrl,
+    message,
+    error,
+    setError,
+    isLoading,
+    setIsLoading,
+  }
+}
+
+// ─── Mobile variant ──────────────────────────────────────────────────────
+function MobileLoginForm() {
+  const state = useLoginState()
+  const [showPassword, setShowPassword] = useState(false)
+
+  const form: UseFormReturn<LoginFormData> = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  })
+
+  const onSubmit = (data: LoginFormData) =>
+    submitLogin(data, {
+      setError: state.setError,
+      setIsLoading: state.setIsLoading,
+      router: state.router,
+      callbackUrl: state.callbackUrl,
+    })
+
+  return (
+    <div className="px-6 pt-3 pb-6 flex flex-col" style={{ minHeight: '100%' }}>
+      {state.isLoading && <MindsetLoader message="Signing you in…" />}
+
+      <div className="mb-5">
+        <MobileBackButton href="/welcome" ariaLabel="Back to welcome" />
+      </div>
+
+      <div style={{ animation: 'ms-fade-up .6s both' }}>
+        <p
+          className="text-xs font-bold uppercase tracking-wider"
+          style={{ color: 'var(--primary)' }}
+        >
+          Welcome back
+        </p>
+        <h1
+          className="mt-1.5"
+          style={{
+            fontFamily: 'var(--font-heading)',
+            fontSize: 38,
+            lineHeight: 1.0,
+            color: 'var(--text)',
+          }}
+        >
+          Good to see you<br />again.
+        </h1>
+      </div>
+
+      {state.message === 'password-reset' && (
+        <div
+          className="mt-5 p-3.5 rounded-xl flex items-start gap-3 text-sm font-medium"
+          style={{ background: 'var(--primary-tint)', color: 'var(--primary)' }}
+        >
+          <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" aria-hidden="true" />
+          Password reset successfully. Sign in with your new password.
+        </div>
+      )}
+
+      {state.error && (
+        <div
+          role="alert"
+          className="mt-5 p-3.5 rounded-xl text-sm font-medium"
+          style={{ background: 'var(--accent-tint)', color: 'var(--accent-deep)' }}
+        >
+          {state.error}
+        </div>
+      )}
+
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="mt-7 flex flex-col gap-3.5"
+        style={{ animation: 'ms-fade-up .6s .1s both' }}
+        noValidate
+      >
+        <MobileField
+          label="Email"
+          icon={<Mail size={18} strokeWidth={1.7} />}
+          type="email"
+          autoComplete="email"
+          placeholder="you@example.com"
+          fieldError={form.formState.errors.email?.message}
+          {...form.register('email')}
+        />
+        <MobileField
+          label="Password"
+          icon={<Lock size={18} strokeWidth={1.7} />}
+          type={showPassword ? 'text' : 'password'}
+          autoComplete="current-password"
+          placeholder="Enter your password"
+          fieldError={form.formState.errors.password?.message}
+          trailing={
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="text-xs font-bold transition-opacity hover:opacity-70"
+              style={{ color: 'var(--primary)' }}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          }
+          {...form.register('password')}
+        />
+
+        <Link
+          href="/forgot-password"
+          className="self-end text-xs font-bold transition-opacity hover:opacity-70"
+          style={{ color: 'var(--primary)' }}
+        >
+          Forgot password?
+        </Link>
+
+        <button
+          type="submit"
+          disabled={state.isLoading}
+          className="mt-3 w-full inline-flex items-center justify-center gap-2 py-4 rounded-full text-sm font-bold transition-opacity hover:opacity-90 disabled:opacity-70"
+          style={{
+            background: 'var(--primary)',
+            color: 'var(--on-dark)',
+            animation: 'ms-fade-up .6s .2s both',
+          }}
+        >
+          {state.isLoading ? (
+            <>
+              <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+              Signing you in…
+            </>
+          ) : (
+            <>
+              Sign in
+              <ArrowRight size={16} strokeWidth={2.2} aria-hidden="true" />
+            </>
+          )}
+        </button>
+      </form>
+
+      <p
+        className="mt-5 text-center text-sm"
+        style={{ color: 'var(--text-muted)' }}
+      >
+        New to Mindset?{' '}
+        <Link
+          href={
+            state.callbackUrl
+              ? `/register?callbackUrl=${encodeURIComponent(state.callbackUrl)}`
+              : '/register'
+          }
+          className="font-bold transition-opacity hover:opacity-70"
+          style={{ color: 'var(--primary)' }}
+        >
+          Create one
+        </Link>
+      </p>
+
+      <div className="flex items-center gap-3 my-5" aria-hidden="true">
+        <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+        <span
+          className="text-[11px] font-bold uppercase tracking-wider"
+          style={{ color: 'var(--text-faint)' }}
+        >
+          or continue with
+        </span>
+        <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+      </div>
+
+      <GoogleButton callbackUrl={state.callbackUrl ?? '/user'} />
+
+      <p
+        className="mt-auto pt-6 text-center text-[11px] leading-relaxed"
+        style={{ color: 'var(--text-faint)' }}
+      >
+        Mindset cares about your privacy — all sessions are end-to-end encrypted.
+      </p>
+    </div>
+  )
+}
+
+// ─── Desktop variant — unchanged visual from before sub-phase 1.4 ───────
+function DesktopLoginForm() {
+  const state = useLoginState()
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) })
 
-  const onSubmit = async (data: LoginFormData) => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const result = await signIn('credentials', {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-      })
-
-      if (result?.error) {
-        // Check whether the account is locked so we can show a clear message.
-        try {
-          const lockRes = await fetch('/api/auth/check-lock', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: data.email }),
-          })
-          if (lockRes.ok) {
-            const lockData = (await lockRes.json()) as {
-              locked: boolean
-              until?: string
-            }
-            if (lockData.locked && lockData.until) {
-              const mins = Math.max(
-                1,
-                Math.ceil(
-                  (new Date(lockData.until).getTime() - Date.now()) / 60000
-                )
-              )
-              setError(
-                `Too many failed attempts. Try again in ${mins} minute${mins === 1 ? '' : 's'}.`
-              )
-              setIsLoading(false)
-              return
-            }
-          }
-        } catch {
-          // Fall through to generic message
-        }
-        setError('Invalid email or password')
-        setIsLoading(false)
-        return
-      }
-
-      // Read role from the freshly-issued JWT session instead of round-
-      // tripping /api/user/me. getSession() decodes the cookie via
-      // /api/auth/session which is JWT-only (no DB hit) and gets cached
-      // by the next-auth client after this call.
-      const session = await getSession()
-      const role = session?.user?.role
-
-      // Don't reset isLoading on success — keep the loader visible until the
-      // component unmounts when the dashboard renders. router.push() is
-      // non-blocking so a finally{setIsLoading(false)} would flash the login
-      // page before navigation completes.
-      if (callbackUrl) {
-        router.push(callbackUrl)
-        return
-      }
-
-      if (role === 'ADMIN') router.push('/admin')
-      else if (role === 'DOCTOR') router.push('/doctor')
-      else router.push('/user')
-    } catch {
-      setError('Something went wrong. Please try again.')
-      setIsLoading(false)
-    }
-  }
+  const onSubmit = (data: LoginFormData) =>
+    submitLogin(data, {
+      setError: state.setError,
+      setIsLoading: state.setIsLoading,
+      router: state.router,
+      callbackUrl: state.callbackUrl,
+    })
 
   return (
     <div>
-      {isLoading && <MindsetLoader message="Signing you in…" />}
+      {state.isLoading && <MindsetLoader message="Signing you in…" />}
 
       <h2
         className="text-2xl sm:text-3xl font-bold mb-1"
@@ -149,7 +362,7 @@ function LoginForm() {
         Sign in to continue your journey.
       </p>
 
-      {message === 'password-reset' && (
+      {state.message === 'password-reset' && (
         <div
           className="mb-5 p-3.5 rounded-xl flex items-start gap-3 text-sm font-medium"
           style={{ background: 'rgba(11,157,169,0.08)', color: '#065F46' }}
@@ -159,17 +372,17 @@ function LoginForm() {
         </div>
       )}
 
-      {error && (
+      {state.error && (
         <div
           role="alert"
           className="mb-5 p-3.5 rounded-xl text-sm font-medium"
           style={{ background: 'rgba(249,101,83,0.08)', color: '#991B1B' }}
         >
-          {error}
+          {state.error}
         </div>
       )}
 
-      <GoogleButton callbackUrl={callbackUrl ?? '/user'} />
+      <GoogleButton callbackUrl={state.callbackUrl ?? '/user'} />
 
       <div className="flex items-center gap-3 my-5" aria-hidden="true">
         <div className="flex-1 h-px" style={{ background: 'rgba(30,68,92,0.12)' }} />
@@ -258,14 +471,14 @@ function LoginForm() {
 
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={state.isLoading}
           className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-sm font-bold text-white transition-all duration-200 disabled:opacity-50"
           style={{
             background: 'var(--teal)',
             boxShadow: '0 4px 16px rgba(11,157,169,0.25)',
           }}
           onMouseEnter={(e) => {
-            if (isLoading) return
+            if (state.isLoading) return
             e.currentTarget.style.transform = 'translateY(-1px)'
             e.currentTarget.style.boxShadow = '0 6px 24px rgba(11,157,169,0.3)'
           }}
@@ -274,7 +487,7 @@ function LoginForm() {
             e.currentTarget.style.boxShadow = '0 4px 16px rgba(11,157,169,0.25)'
           }}
         >
-          {isLoading ? (
+          {state.isLoading ? (
             <>
               <Loader2 size={16} className="animate-spin" />
               Signing in…
@@ -291,7 +504,11 @@ function LoginForm() {
       <p className="text-center text-sm mt-5" style={{ color: 'rgba(30,68,92,0.55)' }}>
         New here?{' '}
         <Link
-          href="/register"
+          href={
+            state.callbackUrl
+              ? `/register?callbackUrl=${encodeURIComponent(state.callbackUrl)}`
+              : '/register'
+          }
           className="font-bold transition-opacity duration-150 hover:opacity-70"
           style={{ color: 'var(--coral)' }}
         >
@@ -310,7 +527,16 @@ export default function LoginPage() {
           <div className="animate-pulse" style={{ minHeight: 420 }} aria-hidden="true" />
         }
       >
-        <LoginForm />
+        {/* Mobile chrome — handoff layout. Lives inside the AuthShell's
+            form panel (the right column on lg+ is suppressed by the
+            wrapper below). */}
+        <div className="lg:hidden">
+          <MobileLoginForm />
+        </div>
+        {/* Desktop chrome — existing layout, unchanged. */}
+        <div className="hidden lg:block">
+          <DesktopLoginForm />
+        </div>
       </Suspense>
     </AuthShell>
   )
