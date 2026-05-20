@@ -247,8 +247,18 @@ function MobileLoginForm() {
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="text-xs font-bold transition-opacity hover:opacity-70"
-              style={{ color: 'var(--primary)' }}
+              className="text-xs font-bold inline-flex items-center justify-center transition-opacity hover:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 rounded"
+              style={{
+                color: 'var(--primary)',
+                // WCAG 2.5.5 minimum tap target — the visible text is small
+                // but the hit area extends out via padding so the touch
+                // surface meets 44x44 without inflating the card height.
+                minWidth: 44,
+                minHeight: 44,
+                padding: '0 8px',
+                margin: '-10px -8px -10px 0',
+                outlineColor: 'var(--primary)',
+              }}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? 'Hide' : 'Show'}
@@ -259,8 +269,14 @@ function MobileLoginForm() {
 
         <Link
           href="/forgot-password"
-          className="self-end text-xs font-bold transition-opacity hover:opacity-70"
-          style={{ color: 'var(--primary)' }}
+          className="self-end text-xs font-bold inline-flex items-center transition-opacity hover:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+          style={{
+            color: 'var(--primary)',
+            // WCAG 2.5.5 — same 44px minimum touch height.
+            minHeight: 44,
+            padding: '0 4px',
+            outlineColor: 'var(--primary)',
+          }}
         >
           Forgot password?
         </Link>

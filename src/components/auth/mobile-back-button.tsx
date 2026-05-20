@@ -21,13 +21,17 @@ export default function MobileBackButton({
 }: MobileBackButtonProps) {
   const router = useRouter()
 
-  const sharedClassName = 'inline-flex items-center justify-center rounded-full transition-opacity hover:opacity-80'
+  // 44x44 satisfies WCAG 2.5.5 minimum tap target without needing a hidden
+  // hit-zone overlay. The handoff prototype rendered 40x40 — small visual
+  // drift; accessibility is the harder constraint.
+  const sharedClassName = 'inline-flex items-center justify-center rounded-full transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2'
   const sharedStyle: React.CSSProperties = {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     background: 'var(--bg-card)',
     color: 'var(--primary)',
     boxShadow: 'var(--shadow-card)',
+    outlineColor: 'var(--primary)',
   }
 
   if (href) {

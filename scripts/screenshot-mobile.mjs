@@ -7,14 +7,15 @@
 //   node scripts/screenshot-mobile.mjs <url> <output.png> <url> <output.png> ...
 //
 // Server must already be running on http://localhost:3000 (or change
-// BASE_URL via env). Uses Playwright at iPhone 14's viewport (390×844)
-// with devicePixelRatio=3 and Safari user-agent for accurate mobile
-// rendering.
+// BASE_URL via env). Uses Playwright at the device specified by env var
+// DEVICE (defaults to 'iPhone 14', 390×844). Set DEVICE='iPhone SE' for
+// the narrower 375×667 verification pass.
 
 import { chromium, devices } from 'playwright'
 import { resolve } from 'node:path'
 
 const BASE_URL = process.env.BASE_URL ?? 'http://localhost:3000'
+const DEVICE_NAME = process.env.DEVICE ?? 'iPhone 14'
 
 async function main() {
   const args = process.argv.slice(2)
@@ -23,9 +24,16 @@ async function main() {
     process.exit(2)
   }
 
+  const device = devices[DEVICE_NAME]
+  if (!device) {
+    console.error(`Unknown device: ${DEVICE_NAME}. Try 'iPhone 14' or 'iPhone SE'.`)
+    process.exit(2)
+  }
+  console.log(`device: ${DEVICE_NAME} (${device.viewport.width}×${device.viewport.height})`)
+
   const browser = await chromium.launch()
   const context = await browser.newContext({
-    ...devices['iPhone 14'],
+    ...device,
     // Don't load real fonts / external scripts to speed up; same-origin only.
     serviceWorkers: 'block',
   })
