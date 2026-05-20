@@ -132,6 +132,35 @@ Applies to every multi-step / multi-state mobile form coming later:
 
 The bug is silent — no React warning, no console error. It surfaces only at the user's eyes ("why is my name in the email box?"). Diff passes for restyles that introduce multi-step forms should explicitly grep for the `step === N ? … : …` pattern and verify each branch has a `key` prop.
 
+### 2026-05-20 — INVARIANT — Lift state out of mobile/desktop variants when redirects depend on derived state
+
+When a route renders both a `lg:hidden` mobile variant and a `hidden lg:block` desktop variant and **either variant decides its redirect target from a hook that reads session / engagement / step state**, the inactive variant's `useEffect` will fire on the same state change and race the active variant to `router.push()`. The inactive variant has different local guards (different `isLoading`, different submitted state) and will usually win the race — landing the user on the wrong destination.
+
+**Discovered:** `/register` post-signup landed on `/user` instead of `/verify-email?sent=1`. Both `MobileRegisterForm` and `DesktopRegisterForm` called `useRegisterState()` separately; on submit, the active variant fired `router.push('/verify-email?sent=1')` and the inactive variant's `useEffect` saw `status === 'authenticated'` and fired `router.replace(ROLE_HOME[role])` a tick later. The inactive variant's `isLoading` was `false` (it never submitted), so its guard didn't fire.
+
+**Fix pattern:** lift the shared hook to a single `<RoutePageInner>` wrapper that calls the hook once and passes the result down to both variants as a prop. Each variant becomes a pure renderer of the shared state.
+
+```tsx
+function RegisterPageInner() {
+  const state = useRegisterState() // ← called once
+  return (
+    <>
+      <div className="lg:hidden"><MobileRegisterForm state={state} /></div>
+      <div className="hidden lg:block"><DesktopRegisterForm state={state} /></div>
+    </>
+  )
+}
+```
+
+**Apply in Phases 2–5 wherever multi-variant components decide redirect targets from derived state:**
+- Phase 2: home engagement state (`/user` deciding which dashboard chunk loads based on `latestEngagementSummary` + `currentStreak`)
+- Phase 3: session state (`/user/practice/[id]` deciding between waiting-room / live / ended)
+- Phase 4: assignment state (BREATHING redirecting to results after completion)
+- Phase 5: checkout step (cart → address → payment, each step redirect-on-success)
+- Phase 6: account-delete flow (each step's confirm-and-redirect)
+
+The bug is silent on first render (only one variant is in the DOM via CSS, but **both effects run** because both are mounted in the React tree). It surfaces only at the user's eyes ("why did I land on /user when I just signed up?"). Adding `isLoading` guards to the effect helps but doesn't fix the root cause — the inactive variant's `isLoading` will always be `false` because it never submitted.
+
 ---
 
 ## Ops notes (cross-phase)

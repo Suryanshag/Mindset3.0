@@ -38,9 +38,11 @@ const ROLE_HOME: Record<string, string> = { ADMIN: '/admin', DOCTOR: '/doctor', 
 // share useForm() state (which would force a single field's value to flow
 // through both DOM trees and create RHF ref-collision footguns).
 //
-// Lockout policy: an inline error is rendered now as the user-visible fallback;
-// the redirect to /account-locked is wired up in the same turn that builds
-// that route — see PORT_LOG.md.
+// Lockout policy: a real lockout (5 failed attempts) redirects to
+// /account-locked?until=<ISO8601>. The inline `setError(...)` branch is
+// preserved as graceful-degradation fallback if router.push throws —
+// the user still sees the same minutes-remaining message inline and is
+// never stranded on a half-handled error.
 type SubmitContext = {
   setError: (msg: string | null) => void
   setIsLoading: (v: boolean) => void
@@ -72,15 +74,28 @@ async function submitLogin(data: LoginFormData, ctx: SubmitContext): Promise<voi
             until?: string
           }
           if (lockData.locked && lockData.until) {
-            const mins = Math.max(
-              1,
-              Math.ceil((new Date(lockData.until).getTime() - Date.now()) / 60000)
-            )
-            ctx.setError(
-              `Too many failed attempts. Try again in ${mins} minute${mins === 1 ? '' : 's'}.`
-            )
-            ctx.setIsLoading(false)
-            return
+            // Primary path: redirect to the dedicated lockout page with
+            // the ISO8601 timestamp so it can render a live countdown.
+            // The inline-message fallback below stays as graceful
+            // degradation if router.push throws for any reason.
+            try {
+              ctx.router.push(
+                `/account-locked?until=${encodeURIComponent(lockData.until)}`
+              )
+              // Keep loading state truthy through navigation so the form
+              // doesn't visibly re-enable before the next page paints.
+              return
+            } catch {
+              const mins = Math.max(
+                1,
+                Math.ceil((new Date(lockData.until).getTime() - Date.now()) / 60000)
+              )
+              ctx.setError(
+                `Too many failed attempts. Try again in ${mins} minute${mins === 1 ? '' : 's'}.`
+              )
+              ctx.setIsLoading(false)
+              return
+            }
           }
         }
       } catch {
