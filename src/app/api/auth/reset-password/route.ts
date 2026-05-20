@@ -6,16 +6,15 @@ import { sensitiveActionLimiter, authLimiter } from '@/lib/arcjet'
 import { handleArcjetDenial } from '@/lib/arcjet-protect'
 import { logAuthEvent } from '@/lib/auth-events'
 import { rejectIfBadOrigin } from '@/lib/origin-check'
+import { passwordSchema } from '@/lib/validations/password-policy'
 
+// Server-side validation reads from the same passwordSchema the client's
+// PasswordStrengthBars consume — owner Decision 4 (single source of
+// truth) prevents the "Strong on the client, rejected on the server"
+// UX-disaster bug.
 const schema = z.object({
   token: z.string().min(1),
-  password: z
-    .string()
-    .min(10, 'Password must be at least 10 characters')
-    .refine((p) => {
-      const classes = [/[a-z]/, /[A-Z]/, /[0-9]/, /[^A-Za-z0-9]/]
-      return classes.filter((re) => re.test(p)).length >= 3
-    }, 'Password must include 3 of: uppercase, lowercase, number, special character'),
+  password: passwordSchema,
 })
 
 export async function POST(req: NextRequest) {
@@ -94,8 +93,13 @@ export async function POST(req: NextRequest) {
       request: req,
     })
 
+    // Returning email lets the client call signIn('credentials') for the
+    // user immediately after the reset, avoiding the friction theatre of
+    // re-typing a password they just set. The email is the one bound to
+    // the reset token, which we already validated above.
     return NextResponse.json({
       success: true,
+      email: resetToken.user.email,
       message: 'Password reset successfully.',
     })
   } catch (error) {

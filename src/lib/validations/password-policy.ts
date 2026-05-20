@@ -14,6 +14,7 @@ import { z } from 'zod'
 // digit, non-alphanumeric}.
 
 const MIN_LENGTH = 10
+const GOOD_LENGTH = 12
 const STRONG_LENGTH = 14
 const CLASS_REGEXES = [/[a-z]/, /[A-Z]/, /[0-9]/, /[^A-Za-z0-9]/] as const
 
@@ -43,10 +44,15 @@ export type PasswordScore = {
  *
  * Score-to-label rules:
  *   0  "Too short"  empty or shorter than MIN_LENGTH
- *   1  "Weak"       at least MIN_LENGTH but fewer than 3 classes
- *   2  "Fair"       meets policy, but lacks length OR class breadth
- *   3  "Good"       meets policy and (length >= STRONG_LENGTH XOR all 4 classes)
- *   4  "Strong"     meets policy AND length >= STRONG_LENGTH AND all 4 classes
+ *   1  "Weak"       at least MIN_LENGTH but fewer than 3 classes (fails policy)
+ *   2  "Fair"       meets policy, but lacks length AND class breadth
+ *   3  "Good"       meets policy and (length >= STRONG_LENGTH OR all 4 classes — but not both maxed)
+ *   4  "Strong"     meets policy AND (all 4 classes OR length >= STRONG_LENGTH)
+ *
+ * Note on Strong: users perceive "all 4 character classes at minimum length"
+ * as fully maxed out on the variety axis. The threshold favours that
+ * intuition rather than insisting on both length-and-variety being maxed
+ * simultaneously. A 10-character `MyDog2026!` therefore reads as Strong.
  */
 export function scorePassword(value: string): PasswordScore {
   if (!value || value.length < MIN_LENGTH) {
@@ -59,12 +65,15 @@ export function scorePassword(value: string): PasswordScore {
     return { score: 1, label: 'Weak', meetsPolicy: false }
   }
 
-  const longEnough = value.length >= STRONG_LENGTH
   const allClasses = classCount === 4
-  if (longEnough && allClasses) {
+  // Hitting either ceiling — all 4 character classes (variety maxed) OR
+  // length >= STRONG_LENGTH (length maxed) — reads as Strong to the user.
+  if (allClasses || value.length >= STRONG_LENGTH) {
     return { score: 4, label: 'Strong', meetsPolicy: true }
   }
-  if (longEnough || allClasses) {
+  // Past the GOOD_LENGTH threshold but still missing one stop on either
+  // ceiling — readable progression on the bar without overpromising.
+  if (value.length >= GOOD_LENGTH) {
     return { score: 3, label: 'Good', meetsPolicy: true }
   }
   return { score: 2, label: 'Fair', meetsPolicy: true }
