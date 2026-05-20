@@ -184,3 +184,62 @@ Suggested cadence: 1st of January, April, July, October. Could be a `/schedule` 
 ## Phase 1 — sub-phase 1.3 (in progress)
 
 _(Entries to be added as 1.3 work lands.)_
+
+---
+
+## Phase 1 — sub-phase 1.4 (DONE)
+
+### 2026-05-20 — DONE — Auth restyle complete, 6/6 routes shipped
+
+Commits in 1.4 (foundation → smoke), oldest first:
+
+1. `390363e` foundation — password policy module + mobile components
+2. `a1b3204` /login restyle + screenshot tooling
+3. `1e1a004` a11y — 44×44 tap targets + focus-visible rings
+4. `d32cdca` PORT_LOG — mobile-form a11y baseline invariant
+5. `389b991` /register restyle (two-step mobile)
+6. `0b100dc` MobileField auto-enforces 44×44 on interactive trailings
+7. `8d9b6f0` PORT_LOG — React-key invariant + iPhone SE minimum
+8. `9ce6b26` /forgot-password restyle (3 stages preserved)
+9. `d99dedd` /reset-password restyle + auto-signin + policy SSoT
+10. `ffaa6cd` password-policy thresholds locked with rationale
+11. `002bbe3` /verify-email restyle (?sent=1 + 5 token states + /register redirect flip)
+12. `bbb3076` /forgot-password MindsetLoaderOverlay typo fix
+13. `d0fce6e` /account-locked + /login lockout redirect (coupled)
+14. `04c39e3` end-to-end auth funnel smoke (6/6 PASS)
+
+**14 commits, 4630 insertions / 550 deletions across 26 files** (`git diff --shortstat 390363e^..04c39e3`).
+
+Smoke covers signup → verify → forgot/reset → 5-fail lockout → Google OAuth button → callbackUrl preservation. See `docs/phase-1/auth-funnel-smoke.md`.
+
+### 2026-05-20 — FLAGGED — UX drift across the 6 restyled auth routes
+
+Surfaced during the 1.4 smoke + screenshot review. Not fixed in 1.4; flagging for owner decision on a small polish pass before/after 1.5.
+
+1. **Mobile h1 size — /login is the outlier at 38px.** Every other auth route's primary mobile heading is `fontSize: 32`. /login's `Good to see you again.` is `fontSize: 38` (login/page.tsx:210). Either /login drops to 32 to match the family, or the others get reviewed for too-small. Pick one.
+
+2. **Kicker color — /account-locked uses `--accent-deep`, every other route uses `--primary`.** The choice is *intentional* (warm color reads "paused" not "welcome") but worth owner confirmation. If the owner agrees, document it as the convention for warning/safety surfaces. If not, drop /account-locked to `--primary` and find another way to differentiate.
+
+3. **Error / warning palette — three different mobile surface tints.**
+   - Form error pills (register, forgot-password, reset-password): `rgba(249,101,83,0.08)` + `#991B1B` text — coral-on-pale-coral.
+   - Token-flow error icons (verify-email, reset-password): `--accent-tint` (#FBE9DD) + `--accent-deep` (#9A3412) — peach-on-deep-orange.
+   - Account-locked card: `rgba(250,167,157,0.18)` + `--accent-deep` — soft-pink-on-deep-orange.
+   The differentiation reads as "validation error" vs "verification failed" vs "safety pause" semantically, but the three surface tints are close enough that a reader doesn't get a clear signal. Consider collapsing token-flow + account-locked to the same `--accent-tint` (or vice-versa), and keep coral as the form-error-specific tone.
+
+4. **iPhone SE rendering — /login password placeholder truncates.** Captured during /account-locked malformed screenshot pass (`screenshots/phase-1/4-auth/account-locked-malformed-iphone-se.png`). `Enter your passw…` is cut off because the Show button takes ~80px of the field's 320px width. Shorter placeholder ("Password" or "Your password") or moving Show below the field would fix it. Other routes don't have this because they use shorter placeholders or no trailing button.
+
+5. **Sub-card corner radius — two values used.** `rounded-[26px]` on /verify-email-sent + /account-locked sub-cards, `rounded-2xl` and `rounded-xl` elsewhere. Pick one and align.
+
+6. **Animation timing — `.6s` + variable delays (`.1s`, `.2s`).** Consistent in spirit but the actual delay values are sprinkled ad-hoc across files. Worth extracting to a tokens module if we keep them, or dropping the staggered delays if owner finds them gimmicky.
+
+### 2026-05-20 — DEFERRED to 1.5 — Items flagged for Phase 1 wrap-up
+
+- **Production build smoke**: every screenshot above was captured against `npm run dev` with Turbopack. The shipped app uses `npm run build` + `npm start`. Run the same smoke against the production build before declaring Phase 1 closed.
+- **Real-device QA**: capture the 6 routes on at least one Android (Chrome) and one iOS (Safari) handheld. iPhone SE Playwright viewport tests the layout floor; real Safari renders the keyboard, scrolls, animations, and font subpixels differently.
+- **Lighthouse PWA score ≥ 90**: token-drift doc §3 holds `--color-text-faint` at `#6B6862` for AA contrast; Lighthouse may still flag the lighter text on cream backgrounds. Run an audit.
+- **PORT_LOG token-drift §2 sync** (cosmetic): if owner approves the `--color-text-muted` design value (#6B6862), the alias in globals.css §155 follows automatically.
+- **Splash 50–100ms blank verification** (deferred from 1.2): verify on production build that the initial blank flash is within budget after PWA install.
+- **iOS A2HS variant verification** (deferred from 1.2): Add-to-Home-Screen flow on iOS Safari renders manifest theme/icons differently from Android — explicit pass needed.
+- **Onboarding gate end-to-end with real session**: smoke step 2 sets `mindset_onboarded=1` cookie to bypass the `/user` → `/onboarding` redirect. Real first-time users hit the redirect; the gate has not been exercised end-to-end with a fresh authenticated session in 1.4.
+- **Cross-tab `mindset:password-reset-complete` signal** (verified at unit level only): exercise two tabs side-by-side to confirm the listener clears stale UI in tab B when tab A completes a reset.
+- **Email deliverability**: `[EMAIL] ✓` dev-server logs confirm the Resend `send()` returned ok, but `@mindset-test.local` won't be a delivered inbox. A 1.5 pass should send to a real mailbox and confirm the email looks correct (link works, branding, footer).
