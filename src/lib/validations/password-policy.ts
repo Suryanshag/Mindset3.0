@@ -37,22 +37,31 @@ export type PasswordScore = {
 }
 
 /**
- * Returns a deterministic score + label for the given candidate password.
+ * Strength bar labels — UI-only, downstream of meetsPolicy. Owner-reviewed
+ * and locked 2026-05-20. Future label-threshold changes require owner
+ * approval. Server policy (meetsPolicy) changes require security review.
+ *
+ *   Too short    : length < MIN_LENGTH (10)
+ *   Weak         : length ≥ MIN_LENGTH (10) AND < 3 character classes
+ *                  (fails meetsPolicy on the class-count requirement)
+ *   Fair         : meets policy, length 10–11 with exactly 3 classes
+ *   Good         : meets policy, length 12–13 with exactly 3 classes
+ *   Strong       : meets policy AND (all 4 character classes at any length
+ *                  ≥ MIN_LENGTH, OR length ≥ STRONG_LENGTH (14) with ≥ 3 classes)
+ *
+ * meetsPolicy (gate for server acceptance, NEVER tightened in UI):
+ *   length ≥ MIN_LENGTH (10) AND ≥ 3 of [upper, lower, digit, symbol]
+ *
+ * Rationale for the Strong threshold: users perceive "all 4 character
+ * classes at the policy-minimum length" as fully maxed on the variety
+ * axis. The threshold treats that as Strong rather than insisting on
+ * both length and variety being maxed simultaneously. NIST 800-63B
+ * concurs: length is the primary security driver; variety is secondary.
+ * `MyDog2026!` (10 chars, 4 classes) therefore reads Strong; so does
+ * `MyVeryLongPassword12345` (24 chars, 3 classes — no symbol).
  *
  * The `meetsPolicy` flag mirrors `passwordSchema.safeParse(value).success`
  * (verified by construction — same MIN_LENGTH and CLASS_REGEXES constants).
- *
- * Score-to-label rules:
- *   0  "Too short"  empty or shorter than MIN_LENGTH
- *   1  "Weak"       at least MIN_LENGTH but fewer than 3 classes (fails policy)
- *   2  "Fair"       meets policy, but lacks length AND class breadth
- *   3  "Good"       meets policy and (length >= STRONG_LENGTH OR all 4 classes — but not both maxed)
- *   4  "Strong"     meets policy AND (all 4 classes OR length >= STRONG_LENGTH)
- *
- * Note on Strong: users perceive "all 4 character classes at minimum length"
- * as fully maxed out on the variety axis. The threshold favours that
- * intuition rather than insisting on both length-and-variety being maxed
- * simultaneously. A 10-character `MyDog2026!` therefore reads as Strong.
  */
 export function scorePassword(value: string): PasswordScore {
   if (!value || value.length < MIN_LENGTH) {
