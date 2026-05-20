@@ -92,6 +92,23 @@ If iOS labeling changes in a future iOS version, the banner copy in `install-ban
 
 ---
 
+## Cross-phase invariants
+
+### 2026-05-20 — INVARIANT — Mobile form accessibility baseline
+
+Every restyled mobile form in Phases 2–5 inherits the following from sub-phase 1.4. These are not aspirational — they are the floor. **Diff passes must flag any restyle that doesn't meet all three.**
+
+1. **44×44 minimum tap target** (WCAG 2.5.5 — Target Size). Applies to every interactive element: buttons, links, toggles, checkbox/radio chrome, icon buttons. Visible chrome can stay smaller, but the hit zone must reach 44×44 via padding, negative margins, or a hidden `::before` overlay. The new components establish this:
+   - `<MobileBackButton>` renders at 44×44 visible.
+   - `<MobileField>`'s trailing slot is caller-managed; trailing buttons (e.g., Show / Hide toggles) must explicitly set `minWidth: 44, minHeight: 44`.
+   - Text-only links (e.g., "Forgot password?") need `minHeight: 44` + horizontal padding.
+2. **Visible focus-visible ring** (WCAG 2.4.7 — Focus Visible). Every interactive element must show a visible focus indicator when reached by keyboard. `<MobileField>` composes a 2px `--primary` ring into its box-shadow on focus; `<MobileBackButton>` uses a `focus-visible:outline` in `--primary`. New components that introduce additional interactive surfaces (e.g., the Phase 6 SOS button, the mood face buttons in the home check-in sheet) must follow the same pattern. Pure `:hover` styling does not satisfy this requirement.
+3. **Form fits + scrolls above the soft keyboard** at iPhone SE width (375×667 for the current 3rd-gen SE; Playwright defaults to 1st-gen 320×568 which is a stricter test). When a field is focused on a real device, the focused input must be visible above the keyboard. Mobile browsers handle this automatically when the page is naturally scrollable; restyles that lock the AuthShell or layout to `min-h-screen` + `items-center` can break this by pushing top content off-screen. The current `AuthShell` mobile layout is unchanged and acceptable; future surfaces with form chrome must verify on a real device during 1.5 and subsequent phase QA.
+
+The new mobile auth primitives in `src/components/auth/` (`mobile-field.tsx`, `mobile-back-button.tsx`, `password-strength-bars.tsx`) ship this baseline by construction. Reuse them where possible; copy the pattern (44×44 + focus-visible + scrollable) when introducing new interactive chrome elsewhere.
+
+---
+
 ## Ops notes (cross-phase)
 
 ### 2026-05-20 — OPS — Quarterly helpline number check
