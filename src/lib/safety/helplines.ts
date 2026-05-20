@@ -43,9 +43,9 @@ export const HELPLINES: readonly Helpline[] = [
     id: 'vandrevala',
     name: 'Vandrevala Foundation',
     hours: '24/7',
-    phone: '18602662345',
-    display: '1860-2662-345',
-    whatsapp: '+911860266234',
+    phone: '9999666555',
+    display: '+91 9999 666 555',
+    whatsapp: '+919999666555',
     blurb: 'Free 24/7 mental health support; phone, chat, and email.',
   },
   {
