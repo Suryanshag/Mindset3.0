@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, CheckCircle, Loader2, Mail } from 'lucide-react'
 import AuthShell from '@/components/auth/auth-shell'
 import MobileField from '@/components/auth/mobile-field'
 import MobileBackButton from '@/components/auth/mobile-back-button'
+import { MindsetLoader } from '@/components/auth/mindset-loader'
 
 const RESEND_COOLDOWN_SECONDS = 60
 const COMPLETION_FRESHNESS_MS = 30 * 60 * 1000
@@ -285,7 +286,7 @@ function MobileForgotPassword(props: ForgotPasswordState) {
       style={{ minHeight: '100%' }}
       noValidate
     >
-      {isLoading && <MindsetLoaderOverlay />}
+      {isLoading && <MindsetLoader message="Sending reset link…" />}
 
       <div className="mb-5">
         <MobileBackButton href="/login" ariaLabel="Back to sign in" />
