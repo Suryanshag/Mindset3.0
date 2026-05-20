@@ -1,6 +1,6 @@
 'use client'
 
-import { forwardRef, useState, type InputHTMLAttributes, type ReactNode, type FocusEvent } from 'react'
+import { forwardRef, isValidElement, useState, type InputHTMLAttributes, type ReactNode, type FocusEvent, type ReactElement } from 'react'
 
 interface MobileFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'prefix'> {
   /** Visually-prominent uppercase label rendered inside the card. */
@@ -9,15 +9,35 @@ interface MobileFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, '
   icon?: ReactNode
   /**
    * Trailing slot — used for "Show" toggles on password fields, status
-   * badges, etc. When the trailing content is interactive (a button), the
-   * caller is responsible for giving it a 44×44 minimum hit area (WCAG
-   * 2.5.5). MobileField provides a vertically-centered slot but does NOT
-   * force the inner element's hit zone — that's a caller decision because
-   * a status icon would look wrong if forcibly stretched to 44px.
+   * badges, etc.
+   *
+   * Interactive trailings (a <button>, a [role="button"] element, or any
+   * element with an onClick handler) are auto-wrapped in a 44×44 minimum
+   * flex container so WCAG 2.5.5 is satisfied without each caller having
+   * to remember to size their button.
+   *
+   * Non-interactive trailings (icon, status badge, label) render as-is
+   * with no minimum size — forcing a 44×44 box around a decorative icon
+   * would distort the field layout.
    */
   trailing?: ReactNode
   /** When set, renders an error message below the field and tints the border. */
   fieldError?: string
+}
+
+// Detect whether a trailing element is interactive. Three signals:
+//   1. element type is the intrinsic 'button'  (a JSX <button>)
+//   2. element has an onClick prop             (a clickable wrapper)
+//   3. element has role="button"               (a custom role)
+// Returns false for plain icons, spans, status badges, etc.
+function isInteractiveTrailing(node: ReactNode): boolean {
+  if (!isValidElement(node)) return false
+  const el = node as ReactElement<Record<string, unknown>>
+  if (el.type === 'button') return true
+  const props = el.props ?? {}
+  if (typeof props.onClick === 'function') return true
+  if (props.role === 'button') return true
+  return false
 }
 
 // Handoff `<Field>` analogue used across the mobile auth chrome — card-
@@ -87,7 +107,30 @@ const MobileField = forwardRef<HTMLInputElement, MobileFieldProps>(function Mobi
             onBlur={handleBlur}
             {...inputProps}
           />
-          {trailing && <span style={{ display: 'inline-flex', alignItems: 'center' }}>{trailing}</span>}
+          {trailing && (
+            <span
+              style={
+                isInteractiveTrailing(trailing)
+                  ? {
+                      // 44×44 hit-zone enforcement for interactive trailings
+                      // (WCAG 2.5.5). The wrapper sets a floor; a child that
+                      // already declares its own ≥44 dimensions composes
+                      // naturally (the wrapper just provides the minimum
+                      // tap surface). Negative margins on the child shift
+                      // its visual position relative to the wrapper without
+                      // breaking the hit zone.
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minWidth: 44,
+                      minHeight: 44,
+                    }
+                  : { display: 'inline-flex', alignItems: 'center' }
+              }
+            >
+              {trailing}
+            </span>
+          )}
         </span>
       </label>
       {fieldError && (
