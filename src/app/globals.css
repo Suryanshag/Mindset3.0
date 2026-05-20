@@ -66,8 +66,8 @@
     --color-accent-deep:  #9A3412;
     --color-accent-tint:  #FBE9DD;
     --color-text:         #1A1A1A;
-    --color-text-muted:   #3D3935;
-    --color-text-faint:   #6B6862;
+    --color-text-muted:   #6B6862; /* synced to handoff 2026-05-20 — was #3D3935; see docs/phase-1/token-drift.md §2 */
+    --color-text-faint:   #6B6862; /* held at production value (design #9A968F fails WCAG AA); see docs/phase-1/token-drift.md §3 */
     --color-border:       rgba(0,0,0,0.14);
     --color-border-strong: rgba(0,0,0,0.18);
     --color-purple-tint:  #E8E4F2;
