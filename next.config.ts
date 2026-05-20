@@ -72,6 +72,24 @@ const nextConfig: NextConfig = {
           { key: "Content-Security-Policy", value: csp },
         ],
       },
+      {
+        // PWA service worker. Per Next 16's official PWA guide we must not
+        // cache the SW itself — otherwise users would be pinned to whatever
+        // version was first cached by their browser and would never receive
+        // updates. CSP is inherited from the global block above (script-src
+        // 'self' already permits SW execution).
+        source: "/sw.js",
+        headers: [
+          {
+            key: "Content-Type",
+            value: "application/javascript; charset=utf-8",
+          },
+          {
+            key: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
+          },
+        ],
+      },
     ];
   },
   serverExternalPackages: ["@prisma/client"],

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Nunito, Barlow_Condensed, Source_Serif_4 } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -9,6 +9,8 @@ import { auth } from "@/lib/auth";
 import { getInitialCartItems } from "@/lib/queries/cart";
 import { JsonLd, organizationLd, websiteLd } from "@/components/seo/json-ld";
 import CookieBanner from "@/components/legal/cookie-banner";
+import ServiceWorkerProvider from "@/components/pwa/service-worker-provider";
+import InstallBanner from "@/components/pwa/install-banner";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -90,10 +92,27 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/images/icons/Logo.webp",
-    apple: "/images/icons/Logo.png",
+    icon: [
+      { url: "/images/icons/Logo.webp" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Mindset",
   },
   category: "health",
+};
+
+// Next 15+ moved themeColor + viewport-related metadata to a separate export.
+export const viewport: Viewport = {
+  themeColor: "#F7F2EA",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({
@@ -105,10 +124,14 @@ export default async function RootLayout({
   // Server-render the cart for USER sessions so CartProvider doesn't have
   // to round-trip /api/user/cart on mount (~2s warm before this change).
   // For non-USER roles + unauthenticated traffic this skips entirely.
+  // Server-render the cart for USER sessions so CartProvider doesn't have
+  // to round-trip /api/user/cart on mount (~2s warm before this change).
+  // For non-USER roles + unauthenticated traffic this skips entirely.
   const initialCartItems =
     session?.user?.id && session.user.role === 'USER'
       ? await getInitialCartItems(session.user.id).catch(() => [])
       : undefined;
+  const isAuthedUser = !!session?.user?.id && session.user.role === 'USER';
   return (
     <html lang="en">
       <head>
@@ -119,6 +142,8 @@ export default async function RootLayout({
         className={`${nunito.variable} ${barlowCondensed.variable} ${sourceSerif.variable}`}
         suppressHydrationWarning
       >
+        <ServiceWorkerProvider />
+        {isAuthedUser && <InstallBanner />}
         <AuthSessionProvider session={session}>
           <RecaptchaProvider>
             <CartProvider initialItems={initialCartItems}>
