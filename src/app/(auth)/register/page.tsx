@@ -95,9 +95,14 @@ async function submitRegister(data: RegisterFormData, ctx: SubmitContext): Promi
       return
     }
 
-    // Don't reset isLoading on success — keep the loader visible until the
-    // component unmounts when the dashboard renders.
-    ctx.router.push('/user')
+    // Post-signup landing: /verify-email?sent=1 per Resolved Decision 3.
+    // The user is now authed (signIn() above just set the session), so
+    // /verify-email's server component reads session.user.email and shows
+    // the "check your inbox" stage. Skip-for-now link there falls back
+    // to /user; we don't strand the user. Don't reset isLoading on
+    // success — keep the loader visible until the component unmounts as
+    // the new route renders.
+    ctx.router.push('/verify-email?sent=1')
   } catch {
     ctx.setError('Something went wrong. Please try again.')
     ctx.setIsLoading(false)
@@ -114,10 +119,17 @@ function useRegisterState() {
   const { data: existingSession, status } = useSession()
 
   useEffect(() => {
+    // Guard against firing during the submit flow. signIn() inside
+    // submitRegister updates the session, which would trigger this effect
+    // and push to ROLE_HOME ahead of the post-signup /verify-email?sent=1
+    // push the submit handler makes — losing the verification-prompt
+    // intent. isLoading stays true through navigation; the effect only
+    // fires for actual "user visits /register while already authed."
+    if (isLoading) return
     if (status === 'authenticated' && existingSession?.user) {
       router.replace(callbackUrl ?? ROLE_HOME[existingSession.user.role ?? ''] ?? '/user')
     }
-  }, [status, existingSession, callbackUrl, router])
+  }, [status, existingSession, callbackUrl, router, isLoading])
 
   const initialError = useMemo(() => {
     if (!oauthError) return null
@@ -154,9 +166,10 @@ function HoneypotField({ inputRef }: { inputRef: React.RefObject<HTMLInputElemen
   )
 }
 
+type RegisterState = ReturnType<typeof useRegisterState>
+
 // ─── Mobile variant — 2-step flow ───────────────────────────────────────
-function MobileRegisterForm() {
-  const state = useRegisterState()
+function MobileRegisterForm({ state }: { state: RegisterState }) {
   const [step, setStep] = useState<0 | 1>(0)
   const [showPassword, setShowPassword] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
@@ -495,8 +508,7 @@ function MobileRegisterForm() {
 }
 
 // ─── Desktop variant — unchanged from before sub-phase 1.4 ──────────────
-function DesktopRegisterForm() {
-  const state = useRegisterState()
+function DesktopRegisterForm({ state }: { state: RegisterState }) {
   const honeypotRef = useRef<HTMLInputElement>(null)
 
   const {
@@ -748,18 +760,33 @@ function DesktopRegisterForm() {
   )
 }
 
+// Page-level wrapper that calls useRegisterState() exactly once and
+// passes the result to both viewport variants. With separate hook calls
+// per variant, the auto-redirect-when-authed useEffect runs twice on
+// session changes — the hidden-variant's isLoading remains false during
+// the visible variant's submit, so it racingly pushes to ROLE_HOME and
+// the post-signup intent (/verify-email?sent=1) is lost.
+function RegisterPageInner() {
+  const state = useRegisterState()
+  return (
+    <>
+      <div className="lg:hidden">
+        <MobileRegisterForm state={state} />
+      </div>
+      <div className="hidden lg:block">
+        <DesktopRegisterForm state={state} />
+      </div>
+    </>
+  )
+}
+
 export default function RegisterPage() {
   return (
     <AuthShell headline="Build a steady, kinder relationship with yourself.">
       <Suspense
         fallback={<div className="animate-pulse" style={{ minHeight: 480 }} aria-hidden="true" />}
       >
-        <div className="lg:hidden">
-          <MobileRegisterForm />
-        </div>
-        <div className="hidden lg:block">
-          <DesktopRegisterForm />
-        </div>
+        <RegisterPageInner />
       </Suspense>
     </AuthShell>
   )
