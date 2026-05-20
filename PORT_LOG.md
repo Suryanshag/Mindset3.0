@@ -64,6 +64,22 @@ The dev-mode `process.env.NODE_ENV !== 'production'` gate in `service-worker-pro
 4. **Lighthouse PWA audit** on the production URL — target ≥ 90. Address any gaps before declaring 1.5 done.
 5. **Owner's personal Android device** also tests independently.
 
+### 2026-05-20 — DEFERRED to 1.5 — Splash 50-100ms blank on browser visit
+
+`src/app/splash/splash-screen.tsx` server-renders a primary-coloured hold div before client JS hydrates and decides whether to animate. PWA cold launches paper over this with the OS splash; **browser visits to `/splash` show a 50-100ms blank primary surface before the immediate `router.replace()`.** Owner-confirmed acceptable in dev; verify perceived smoothness during 1.5 real-device QA. If it's noticeable, the fix is to server-render the static brand background + logo (without animation) so the non-animated path doesn't look empty during hydration.
+
+### 2026-05-20 — DEFERRED to 1.5 — Onboarding gate end-to-end with real session
+
+Sub-phase 1.3 smoke-tested the onboarding gate via curl (`/onboarding` unauthed → 307 to `/login`), but the full path with a real authenticated session was not exercised. **During 1.5 real-device QA, cover the fresh-signup-to-onboarding-to-dashboard loop end-to-end:**
+
+1. Sign up with a brand-new email on a real Android device.
+2. Complete the auth flow → confirm redirect to `/onboarding`.
+3. Walk through all four slides (Check in / Therapy / Journal / Workshops).
+4. Tap "Get started" on slide 4 → confirm `mindset_onboarded=1` cookie is set (1-year, `httpOnly: false`) and landing on `/user`.
+5. Close + re-open the app → confirm landing directly on `/user` (gate doesn't re-fire).
+6. Sign out and sign back in → confirm still on `/user` (cookie persists).
+7. **Edge case:** clear cookies on the test device, then sign in to an account that has activity → confirm `userHasOnboardingActivity` returns true and the gate skips onboarding (returning user on fresh device).
+
 ### 2026-05-20 — DEFERRED to 1.5 — iOS A2HS variant explicit verification
 
 Sub-task of the production-build smoke test, called out separately because iOS Safari has the most quirks:
