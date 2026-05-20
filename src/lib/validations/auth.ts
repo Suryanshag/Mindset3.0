@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { passwordSchema } from './password-policy'
 
 // Phone is optional. Accepts a 10-digit Indian mobile or the same digits
 // prefixed with +91 / 91 (spaces/hyphens allowed). The API normalises to 10 digits.
@@ -14,13 +15,7 @@ export const registerApiSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(50),
   email: z.string().email('Invalid email address'),
   phone: phoneOptional,
-  password: z
-    .string()
-    .min(10, 'Password must be at least 10 characters')
-    .refine((p) => {
-      const classes = [/[a-z]/, /[A-Z]/, /[0-9]/, /[^A-Za-z0-9]/]
-      return classes.filter((re) => re.test(p)).length >= 3
-    }, 'Password must include 3 of: uppercase, lowercase, number, special character'),
+  password: passwordSchema,
 })
 
 // Honeypot is checked at the route boundary, not in the schema, so password

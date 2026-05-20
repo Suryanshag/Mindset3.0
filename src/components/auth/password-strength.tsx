@@ -1,42 +1,29 @@
 'use client'
 
+import { scorePassword, type PasswordScore } from '@/lib/validations/password-policy'
+
 interface PasswordStrengthProps {
   password: string
 }
 
-// Mirrors the server-side policy in src/lib/validations/auth.ts:
-// min 10 chars + 3-of-4 character classes.
+// Single-bar variant used by the desktop / existing auth surfaces. The
+// 4-bar mobile variant lives in password-strength-bars.tsx. Both consume
+// the same scorePassword() function so client visuals never disagree with
+// the server's Zod policy.
+
+const PALETTE: Record<PasswordScore['score'], { color: string; width: string; copy: string }> = {
+  0: { color: '#EF4444', width: '20%', copy: 'Too short — use at least 10 characters' },
+  1: { color: '#EF4444', width: '40%', copy: 'Weak — mix in 3 of: A-Z, a-z, 0-9, symbol' },
+  2: { color: '#F59E0B', width: '65%', copy: 'Fair — good, longer is stronger' },
+  3: { color: '#F59E0B', width: '85%', copy: 'Good — almost there' },
+  4: { color: '#10B981', width: '100%', copy: 'Strong password' },
+}
+
 export default function PasswordStrength({ password }: PasswordStrengthProps) {
   if (!password) return null
 
-  const lengthScore =
-    password.length >= 14 ? 2 : password.length >= 10 ? 1 : 0
-
-  const classScore = [
-    /[A-Z]/,
-    /[a-z]/,
-    /[0-9]/,
-    /[^A-Za-z0-9]/,
-  ].filter((re) => re.test(password)).length
-
-  const meetsPolicy = password.length >= 10 && classScore >= 3
-
-  let label: 'too short' | 'weak' | 'medium' | 'strong'
-  if (!meetsPolicy) {
-    label = password.length < 10 ? 'too short' : 'weak'
-  } else if (lengthScore >= 2 && classScore === 4) {
-    label = 'strong'
-  } else {
-    label = 'medium'
-  }
-
-  const palette: Record<typeof label, { color: string; width: string; copy: string }> = {
-    'too short': { color: '#EF4444', width: '20%', copy: 'Too short — use at least 10 characters' },
-    weak: { color: '#EF4444', width: '40%', copy: 'Weak — mix in 3 of: A-Z, a-z, 0-9, symbol' },
-    medium: { color: '#F59E0B', width: '70%', copy: 'Medium — good, longer is stronger' },
-    strong: { color: '#10B981', width: '100%', copy: 'Strong password' },
-  }
-  const swatch = palette[label]
+  const { score } = scorePassword(password)
+  const swatch = PALETTE[score]
 
   return (
     <div className="mt-2">
