@@ -139,6 +139,44 @@ button { cursor: pointer; }
     --soft-pink: #FAA79D;
     --soft-blue: #A1CCE7;
     --deep-teal: #569A96;
+
+    /* ── Handoff design parity — Phase 1 sub-phase 1.1b ──────────────
+       Bare-name aliases for the Claude-Design handoff. Where a matching
+       source token exists in @theme, alias via var() so the --color-X
+       in @theme remains the single source of truth. Where no source
+       exists (shadows, on-dark variants), the value is inline.
+
+       Two tokens have known value drifts vs. the handoff design and
+       are intentionally aliased to current repo values pending owner
+       review (see docs/phase-1/token-drift.md):
+         --text-muted: repo #3D3935   ↔   design #6B6862
+         --text-faint: repo #6B6862   ↔   design #9A968F
+       The aliases below point at existing repo values; the future
+       value sync (if approved) edits @theme, not this block. */
+    --bg-app: var(--color-bg-app);
+    --bg-card: var(--color-bg-card);
+    --bg-cream: var(--color-cream);
+    --bg-spine: var(--color-bg-spine);
+    --bg-rail: var(--color-bg-rail);
+    --primary: var(--color-primary);
+    --primary-soft: var(--color-primary-soft);
+    --primary-tint: var(--color-primary-tint);
+    --accent: var(--color-accent);
+    --accent-deep: var(--color-accent-deep);
+    --accent-tint: var(--color-accent-tint);
+    --text: var(--color-text);
+    --text-muted: var(--color-text-muted);
+    --text-faint: var(--color-text-faint);
+    --border: var(--color-border);
+    --border-strong: var(--color-border-strong);
+    --purple-tint: var(--color-purple-tint);
+    --tan-tint: var(--color-tan-tint);
+    --amber-soft: var(--amber-light);
+    --on-dark: var(--color-cream);
+    --on-dark-muted: rgba(255, 248, 235, 0.66);
+    --hairline-on-dark: rgba(255, 248, 235, 0.14);
+    --shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 6px 24px rgba(45, 90, 79, 0.06);
+    --shadow-pop: 0 8px 32px rgba(45, 90, 79, 0.18);
 }
 
 /* ============================================
