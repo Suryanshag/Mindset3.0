@@ -5,18 +5,21 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 
 interface MobileBackButtonProps {
-  /** Where to navigate. When omitted, the button calls router.back(). */
+  /** Where to navigate. When set, the button is a <Link>. Takes precedence over onClick. */
   href?: string
+  /** Custom click handler — used for in-screen back behavior (e.g., step-back in 2-step forms). */
+  onClick?: () => void
   /** Accessible label for the icon-only button. Defaults to "Go back". */
   ariaLabel?: string
 }
 
-// 40x40 circular back button matching handoff auth-recovery.jsx headers.
-// Used at the top-left of every mobile auth screen. When `href` is set the
-// destination is fixed (Link); otherwise router.back() — preferred for
-// screens reached via varied entry points.
+// 44x44 circular back button matching handoff auth-recovery.jsx headers.
+// Used at the top-left of every mobile auth screen. Resolution order for
+// the click target: href → Link mode; onClick → button mode with custom
+// handler; neither → button mode with router.back() fallback.
 export default function MobileBackButton({
   href,
+  onClick,
   ariaLabel = 'Go back',
 }: MobileBackButtonProps) {
   const router = useRouter()
@@ -45,7 +48,7 @@ export default function MobileBackButton({
   return (
     <button
       type="button"
-      onClick={() => router.back()}
+      onClick={onClick ?? (() => router.back())}
       aria-label={ariaLabel}
       className={sharedClassName}
       style={sharedStyle}
