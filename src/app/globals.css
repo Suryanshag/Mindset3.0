@@ -6643,3 +6643,39 @@ body .wp-site-blocks .block-blog-hero__shape {
         transform: translate(48px, 0);
     }
 }
+
+/* ============================================
+   PHASE 1 PWA FLOW ANIMATIONS — sub-phase 1.3
+   Splash / Welcome / Onboarding shared keyframes.
+   Prefixed `ms-` (Mindset) to avoid colliding with any of the
+   existing keyframe families further up this file.
+   ============================================ */
+@keyframes ms-mark-in {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 1; transform: scale(1); }
+}
+@keyframes ms-mark-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+@keyframes ms-fade-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ms-float-a {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(8px, -12px) scale(1.04); }
+}
+@keyframes ms-float-b {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(-10px, 8px) scale(0.96); }
+}
+@keyframes ms-load-bar {
+    0%   { transform: translateX(-100%); }
+    50%  { transform: translateX(0%); }
+    100% { transform: translateX(220%); }
+}
+@keyframes ms-slide-in {
+    from { opacity: 0; transform: translateX(16px); }
+    to   { opacity: 1; transform: translateX(0); }
+}

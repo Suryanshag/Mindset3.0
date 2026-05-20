@@ -10,7 +10,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'Mindset',
     description:
       'Mental health care — accessible, affordable, stigma-free. Talk to qualified therapists, journal, and access self-care resources.',
-    start_url: '/user',
+    start_url: '/splash?source=pwa',
     scope: '/',
     display: 'standalone',
     orientation: 'portrait',

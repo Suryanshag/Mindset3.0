@@ -1,4 +1,6 @@
 import { auth } from '@/lib/auth'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import Header from '@/components/dashboard/header'
 import MoodCheckIn from '@/components/dashboard/mood-check-in'
@@ -13,6 +15,7 @@ import HomeRail from '@/components/dashboard/desktop/home-rail'
 import { getNextWorkshop, getUnreadNotificationCount, getUpcomingSession, getTodaysMoodCheckIn, getUserStats, getUserEngagementState } from '@/lib/queries/dashboard'
 import { getReflectionLandingData } from '@/lib/queries/reflection'
 import { getCurrentUserBasics } from '@/lib/queries/current-user'
+import { userHasOnboardingActivity } from '@/lib/queries/onboarding'
 
 export default async function UserHome({
   searchParams,
@@ -22,6 +25,22 @@ export default async function UserHome({
   const params = await searchParams
   const session = await auth()
   const userId = session?.user?.id
+
+  // First-time onboarding gate (Phase 1 sub-phase 1.3) — only on /user, per
+  // Resolved Decision 9. We redirect to /onboarding when: the user is
+  // signed in, the mindset_onboarded cookie is missing, AND they have no
+  // recorded activity (sessions/journal/mood). The check is cheap (three
+  // parallel COUNTs) and only triggers for unflagged users. Returning users
+  // on a fresh device hit the activity check and skip onboarding.
+  if (userId) {
+    const cookieStore = await cookies()
+    if (!cookieStore.get('mindset_onboarded')) {
+      const hasActivity = await userHasOnboardingActivity(userId).catch(() => true)
+      if (!hasActivity) {
+        redirect('/onboarding')
+      }
+    }
+  }
 
   const endOfToday = new Date()
   endOfToday.setHours(23, 59, 59, 999)
