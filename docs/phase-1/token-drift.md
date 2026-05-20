@@ -1,6 +1,6 @@
 # Phase 1 — Token drift survey (Task 1.1b companion)
 
-**Status:** Findings surfaced for owner review. **No value changes have been applied** — the aliases-only commit (`chore(tokens): add bare-name CSS variable aliases for handoff design parity`) is the only token change so far.
+**Status (2026-05-20):** Owner reviewed and resolved. `--color-text-muted` sync approved (ships at start of sub-phase 1.4). `--color-text-faint` sync **rejected on accessibility grounds — option (a) locked in.** Detailed rationale recorded in §3.4 below. **No value changes have been applied yet** — the aliases-only commit (`chore(tokens): add bare-name CSS variable aliases for handoff design parity`) is the only token change so far; the `--color-text-muted` sync commit lands at the start of 1.4 after WCAG re-verification of all ~50 call sites.
 
 The owner approved Decision 14 ("honor the design; update `globals.css` token values for `--text-muted` and `--soft-pink` to match the handoff"). This document records the survey work, corrects one Phase 0 audit error, and flags a previously-unsurfaced drift that needs an explicit owner call before any value change ships.
 
@@ -130,9 +130,13 @@ Where the new value is safe:
 - Pros: Compliance preserved; visual ladder restored (gap between text-muted at #6B6862 and text-faint at #7C7872 is small but real).
 - Cons: Not strict design fidelity; a third value diverges from the handoff and adds drift in the other direction.
 
-**Recommendation: (a)** for Phase 1, defer (c) to a dedicated accessibility-tuning pass after the Phase 6 polish work. The handoff visual difference between `--text-muted` and `--text-faint` is subtle in practice — the mobile chrome's most decorative use of `--text-faint` is on **`--primary` dark backgrounds** (e.g., welcome hero kicker text) where the relevant token is actually `--on-dark-muted: rgba(255, 248, 235, 0.66)`, not `--text-faint`. So new mobile work doesn't lean heavily on `--text-faint` for design fidelity; the existing dashboard uses it routinely, and changing it is more downside than upside.
+**Resolved (owner 2026-05-20): option (a) — locked.** Design value `#9A968F` rejected on accessibility grounds. Production value `#6B6862` retained on `--color-text-faint`. The full reasoning, recorded for future maintainers:
 
-If owner wants (b) or (c), call it; I'll wire the change in a separate commit before sub-phase 1.4 starts.
+> Design value rejected on accessibility grounds (3.05:1 on cream `--bg-app` fails WCAG AA at 4.5:1 for normal text — and ~30 call sites use `text-text-faint` at 11px-12px which is unambiguously "normal" by WCAG sizing). Production value retained. Revisit in a dedicated accessibility-tuning pass that can rebalance the entire muted/faint ladder while preserving AA across both stops.
+
+We don't ship text that fails AA on a mental health platform. The muted/faint ladder remains visually "collapsed" (both stops resolve to `#6B6862` once Decision 14 lands on `--text-muted`) until that future tuning pass.
+
+This decision overrides Resolved Decision 14's general "honor the design" stance for this specific token. `MOBILE_PORT_PLAN.md` §3g Resolved Decision 14 has been updated to record the exception.
 
 ---
 
@@ -150,10 +154,10 @@ Added to `:root` in `src/app/globals.css` (after existing `--deep-teal: #569A96;
 
 ---
 
-## 5. Action items for owner review
+## 5. Resolution status
 
-1. **Confirm `--color-text-muted` sync** can ship in a separate `refactor(tokens):` commit at start of sub-phase 1.4. Trivial single-line @theme edit. Visual lightening across ~50 call sites; passes AA.
-2. **Pick (a) / (b) / (c) for `--color-text-faint`** per §3.4. Default is (a) if you don't pick — defer and re-visit during accessibility tuning later.
-3. **Drop the `--soft-pink` "drift" entry from MOBILE_PORT_PLAN.md §2.3** (`/Users/suryansh/Documents/Mindset/Mindset3/MOBILE_PORT_PLAN.md` line ~92) since it was incorrect — value already matches design. Will do as a small plan-doc edit once you've reviewed this drift survey.
+1. **`--color-text-muted` sync — approved 2026-05-20.** Ships as a standalone `refactor(tokens): sync --color-text-muted to design value` commit at the start of sub-phase 1.4, before any auth restyle. Will re-verify all ~50 call sites still pass WCAG AA at the new value before the commit lands.
+2. **`--color-text-faint` — resolved 2026-05-20 as option (a).** Production value retained. See §3.4 above.
+3. **`--soft-pink` plan-doc correction — applied 2026-05-20.** `MOBILE_PORT_PLAN.md` §2.3 now correctly shows `--color-soft-pink: #FAA79D` matches the handoff.
 
-The alias commit itself can land now (or after you've read this doc) — it's a pure additive change with zero risk to existing styling. The value-sync edits are separate and gated on (1) and (2) above.
+All three items closed. No further owner action required on this document.

@@ -121,11 +121,11 @@ These do not exist today and must be added:
 | `--navy: #1E445C` | `--color-navy: #1E445C` | ✅ |
 | `--text: #1A1A1A` | `--color-text: #1A1A1A` | ✅ |
 | `--text-muted: #6B6862` | (close: `--color-text-muted: #3D3935`) | ⚠️ value drift |
-| `--soft-pink: #FAA79D` | (closest: `--color-coral-500: #F96553`) | ⚠️ value drift |
+| `--soft-pink: #FAA79D` | `--color-soft-pink: #FAA79D` | ✅ (Phase 0 misread; values match — see `docs/phase-1/token-drift.md`) |
 | `--soft-blue: #A1CCE7` | `--color-soft-blue: #A1CCE7` | ✅ |
 | `--amber: #FFAA11` | `--color-amber-500: #FFAA11` | ✅ |
 
-**Action (Phase 1):** add bare-name aliases in `globals.css` (e.g., `--bg-app: var(--color-bg-app)`) so handoff-style class strings (`style={{ background: 'var(--bg-app)' }}`) work without rewriting every component. Resolve the two value drifts (text-muted, soft-pink) by owner choice during Phase 1 design pass — they are 80%-aesthetic decisions, not correctness ones.
+**Action (Phase 1):** add bare-name aliases in `globals.css` (e.g., `--bg-app: var(--color-bg-app)`) so handoff-style class strings (`style={{ background: 'var(--bg-app)' }}`) work without rewriting every component. The actual drifts are documented in `docs/phase-1/token-drift.md` after the sub-phase 1.1b survey: `--text-muted` syncs to design value at the start of sub-phase 1.4 (passes AA); `--text-faint` is held at the production value as an **accessibility exception** to Resolved Decision 14 (design value `#9A968F` measures 3.05:1 on `--bg-app`, failing WCAG AA at 4.5:1). The `--soft-pink` "drift" reported in the original Phase 0 audit was a misread — production and design both hold `#FAA79D`.
 
 ### 2.4 Fonts — already loaded
 
@@ -359,7 +359,7 @@ Each phase commits separately. Each phase ends with a screenshot dump at iPhone 
 
 - Day 1: Verify Serwist vs Next 16 compatibility (consult `node_modules/next/dist/docs/` + Context7); install or build SW.
 - Day 1–2: `src/app/manifest.ts`, icons (PNG generation), root metadata updates, `<InstallBanner/>`, iOS A2HS modal.
-- Day 2–3: Token aliases (bare-name CSS vars referencing existing `--color-X`). Resolve text-muted and soft-pink drifts with owner.
+- Day 2–3: Token aliases (bare-name CSS vars referencing existing `--color-X`). Done in sub-phase 1.1b via `chore(tokens): add bare-name CSS variable aliases for handoff design parity`. Value sync for `--color-text-muted` (3D3935 → 6B6862) deferred to a standalone `refactor(tokens):` commit at the start of sub-phase 1.4. `--color-text-faint` value retained as an accessibility exception (see Resolved Decision 14).
 - Day 3: `/splash`, `/welcome` (public routes; the existing marketing `/` stays untouched).
 - Day 4: Restyle `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email`; add `/(auth)/account-locked`.
 - Day 4–5: `/onboarding` (4 slides, gated by `mindset_onboarded` cookie); smoke test full auth funnel; screenshots.
@@ -452,7 +452,10 @@ All 15 open questions from the original draft have been answered by the owner. N
 11. **(Resolved by Amendment B.)** No SessionLive component, no 4-state UI, no 3-state collapse. Replaced by Session Detail state-aware logic (Upcoming / Joinable / Awaiting feedback / Completed) plus user-initiated wrap-up. No `startSessionLive` action.
 12. **Doctor mobile.** Out of scope. User-facing only. Doctor mobile is a separate future project.
 13. **Next 16 specifics.** Follow `AGENTS.md` strictly. Read `node_modules/next/dist/docs/` for any Next.js framework question. Use Context7 MCP where training data may be stale. Copy existing codebase patterns; do not invent new ones.
-14. **Token drift.** Honor the design. Update `globals.css` token values for `--text-muted` and `--soft-pink` to match the handoff. If a sync visibly breaks an existing screen during a Phase 2–5 diff pass, flag and discuss.
+14. **Token drift.** Honor the design **where it doesn't degrade accessibility**. After the sub-phase 1.1b survey + WCAG analysis in `docs/phase-1/token-drift.md`, the locked positions are:
+    - **`--color-text-muted`**: sync repo `#3D3935` → design `#6B6862`. Passes WCAG AA across all ~50 call sites (~5.5:1 on `--bg-app`). Shipped as a standalone `refactor(tokens):` commit at the start of sub-phase 1.4.
+    - **`--color-text-faint`**: **explicit exception** — design value `#9A968F` rejected on accessibility grounds (measures 3.05:1 on cream `#F7F2EA`, failing WCAG AA's 4.5:1 floor for normal text; ~30 existing call sites at 11px-12px would all regress). Production value `#6B6862` retained. The muted/faint ladder remains "collapsed" until a dedicated accessibility-tuning pass can rebalance both stops while preserving AA.
+    - **`--soft-pink`**: not drifted; production already matches design (Phase 0 audit misread; corrected in §2.3 above).
 15. **Email templates.** Only the two new templates noted in §0B (account-deletion requested / completed). Post-session feedback and daily reflection prompt emails deferred. Match existing styling and `FROM_EMAIL` centralization.
 
 ### 3h. Packages list
