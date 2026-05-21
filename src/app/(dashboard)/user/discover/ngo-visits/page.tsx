@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { CalendarDays, MapPin, ChevronRight, HeartHandshake } from 'lucide-react'
 import PageHeader from '@/components/dashboard/page-header'
 import { formatSessionDate } from '@/lib/format-date'
+import MobileNgoList from '@/components/mobile/ngo-visits'
 
 export default async function DashboardNgoVisitsListPage() {
   const session = await auth()
@@ -33,7 +34,24 @@ export default async function DashboardNgoVisitsListPage() {
   )
 
   return (
-    <div>
+    <>
+      {/* Mobile — Phase 5 ported NGO list. */}
+      <div className="lg:hidden">
+        <MobileNgoList
+          upcoming={upcoming.map((v) => ({
+            id: v.id,
+            ngoName: v.ngoName,
+            location: v.location,
+            description: v.description,
+            photos: v.photos,
+            visitDate: v.visitDate.toISOString(),
+            isRegistered: registeredIds.has(v.id),
+          }))}
+        />
+      </div>
+
+      {/* Desktop — existing layout, unchanged. */}
+      <div className="hidden lg:block">
       <PageHeader title="NGO Visits" subtitle="Join our community outreach drives" back="/user/discover" />
 
       <div className="pt-3.5">
@@ -113,6 +131,7 @@ export default async function DashboardNgoVisitsListPage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   )
 }
