@@ -236,7 +236,7 @@ function MobileRegisterForm({ state }: { state: RegisterState }) {
       {state.error && (
         <div
           role="alert"
-          className="mb-5 p-3.5 rounded-xl text-sm font-medium"
+          className="mb-5 p-3.5 rounded-2xl text-sm font-medium"
           style={{ background: 'var(--accent-tint)', color: 'var(--accent-deep)' }}
         >
           {state.error}
@@ -561,7 +561,7 @@ function DesktopRegisterForm({ state }: { state: RegisterState }) {
       {state.error && (
         <div
           role="alert"
-          className="mb-5 p-3.5 rounded-xl text-sm font-medium"
+          className="mb-5 p-3.5 rounded-2xl text-sm font-medium"
           style={{ background: 'rgba(249,101,83,0.08)', color: '#991B1B' }}
         >
           {state.error}

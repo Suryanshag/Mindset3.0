@@ -325,7 +325,7 @@ function MobileForgotPassword(props: ForgotPasswordState) {
       {error && (
         <div
           role="alert"
-          className="mt-5 p-3.5 rounded-xl text-sm font-medium"
+          className="mt-5 p-3.5 rounded-2xl text-sm font-medium"
           style={{ background: 'var(--accent-tint)', color: 'var(--accent-deep)' }}
         >
           {error}
@@ -425,7 +425,7 @@ function DesktopForgotPassword(props: ForgotPasswordState) {
           password reset link within a few minutes.
         </p>
         <p
-          className="text-xs font-medium rounded-xl p-3 mb-6"
+          className="text-xs font-medium rounded-2xl p-3 mb-6"
           style={{ background: 'rgba(255,170,17,0.08)', color: '#92400E' }}
         >
           The link expires in 15 minutes. Didn&apos;t get it? Check spam, or resend below.
@@ -487,7 +487,7 @@ function DesktopForgotPassword(props: ForgotPasswordState) {
       {error && (
         <div
           role="alert"
-          className="mb-5 p-3.5 rounded-xl text-sm font-medium"
+          className="mb-5 p-3.5 rounded-2xl text-sm font-medium"
           style={{ background: 'rgba(249,101,83,0.08)', color: '#991B1B' }}
         >
           {error}

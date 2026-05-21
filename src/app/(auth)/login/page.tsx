@@ -218,7 +218,7 @@ function MobileLoginForm() {
 
       {state.message === 'password-reset' && (
         <div
-          className="mt-5 p-3.5 rounded-xl flex items-start gap-3 text-sm font-medium"
+          className="mt-5 p-3.5 rounded-2xl flex items-start gap-3 text-sm font-medium"
           style={{ background: 'var(--primary-tint)', color: 'var(--primary)' }}
         >
           <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" aria-hidden="true" />
@@ -229,7 +229,7 @@ function MobileLoginForm() {
       {state.error && (
         <div
           role="alert"
-          className="mt-5 p-3.5 rounded-xl text-sm font-medium"
+          className="mt-5 p-3.5 rounded-2xl text-sm font-medium"
           style={{ background: 'var(--accent-tint)', color: 'var(--accent-deep)' }}
         >
           {state.error}
@@ -395,7 +395,7 @@ function DesktopLoginForm() {
 
       {state.message === 'password-reset' && (
         <div
-          className="mb-5 p-3.5 rounded-xl flex items-start gap-3 text-sm font-medium"
+          className="mb-5 p-3.5 rounded-2xl flex items-start gap-3 text-sm font-medium"
           style={{ background: 'rgba(11,157,169,0.08)', color: '#065F46' }}
         >
           <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'var(--teal)' }} />
@@ -406,7 +406,7 @@ function DesktopLoginForm() {
       {state.error && (
         <div
           role="alert"
-          className="mb-5 p-3.5 rounded-xl text-sm font-medium"
+          className="mb-5 p-3.5 rounded-2xl text-sm font-medium"
           style={{ background: 'rgba(249,101,83,0.08)', color: '#991B1B' }}
         >
           {state.error}

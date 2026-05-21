@@ -275,7 +275,7 @@ function DesktopSent({ email, cooldown, sendState, onResend, onEditEmail }: Chil
         <strong style={{ color: 'var(--navy)' }}>{email}</strong>. Tap it to verify your email.
       </p>
       <p
-        className="text-xs font-medium rounded-xl p-3 mb-6"
+        className="text-xs font-medium rounded-2xl p-3 mb-6"
         style={{ background: 'rgba(255,170,17,0.08)', color: '#92400E' }}
       >
         The link expires in 24 hours.
