@@ -196,9 +196,7 @@ export async function cancelSession(sessionId: string) {
     .create({
       data: {
         userId,
-        // SESSION_CANCELLED is added to the enum in Task 3; using SYSTEM
-        // as the placeholder so this commit's TypeScript stays clean.
-        kind: 'SYSTEM',
+        kind: 'SESSION_CANCELLED',
         title: 'Session cancelled',
         body: refundNote,
         link: '/user/sessions',
@@ -213,7 +211,11 @@ export async function cancelSession(sessionId: string) {
         doctorName: txResult.doctorName,
         sessionDate: txResult.sessionDate,
         cancelledBy: 'USER',
-        refundNote,
+        // Structured props let the template render a richer refund block
+        // with policy-derived reason copy + correct success/no-refund tinting.
+        refundAmount: txResult.refundAmountPaise / 100,
+        refundPercent: txResult.refundPercent,
+        cancellationReason: txResult.refundReason,
       })
     } catch (err) {
       console.error('[EMAIL_FAILED]', err)

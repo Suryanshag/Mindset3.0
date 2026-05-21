@@ -456,6 +456,84 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Refund.processed — Razorpay finished moving the money back to the
+    // user's bank. Flip our Payment.refundStatus to PROCESSED + stamp
+    // refundedAt and fire a user notification confirming arrival.
+    if (eventType === 'refund.processed') {
+      const refundEntity = event.payload.refund.entity
+      const refundId = refundEntity.id as string
+      console.log('[WEBHOOK] Refund processed:', refundId)
+
+      const payment = await prisma.payment.findFirst({ where: { refundId } })
+      if (!payment) {
+        // Razorpay-generated refund (e.g. manual dashboard refund by
+        // admin) won't have a matching DB refundId. 200-ack so Razorpay
+        // stops retrying; log so admin can reconcile if needed.
+        console.error(
+          '[WEBHOOK] [REFUND_NO_MATCH] no Payment row for refundId:',
+          refundId,
+          'payment_id:', refundEntity.payment_id,
+          'amount:', refundEntity.amount,
+          '— likely a manual Razorpay-dashboard refund; reconcile if needed'
+        )
+        return NextResponse.json({ received: true }, { status: 200 })
+      }
+
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          refundStatus: 'PROCESSED',
+          refundedAt: new Date(),
+        },
+      })
+      console.log('[WEBHOOK] ✓ Payment marked REFUND PROCESSED:', payment.id)
+
+      // Best-effort confirmation notification. The amount stored on
+      // Payment.refundAmount is paise; convert to rupees for display.
+      const refundRupees = payment.refundAmount
+        ? (payment.refundAmount / 100).toFixed(0)
+        : '0'
+      prisma.notification
+        .create({
+          data: {
+            userId: payment.userId,
+            kind: 'REFUND_PROCESSED',
+            title: 'Refund processed',
+            body: `Your refund of ₹${refundRupees} has been processed. It should appear in your account in 5-7 business days.`,
+            link: '/user/payments',
+          },
+        })
+        .catch((err) => console.error('[WEBHOOK] refund notification failed:', err))
+    }
+
+    // Refund.failed — Razorpay tried to refund and could not (bank-
+    // side rejection, expired card, etc). Mark FAILED so the admin
+    // reconcile page surfaces it and someone can retry manually.
+    if (eventType === 'refund.failed') {
+      const refundEntity = event.payload.refund.entity
+      const refundId = refundEntity.id as string
+      console.log('[WEBHOOK] Refund FAILED:', refundId)
+
+      const payment = await prisma.payment.findFirst({ where: { refundId } })
+      if (payment) {
+        await prisma.payment.update({
+          where: { id: payment.id },
+          data: { refundStatus: 'FAILED' },
+        })
+        console.error(
+          '[WEBHOOK] [REFUND_FAILED]',
+          'paymentId:', payment.id,
+          'refundId:', refundId,
+          'error:', refundEntity.error_description ?? refundEntity.error_code ?? 'unknown'
+        )
+      } else {
+        console.error(
+          '[WEBHOOK] [REFUND_FAILED_NO_MATCH] no Payment row for refundId:',
+          refundId
+        )
+      }
+    }
+
     console.log('[WEBHOOK] ========== WEBHOOK COMPLETE ==========\n')
     return NextResponse.json({ received: true }, { status: 200 })
 

@@ -236,7 +236,12 @@ export function sendSessionCancelled(
     doctorName: string
     sessionDate: Date
     cancelledBy: 'DOCTOR' | 'ADMIN' | 'USER'
+    // Legacy free-form note from doctor/admin paths.
     refundNote?: string
+    // Structured refund data from the user cancel path; preferred when set.
+    refundAmount?: number
+    refundPercent?: number
+    cancellationReason?: string
   }
 ): void {
   sendEmail(
