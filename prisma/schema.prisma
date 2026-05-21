@@ -139,6 +139,11 @@ model Session {
   userNotes       String?       @db.Text @map("user_notes")
   reminderSent    Boolean       @default(false)
   followupSent    Boolean       @default(false)
+  // Cancellation audit (set when status flips to CANCELLED). updatedAt
+  // also mutates on later edits, so these explicit fields preserve the
+  // original cancellation event for refund + audit queries.
+  cancelledAt        DateTime? @map("cancelled_at")
+  cancellationReason String?   @map("cancellation_reason")
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -434,6 +439,15 @@ model Payment {
   // BEFORE a WorkshopRegistration row exists. Registration is created
   // only after Razorpay captures the payment (webhook).
   workshopId          String?       @map("workshop_id")
+  // Refund tracking (separate from .status which is the payment's own
+  // lifecycle). Set when cancelSession or future admin/doctor cancel
+  // paths fire a Razorpay refund. amount is in paise (matches the
+  // Razorpay refund API contract) to avoid Decimal precision games on
+  // partial refunds.
+  refundId            String?       @map("refund_id")
+  refundedAt          DateTime?     @map("refunded_at")
+  refundAmount        Int?          @map("refund_amount")
+  refundStatus        String?       @map("refund_status")
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
 
