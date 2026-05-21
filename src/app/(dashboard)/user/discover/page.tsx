@@ -1,3 +1,4 @@
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -5,8 +6,12 @@ import { Ticket, BookOpen, ShoppingBag, ChevronRight, HeartHandshake } from 'luc
 import { getNextWorkshop } from '@/lib/queries/dashboard'
 import PageHeader from '@/components/dashboard/page-header'
 import { formatSessionDateRelative } from '@/lib/format-date'
+import MobileDiscover from '@/components/mobile/discover'
 
 export default async function DiscoverHubPage() {
+  const session = await auth()
+  const userId = session?.user?.id
+
   const [
     workshop,
     recentMaterials,
@@ -17,6 +22,8 @@ export default async function DiscoverHubPage() {
     libraryPreview,
     shopPreview,
     nextNgoVisit,
+    ngoVisitsCount,
+    libraryOwnedCount,
   ] = await Promise.all([
     getNextWorkshop().catch(() => null),
     prisma.studyMaterial
@@ -82,6 +89,14 @@ export default async function DiscoverHubPage() {
         select: { id: true, ngoName: true, location: true, visitDate: true },
       })
       .catch(() => null),
+    prisma.ngoVisit
+      .count({ where: { isPublished: true, visitDate: { gte: new Date() } } })
+      .catch(() => 0),
+    userId
+      ? prisma.studyMaterialAccess
+          .count({ where: { userId } })
+          .catch(() => 0)
+      : Promise.resolve(0),
   ])
 
   const sections = [
@@ -123,7 +138,34 @@ export default async function DiscoverHubPage() {
     nextWorkshopFull?.presenter?.name ?? nextWorkshopFull?.instructorName ?? null
 
   return (
-    <div>
+    <>
+      {/* Mobile — Phase 5 ported Discover hub. */}
+      <div className="lg:hidden">
+        <MobileDiscover
+          libraryPreview={libraryPreview.map((m) => ({
+            id: m.id,
+            title: m.title,
+            type: m.type as 'FREE' | 'PAID',
+            price: m.price ? String(m.price) : null,
+            coverImage: m.coverImage,
+          }))}
+          libraryOwnedCount={libraryOwnedCount}
+          nextNgoVisit={
+            nextNgoVisit
+              ? {
+                  id: nextNgoVisit.id,
+                  ngoName: nextNgoVisit.ngoName,
+                  location: nextNgoVisit.location,
+                  visitDate: nextNgoVisit.visitDate.toISOString(),
+                }
+              : null
+          }
+          ngoVisitsCount={ngoVisitsCount}
+        />
+      </div>
+
+      {/* Desktop — existing layout (Phase 1, unchanged). */}
+      <div className="hidden lg:block">
       <PageHeader title="Discover" subtitle="Workshops, library, and shop" />
 
       <div className="space-y-3.5 pt-3.5">
@@ -327,6 +369,7 @@ export default async function DiscoverHubPage() {
           </div>
         </Link>
       </section>
-    </div>
+      </div>
+    </>
   )
 }
