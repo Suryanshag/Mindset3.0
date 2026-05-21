@@ -5,6 +5,7 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import PageHeader from '@/components/dashboard/page-header'
+import MobileLibrary from '@/components/mobile/library'
 
 /** "Today" / "Yesterday" / "3 days ago" / "Sep 12" — for "last opened" subtitle. */
 function formatLastOpened(d: Date): string {
@@ -155,7 +156,41 @@ export default async function LibraryPage() {
   const recommended = allMaterials.filter((m) => !ownedEbookIdsSet.has(m.id))
 
   return (
-    <div>
+    <>
+      {/* Mobile — Phase 5 ported Library. */}
+      <div className="lg:hidden">
+        <MobileLibrary
+          owned={libraryEbooks.map((e) => ({
+            id: e.id,
+            title: e.title,
+            type: e.type as 'FREE' | 'PAID',
+            price: e.price ? String(e.price) : null,
+            coverImage: e.coverImage,
+            lastOpenedAt: e.lastOpenedAt ? e.lastOpenedAt.toISOString() : null,
+          }))}
+          browseFree={recommended
+            .filter((m) => m.type === 'FREE')
+            .map((m) => ({
+              id: m.id,
+              title: m.title,
+              type: m.type as 'FREE' | 'PAID',
+              price: m.price ? String(m.price) : null,
+              coverImage: m.coverImage,
+            }))}
+          browsePaid={recommended
+            .filter((m) => m.type === 'PAID')
+            .map((m) => ({
+              id: m.id,
+              title: m.title,
+              type: m.type as 'FREE' | 'PAID',
+              price: m.price ? String(m.price) : null,
+              coverImage: m.coverImage,
+            }))}
+        />
+      </div>
+
+      {/* Desktop — existing layout, unchanged. */}
+      <div className="hidden lg:block">
       <PageHeader title="Library" back="/user/discover" />
 
       <div className="space-y-5 pt-3.5">
@@ -251,6 +286,7 @@ export default async function LibraryPage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   )
 }
