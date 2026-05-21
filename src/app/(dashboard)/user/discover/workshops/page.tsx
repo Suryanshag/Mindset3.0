@@ -6,6 +6,7 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import PageHeader from '@/components/dashboard/page-header'
 import { formatSessionDate } from '@/lib/format-date'
+import MobileWorkshopsList from '@/components/mobile/workshops-list'
 
 export default async function WorkshopsListPage() {
   const session = await auth()
@@ -18,6 +19,10 @@ export default async function WorkshopsListPage() {
       .findMany({
         where: { published: true, startsAt: { gte: now } },
         orderBy: { startsAt: 'asc' },
+        include: {
+          presenter: { select: { name: true } },
+          _count: { select: { registrations: true } },
+        },
       })
       .catch(() => []),
     // Workshops THIS user has registered for that have already happened.
@@ -40,7 +45,34 @@ export default async function WorkshopsListPage() {
   const hasAttended = pastRegistrations.length > 0
 
   return (
-    <div>
+    <>
+      {/* Mobile — Phase 5 ported list. */}
+      <div className="lg:hidden">
+        <MobileWorkshopsList
+          upcoming={upcoming.map((w) => ({
+            id: w.id,
+            title: w.title,
+            subtitle: w.subtitle,
+            description: w.description,
+            coverImageUrl: w.coverImageUrl,
+            instructorName: w.instructorName,
+            presenterName: w.presenter?.name ?? null,
+            startsAt: w.startsAt.toISOString(),
+            durationMin: w.durationMin,
+            priceCents: w.priceCents,
+            capacity: w.capacity,
+            registrationsCount: w._count.registrations,
+          }))}
+          attended={pastRegistrations.map((r) => ({
+            id: r.workshop.id,
+            title: r.workshop.title,
+            startsAt: r.workshop.startsAt.toISOString(),
+          }))}
+        />
+      </div>
+
+      {/* Desktop — existing layout, unchanged. */}
+      <div className="hidden lg:block">
       <PageHeader title="Workshops" back="/user/discover" />
 
       <div className="space-y-5 pt-3.5">
@@ -164,6 +196,7 @@ export default async function WorkshopsListPage() {
           </section>
         )}
       </div>
-    </div>
+      </div>
+    </>
   )
 }

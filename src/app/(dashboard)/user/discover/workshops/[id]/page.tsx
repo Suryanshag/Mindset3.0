@@ -7,6 +7,7 @@ import PageHeader from '@/components/dashboard/page-header'
 import WorkshopRegisterButton from './register-button'
 import { formatSessionDateLong, formatSessionTime } from '@/lib/format-date'
 import { getWorkshopWindowState, isWorkshopJoinable } from '@/lib/workshop-window'
+import MobileWorkshopDetail from '@/components/mobile/workshop-detail'
 
 export default async function WorkshopDetailPage({
   params,
@@ -41,9 +42,43 @@ export default async function WorkshopDetailPage({
     workshop.capacity !== null &&
     workshop._count.registrations >= workshop.capacity
   const isFree = workshop.priceCents === 0
+  const workshopState = getWorkshopWindowState(
+    workshop.startsAt,
+    workshop.durationMin,
+  )
+  const joinable = isWorkshopJoinable(workshopState)
 
   return (
-    <div>
+    <>
+      {/* Mobile — Phase 5 ported detail. Reuses WorkshopRegisterButton
+          (Sprint Workshops-Paid) inside a mobile-styled sticky bar. */}
+      <div className="lg:hidden">
+        <MobileWorkshopDetail
+          w={{
+            id: workshop.id,
+            title: workshop.title,
+            subtitle: workshop.subtitle,
+            description: workshop.description,
+            coverImageUrl: workshop.coverImageUrl,
+            instructorName: workshop.instructorName,
+            presenterName: workshop.presenter?.name ?? null,
+            startsAt: workshop.startsAt.toISOString(),
+            durationMin: workshop.durationMin,
+            priceCents: workshop.priceCents,
+            capacity: workshop.capacity,
+            registrationsCount: workshop._count.registrations,
+            meetLink: workshop.meetLink,
+            whatsappGroupUrl: workshop.whatsappGroupUrl,
+          }}
+          isRegistered={isRegistered}
+          isPast={isPast}
+          isFull={isFull}
+          joinable={joinable}
+        />
+      </div>
+
+      {/* Desktop — existing layout, unchanged. */}
+      <div className="hidden lg:block">
       <PageHeader title="Workshop" back="/user/discover/workshops" />
 
       <div className="space-y-3.5 pt-5 pb-24">
@@ -202,6 +237,7 @@ export default async function WorkshopDetailPage({
         />
       </div>
     </div>
+    </>
   )
 }
 
