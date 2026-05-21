@@ -542,3 +542,68 @@ Reminders carried forward into Phase 4:
 - Cookies banner contrast fix
 - `getUpcomingWorkshops(n)` helper for HomeEngaged WorkshopTeaser (Phase 2 deferral still open)
 - Motion-token extraction (Phase 1 deferral; we now have auth + home + SOS + sessions + post-session motion patterns as data points)
+
+---
+
+## Phase 4 — Practice hub + Journal + Assignments + Breathe (DONE)
+
+### 2026-05-22 — DONE — Phase 4 ports
+
+**Scope:** mobile variants of Practice hub, Journal list + composer, Assignments list + detail, NEW /user/practice/breathe page, home Breathe tile wiring fix.
+
+**Commits in Phase 4** (oldest first):
+- `3294d9f` Practice hub mobile — 3 tiles (Journal accent-tint / Assignments primary-tint with badge / Mindfulness disabled), stat pill, Dr Priya quote card
+- `5fd74c1` Journal list (calendar strip + today's prompt + filter chips + entries) + composer with sticky bottom mood toolbar. New `getJournalStreak` + `getLastWeekJournal` helpers
+- `b3dc036` Assignments list (pill tabs with counts) + detail with type-specific completion zone (JOURNAL_PROMPT / WORKSHEET / READING / BREATHING / CUSTOM)
+- `a946815` /user/practice/breathe (pre/during/post flow, frontend-only timer) + home Breathe tile href fix
+
+**4 commits, ~3,278 insertions / 49 deletions across 14 files** (`git diff --shortstat 3294d9f^..a946815`).
+
+### 2026-05-22 — DEFERRED to Phase 5 entry checklist
+
+**JournalEntry.tags column** — Phase 4 ported the design's filter chips
+(All / Gratitude / Relationships / Health / Work / Sleep) but the
+underlying JournalEntry model has no `tags` field. Chips render as a
+visual element but tapping them does NOT filter the entry list. The
+schema add is a Phase 5 candidate alongside any other journal-feature
+work (e.g., search-by-tag, weekly tag rollups).
+
+**Voice-to-text on the journal composer** — the mic icon in the
+sticky bottom toolbar is present per the design but tap shows a
+non-interruptive "Voice-to-text is coming soon" hint. Wiring the
+Web Speech API (or a managed service like Whisper API) is post-launch.
+
+**Session detail "after this session" timeline + pre-session work
+list** — still deferred from Phase 3, not addressed in Phase 4.
+
+**Cookies banner contrast** — still deferred from Phase 3, not
+addressed in Phase 4.
+
+**Mood-token persistence on Breathe Post state** — the user picks a
+mood face on the Post screen but it's currently visual-only (no DB
+write per the frontend-only constraint). If we want to persist this,
+the cleanest move is to upsert a MoodCheckIn for the day (re-using
+the existing logMoodCheckIn action) — flag for Phase 5 polish.
+
+### 2026-05-22 — Phase 4 closure pending owner device QA
+
+`docs/phase-4/wrapup-device-qa.md` 5 sections (A through E). FAILs
+gate Phase 4 closure. Section E Lighthouse on the phone is a
+nice-to-have.
+
+### 2026-05-22 — DEFERRED — Phase 5 entry checklist
+
+Carried forward + new additions:
+- Discover mobile port (workshops, NGO, library, presenters)
+- Profile mobile port
+- Notifications mobile port
+- Cart + Orders mobile port
+- Session detail timeline + pre-session work list
+- Therapist detail aggregate stats
+- Cookies banner contrast fix
+- **JournalEntry.tags column add (new)**
+- **Voice-to-text composer wiring (new)**
+- **Breathe Post mood persistence (new)**
+- `getUpcomingWorkshops(n)` for HomeEngaged WorkshopTeaser
+- Motion-token extraction (Phase 1 deferral; now actionable with auth
+  + home + SOS + sessions + post-session + practice motion patterns)
