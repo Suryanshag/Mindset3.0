@@ -161,6 +161,66 @@ function RegisterPageInner() {
 
 The bug is silent on first render (only one variant is in the DOM via CSS, but **both effects run** because both are mounted in the React tree). It surfaces only at the user's eyes ("why did I land on /user when I just signed up?"). Adding `isLoading` guards to the effect helps but doesn't fix the root cause — the inactive variant's `isLoading` will always be `false` because it never submitted.
 
+### 2026-05-21 — INVARIANT — Kicker color convention (welcoming vs protective)
+
+The small uppercase kicker above the page headline encodes semantic intent through color. Two values, in opposition.
+
+**`--primary`** (teal-green `#2D5A4F`) — **default**. Used for routes about welcoming, building, or progressing the user. Every Phase 1 auth route's mobile kicker uses this:
+- /login — "WELCOME BACK"
+- /register — "ALMOST THERE" / "GOOD TO MEET YOU"
+- /forgot-password — "RESET PASSWORD"
+- /reset-password — "ALMOST THERE"
+- /verify-email-sent — "CONFIRM YOUR EMAIL"
+
+Apply by default in Phase 2-5 wherever a kicker appears.
+
+**`--accent-deep`** (terracotta `#9A3412`) — **reserved**. Used for routes about pausing, protecting, or asking the user to stop and think before continuing. The warm tone reads "be careful, slow down" rather than "you've messed up". Current and planned uses:
+- /account-locked — "ACCOUNT PAUSED"
+- Phase 6 /user/sos — SOS triage state kickers
+- Phase 6 /user/profile/delete-account — destructive-action confirmation kickers
+- Any future "high-stakes" surface where the visual semantic should be "pause"
+
+**Do not** use `--accent-deep` kickers on routine surfaces. The protective tint loses meaning if it appears on regular dashboard cards, modals, or non-destructive interactions. If a Phase 2-5 surface feels like it warrants `--accent-deep`, surface for owner discussion before adopting.
+
+### 2026-05-21 — INVARIANT — Error / warning tint semantic mapping (3 escalation levels)
+
+Three tints, three levels of severity. **Don't collapse them.** Each surface tint encodes a distinct intent and a distinct expected user response.
+
+| Tint | Color | Level | Expected response |
+|------|-------|-------|-------------------|
+| **Coral / error-coral** | `rgba(249,101,83,0.08)` bg + `#991B1B` text + `--coral` icon | **Field-level error.** Single-field rejection, inline validation, recoverable typo | Fix the one field |
+| **`--accent-tint`** | `#FBE9DD` bg + `--accent-deep` text/icon | **Block-level warning.** Whole-card warning or informational state, no immediate action required | Read the message; optional next-step CTA |
+| **`--soft-pink`** | `rgba(250,167,157,0.18)` bg + `--accent-deep` text/icon | **Page-level protective state.** Full-screen "we're pausing you for safety" | Wait, reset, or take the protective alternative path |
+
+Current uses:
+- Coral: /register validation pills, /reset-password confirm-password mismatch, all /login submit errors
+- Accent-tint: /verify-email expired/invalid/used token icons, /reset-password invalid-token state
+- Soft-pink: /account-locked card; planned for /user/sos triage state
+
+**Apply consistently in Phases 2-6.** Audit each restyle for tint use:
+- Field-level → coral
+- Block-level warning inside a working surface → `--accent-tint`
+- Page-level protective surface → `--soft-pink`
+
+If a new surface needs a 4th tint, surface for owner discussion before adding — the 3-tier mapping should cover virtually every case.
+
+### 2026-05-21 — DEFERRED — Motion / animation token extraction
+
+Animation timings are currently sprinkled ad-hoc across the 6 auth routes:
+- `ms-fade-up .6s both` — primary entrance animation
+- `ms-fade-up .6s .1s both` — secondary card entrance
+- `ms-fade-up .6s .2s both` — tertiary
+- Various `transition-opacity duration-150` for hover/tap
+
+**Don't extract to a tokens module yet.** Phase 2-4 will add new motion patterns:
+- Phase 2: mood check-in sheet open/close animations
+- Phase 3: slot picker reveal, booking confirmation transitions, doctor-list lazy-load fades
+- Phase 4: BREATHING timer pre→during→done state transitions
+
+We don't have enough data points to know canonical values. Premature extraction would lock us into auth-route timing that may not fit kinetic UI in later phases.
+
+**Action:** schedule a dedicated `refactor(motion): extract animation tokens` commit AFTER Phase 2 lands. By then we'll have ≥2 distinct kinetic surfaces (auth + check-in sheet) to draw canonical timings from. Add to the Phase 3 entry checklist as a prerequisite — Phase 3 animations should reference the extracted tokens rather than inline values.
+
 ---
 
 ## Ops notes (cross-phase)
