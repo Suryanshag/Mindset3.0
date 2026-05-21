@@ -40,7 +40,11 @@ export default async function UserDashboardLayout({
       {/* Mobile: below lg breakpoint — banner above shell */}
       <div className="lg:hidden">
         {showVerifyBanner && <VerifyEmailBanner />}
-        <MobileShell name={displayName} unreadCount={unreadCount}>
+        <MobileShell
+          name={displayName}
+          unreadCount={unreadCount}
+          userId={session.user.id}
+        >
           {children}
         </MobileShell>
       </div>

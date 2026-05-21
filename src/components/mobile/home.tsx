@@ -47,6 +47,18 @@ type PendingAssignment = {
 
 type WeekMood = { date: Date | string; mood: 1 | 2 | 3 | 4 | 5 | null }
 
+// Phase 3 — Recent SessionFollowup rows. Used by HomeEngaged's
+// "Your last 3 sessions" panel. mood + note are the user's reflection
+// captured by the post-session interstitial.
+type RecentFollowup = {
+  sessionId: string
+  doctorName: string
+  doctorPhoto: string | null
+  sessionDate: string
+  postMood: 1 | 2 | 3 | 4 | 5 | null
+  homeworkNote: string | null
+}
+
 type EngagementState = 'empty' | 'partial' | 'engaged'
 
 export type MobileHomeProps = {
@@ -57,6 +69,7 @@ export type MobileHomeProps = {
   upcomingSession: UpcomingSession
   pendingAssignments: PendingAssignment[]
   weekMoods: WeekMood[]
+  recentFollowups?: RecentFollowup[]
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -84,6 +97,7 @@ export default function MobileHome(props: MobileHomeProps) {
         <HomeEngaged
           {...shared}
           pendingAssignments={props.pendingAssignments}
+          recentFollowups={props.recentFollowups ?? []}
         />
       )}
       <MoodSheet
@@ -442,7 +456,11 @@ function HomeEngaged({
   upcomingSession,
   weekMoods,
   pendingAssignments,
-}: SharedHomeProps & { pendingAssignments: PendingAssignment[] }) {
+  recentFollowups,
+}: SharedHomeProps & {
+  pendingAssignments: PendingAssignment[]
+  recentFollowups: RecentFollowup[]
+}) {
   return (
     <div
       className="screen-scroll"
@@ -455,36 +473,52 @@ function HomeEngaged({
     >
       <MobileHeader name={name} unreadCount={unreadCount} />
 
-      <section style={{ padding: '14px 20px 0' }}>
-        <Card padding={20} bg="var(--bg-cream)" radius={22}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              fontSize: 11,
-              fontWeight: 800,
-              letterSpacing: '0.14em',
-              color: 'var(--accent)',
-              textTransform: 'uppercase',
-            }}
-          >
-            <IconLeaf size={14} sw={1.8} /> A look back
+      {recentFollowups.length > 0 ? (
+        <section style={{ padding: '14px 20px 0' }}>
+          <SectionHead
+            kicker="A look back"
+            title={`Your last ${recentFollowups.length === 1 ? 'session' : `${recentFollowups.length} sessions`}`}
+            action="All sessions"
+            onAction={() => (window.location.href = '/user/sessions?tab=past')}
+          />
+          <div style={{ display: 'grid', gap: 10 }}>
+            {recentFollowups.map((f) => (
+              <RecentFollowupRow key={f.sessionId} f={f} />
+            ))}
           </div>
-          <p
-            className="ms-serif"
-            style={{
-              fontSize: 18,
-              lineHeight: 1.55,
-              color: 'var(--text)',
-              marginTop: 10,
-              marginBottom: 0,
-            }}
-          >
-            You’ve been showing up for yourself — keep the small steps coming.
-          </p>
-        </Card>
-      </section>
+        </section>
+      ) : (
+        <section style={{ padding: '14px 20px 0' }}>
+          <Card padding={20} bg="var(--bg-cream)" radius={22}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                fontSize: 11,
+                fontWeight: 800,
+                letterSpacing: '0.14em',
+                color: 'var(--accent)',
+                textTransform: 'uppercase',
+              }}
+            >
+              <IconLeaf size={14} sw={1.8} /> A look back
+            </div>
+            <p
+              className="ms-serif"
+              style={{
+                fontSize: 18,
+                lineHeight: 1.55,
+                color: 'var(--text)',
+                marginTop: 10,
+                marginBottom: 0,
+              }}
+            >
+              You’ve been showing up for yourself — keep the small steps coming.
+            </p>
+          </Card>
+        </section>
+      )}
 
       <section style={{ padding: '24px 20px 0' }}>
         <SectionHead
@@ -1267,5 +1301,86 @@ function WorkshopTeaserCard({
         </div>
       </div>
     </div>
+  )
+}
+
+function RecentFollowupRow({ f }: { f: RecentFollowup }) {
+  const date = new Date(f.sessionDate)
+  const moodInfo = f.postMood ? MOOD_INFO[f.postMood] : null
+  return (
+    <Link
+      href={`/user/sessions/${f.sessionId}`}
+      style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 12,
+        background: 'var(--bg-card)',
+        borderRadius: 18,
+        padding: 14,
+        boxShadow: 'var(--shadow-card)',
+      }}
+    >
+      <Avatar
+        name={f.doctorName}
+        size={42}
+        color="var(--accent)"
+        src={f.doctorPhoto ?? undefined}
+      />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>
+            {f.doctorName}
+          </div>
+          {moodInfo && (
+            <span
+              style={{
+                marginLeft: 'auto',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                fontSize: 11,
+                color: moodInfo.color,
+                fontWeight: 700,
+              }}
+            >
+              <MoodFace mood={f.postMood as 1 | 2 | 3 | 4 | 5} size={16} />{' '}
+              {moodInfo.label}
+            </span>
+          )}
+        </div>
+        <div
+          style={{
+            fontSize: 11,
+            color: 'var(--text-muted)',
+            marginTop: 2,
+            letterSpacing: '0.04em',
+          }}
+        >
+          {date.toLocaleDateString('en-IN', {
+            weekday: 'short',
+            day: 'numeric',
+            month: 'short',
+          })}
+        </div>
+        {f.homeworkNote && (
+          <p
+            className="ms-serif"
+            style={{
+              fontSize: 13,
+              lineHeight: 1.5,
+              color: 'var(--text-muted)',
+              marginTop: 6,
+              marginBottom: 0,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical' as const,
+              overflow: 'hidden',
+            }}
+          >
+            {f.homeworkNote}
+          </p>
+        )}
+      </div>
+    </Link>
   )
 }

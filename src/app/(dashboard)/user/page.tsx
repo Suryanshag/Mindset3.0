@@ -18,6 +18,7 @@ import {
 import { getReflectionLandingData } from '@/lib/queries/reflection'
 import { getCurrentUserBasics } from '@/lib/queries/current-user'
 import { userHasOnboardingActivity } from '@/lib/queries/onboarding'
+import { getRecentSessionFollowups } from '@/lib/queries/post-session'
 
 export default async function UserHome({
   searchParams,
@@ -89,6 +90,13 @@ export default async function UserHome({
       : Promise.resolve([] as { date: Date; mood: 1|2|3|4|5 | null }[]),
   ])
 
+  // Phase 3 — recent SessionFollowups feed the HomeEngaged "Your last N
+  // sessions" panel. Empty array means HomeEngaged renders its fallback
+  // "A look back" copy card.
+  const recentFollowups = userId
+    ? await getRecentSessionFollowups(userId, 3).catch(() => [])
+    : []
+
   // Derive user display info from real DB row
   const userName = dbUser?.name ?? session?.user?.name ?? 'User'
 
@@ -119,6 +127,14 @@ export default async function UserHome({
           weekMoods={weekMoods.map((m) => ({
             date: m.date.toISOString(),
             mood: m.mood,
+          }))}
+          recentFollowups={recentFollowups.map((f) => ({
+            sessionId: f.sessionId,
+            doctorName: f.session.doctor.user.name,
+            doctorPhoto: f.session.doctor.photo,
+            sessionDate: f.session.date.toISOString(),
+            postMood: f.postMood as 1 | 2 | 3 | 4 | 5 | null,
+            homeworkNote: f.homeworkNote,
           }))}
         />
       </div>

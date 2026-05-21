@@ -36,7 +36,13 @@ export const proxy = auth((req) => {
     }
   }
 
-  return NextResponse.next()
+  // Forward the pathname as a request header so Server Components (most
+  // notably MobileShell's post-session-interstitial skip-list) can read
+  // the current route. Next App Router doesn't surface req.url to RSCs;
+  // header-passing through middleware is the documented pattern.
+  const requestHeaders = new Headers(req.headers)
+  requestHeaders.set('x-pathname', pathname)
+  return NextResponse.next({ request: { headers: requestHeaders } })
 })
 
 export const config = {
