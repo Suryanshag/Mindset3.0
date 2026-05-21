@@ -207,8 +207,8 @@ function MobileLoginForm() {
           className="mt-1.5"
           style={{
             fontFamily: 'var(--font-heading)',
-            fontSize: 38,
-            lineHeight: 1.0,
+            fontSize: 32,
+            lineHeight: 1.05,
             color: 'var(--text)',
           }}
         >
