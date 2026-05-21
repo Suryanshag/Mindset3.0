@@ -77,7 +77,7 @@ export default function MobileHome(props: MobileHomeProps) {
   }
 
   return (
-    <div data-mobile-fullbleed>
+    <div data-mobile-fullbleed data-no-mobile-header>
       {props.engagementState === 'empty' && <HomeEmpty {...shared} />}
       {props.engagementState === 'partial' && <HomePartial {...shared} />}
       {props.engagementState === 'engaged' && (

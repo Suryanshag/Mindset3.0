@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 export default function SosPage() {
   return (
-    <div data-mobile-fullbleed>
+    <div data-mobile-fullbleed data-no-mobile-header>
       <SosFlow />
     </div>
   )

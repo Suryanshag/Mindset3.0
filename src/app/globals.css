@@ -6718,6 +6718,15 @@ body .wp-site-blocks .block-blog-hero__shape {
     padding-top: 0;
 }
 
+/* MobileShell header opt-out — pages that render their own top chrome
+   wrap their content in <div data-no-mobile-header>. The shell's
+   `.mobile-shell-header` wrapper is hidden when the marker is present
+   anywhere later in the tree. Used by /user (home renders the header
+   inside its 3 engagement states) and /user/sos (back-button chrome). */
+.min-h-dvh:has([data-no-mobile-header]) .mobile-shell-header {
+    display: none;
+}
+
 /* Two animations the Phase 2 design uses on entrance + sub-card slides.
    Conservative motion budget: 0.35-0.6s, default delays in inline
    `animation` props. The motion-token extraction is deferred per PORT_LOG

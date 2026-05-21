@@ -4,6 +4,7 @@ import MobileShell from '@/components/dashboard/mobile-shell'
 import DesktopShell from '@/components/dashboard/desktop-shell'
 import VerifyEmailBanner from '@/components/auth/verify-email-banner'
 import { getCurrentUserBasics } from '@/lib/queries/current-user'
+import { getUnreadNotificationCount } from '@/lib/queries/dashboard'
 
 const ROLE_HOME: Record<string, string> = {
   ADMIN: '/admin',
@@ -27,15 +28,21 @@ export default async function UserDashboardLayout({
     redirect(ROLE_HOME[role] ?? '/')
   }
 
-  const user = await getCurrentUserBasics(session.user.id)
+  const [user, unreadCount] = await Promise.all([
+    getCurrentUserBasics(session.user.id),
+    getUnreadNotificationCount(session.user.id).catch(() => 0),
+  ])
   const showVerifyBanner = !user?.emailVerified
+  const displayName = user?.name ?? session.user.name ?? 'there'
 
   return (
     <>
       {/* Mobile: below lg breakpoint — banner above shell */}
       <div className="lg:hidden">
         {showVerifyBanner && <VerifyEmailBanner />}
-        <MobileShell>{children}</MobileShell>
+        <MobileShell name={displayName} unreadCount={unreadCount}>
+          {children}
+        </MobileShell>
       </div>
 
       {/* Desktop: lg and above — banner sits inside main column (handled by DesktopShell) */}

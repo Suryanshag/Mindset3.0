@@ -115,11 +115,18 @@ export default function AuthShell({
           <div className="w-full max-w-[420px]">{children}</div>
         </div>
 
-        {/* Footer link cluster + trust strip */}
+        {/* Footer link cluster + trust strip.
+            Phase 1 deferral resolved 2026-05-22 (Phase 3): Terms/Privacy
+            bumped from rgba(...,0.55) (~2.94:1 on cream — failed AA) to
+            rgba(...,0.72) (~4.6:1 on cream — passes AA normal). The
+            "Need help right now?" button moved from --coral (#F96553,
+            ~2.4:1 on cream) to --accent-deep (#9A3412, ~5.8:1) which
+            is also Phase 1's "protective surface" tone — the SOS-link
+            semantic matches. */}
         <footer className="px-5 sm:px-8 pb-6 pt-2 space-y-3">
           <div
             className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs"
-            style={{ color: 'rgba(30,68,92,0.55)' }}
+            style={{ color: 'rgba(30,68,92,0.72)' }}
           >
             <Link href="/terms-of-use" className="hover:opacity-70 transition-opacity">
               Terms
@@ -133,7 +140,7 @@ export default function AuthShell({
               type="button"
               onClick={() => setHelplineOpen(true)}
               className="font-semibold hover:opacity-70 transition-opacity"
-              style={{ color: 'var(--coral)' }}
+              style={{ color: 'var(--accent-deep)' }}
             >
               Need help right now?
             </button>
