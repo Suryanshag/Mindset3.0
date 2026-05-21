@@ -44,6 +44,7 @@ model User {
   emailVerificationTokens EmailVerificationToken[]
   studyMaterialAccesses   StudyMaterialAccess[]
   ngoRegistrations       NgoJoinRequest[]
+  sessionFollowups        SessionFollowup[]
 }
 
 enum Role {
@@ -147,10 +148,11 @@ model Session {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  user    User           @relation(fields: [userId], references: [id])
-  doctor  Doctor         @relation(fields: [doctorId], references: [id])
-  payment Payment?
-  earning DoctorEarning?
+  user     User             @relation(fields: [userId], references: [id])
+  doctor   Doctor           @relation(fields: [doctorId], references: [id])
+  payment  Payment?
+  earning  DoctorEarning?
+  followup SessionFollowup?
 }
 
 enum SessionStatus {
@@ -616,6 +618,30 @@ model MoodCheckIn {
   @@unique([userId, checkedInDate])
   @@index([userId, checkedInDate(sort: Desc)])
   @@map("mood_check_ins")
+}
+
+// Post-session follow-up row. One per Session (unique sessionId).
+// Created by the user via the post-session interstitial:
+//   step 1 → postMood + homeworkNote (the user's reflection)
+//   step 2 → rebookIntent (did they tap "book next session"?)
+// The presence of a SessionFollowup row is the signal that the
+// interstitial has been seen; pending-post-session detection uses
+// `followup: null` to find sessions still owed an interstitial.
+model SessionFollowup {
+  id           String    @id @default(cuid())
+  sessionId    String    @unique @map("session_id")
+  userId       String    @map("user_id")
+  postMood     Int?      @map("post_mood")       // 1..5, optional
+  homeworkNote String?   @db.Text @map("homework_note") // user reflection, optional
+  rebookIntent Boolean?  @map("rebook_intent")   // tapped "book next"?
+  completedAt  DateTime  @default(now()) @map("completed_at")
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionId])
+  @@map("session_followups")
 }
 
 model AssignmentResponse {
