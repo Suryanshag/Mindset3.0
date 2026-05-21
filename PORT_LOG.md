@@ -393,3 +393,73 @@ See `docs/phase-1/wrapup-device-qa.md`. The owner reports back PASS/FAIL per row
 - Email-sender pool uses `PrismaPg` adapter with a tight `max:2` pool inside scripts (vs. `max:5` in app code) to avoid eating Neon connection budget during smokes
 
 Phase 1 closure is conditional on the device-QA checklist (`wrapup-device-qa.md`) returning all-PASS or only DEFERRED-with-reason. Owner sign-off pending.
+
+---
+
+## Phase 2 — Mobile home + mood check-in sheet + SOS triage (DONE)
+
+### 2026-05-22 — DONE — Phase 2 ports
+
+**Scope:** mobile home dashboard with 3 engagement states, mood check-in bottom sheet, persistent SOS button affordance, /user/sos triage flow. Design source: `/tmp/mindset-design/app/` (zip provided 2026-05-21).
+
+**Commits in Phase 2** (oldest first):
+- `42c7a91` mobile/icons library — 37 line icons + IconPhone (new)
+- `66a186f` mobile/ui primitives — Card, Pill, Chip, Avatar, SectionHead, ImageSlot, MoodFace, MOOD_INFO, Blob, TypeChip
+- `fd1f055` design system CSS — `.ms-display`, `.ms-serif`, `.screen-scroll`, `fadeUp` / `slideIn` keyframes + `prefers-reduced-motion` opt-out. MobileShell `:has([data-mobile-fullbleed])` opt-out
+- `121f6d7` mobile/header + sos-button — date + greeting + bell + persistent SOS link
+- `f9d36ca` mobile/home — HomeEmpty / HomePartial / HomeEngaged dispatched by `getUserEngagementState`. MoodSheet bottom-sheet with `logMoodCheckIn`. New `getLastWeekMoods` helper.
+- `1cfbad1` /user/sos — three-state SosFlow (triage / support / crisis). HELPLINES SSoT consumed (4 helplines, current numbers). Real `tel:` + `https://wa.me` links.
+
+**6 commits, 3,341 insertions / 81 deletions across 13 files** (`git diff --shortstat 42c7a91^..1cfbad1`).
+
+### 2026-05-22 — INVARIANT — Per-page mobile header (not shell-injected)
+
+Phase 2 Task 2.1c specified "Wire mobile header into mobile shell". We deviated: the header is rendered by EACH page, not by `MobileShell`. Rationale:
+
+- Pages need to vary header props (show/hide bell, show/hide SOS, custom name) and Next.js layouts can't receive props from their children.
+- The design source itself renders `HomeHeader` inside each screen (home.jsx, journal.jsx, etc.) — the shell pattern would be a structural divergence from the design.
+- Per-page injection keeps prop ownership local and avoids context-API plumbing for what's effectively static-per-route configuration.
+
+**Apply in Phases 3–5:** every mobile authenticated page renders its own `<MobileHeader name={…} unreadCount={…} />` at the top. Pages that hide chrome (e.g. /user/sos, future /onboarding, splash) simply don't include the header. This convention covers Phases 3 (Therapy / Practice / Discover), 5 (Cart / Checkout), and 6 (Profile / SOS extensions).
+
+### 2026-05-22 — INVARIANT — Inline styles preserved (no Tailwind conversion)
+
+The Phase 2 ports keep the design's inline `style={{…}}` props verbatim. We do NOT convert to Tailwind utility classes. Reasons:
+
+- CSS variables (`var(--primary)`, `var(--bg-card)`, etc.) drive theming, and inline-style consumption keeps the surface composable for dynamic values (e.g., `MoodHero` switches background per active face).
+- Tailwind conversion loses the token-driven theming — `bg-primary` resolves at build time, `style={{ background: 'var(--primary)' }}` resolves at runtime against the live CSS variables.
+- Phase 1 auth restyle used the same pattern; Phase 2 follows.
+
+**Apply in Phases 3–6:** all ported design files keep inline styles. Tailwind is fine for utility wrapping (flex / grid / spacing) where no token reference is needed, but anything touching brand colors or font tokens goes inline.
+
+### 2026-05-22 — DEFERRED — Cross-route persistent SOS
+
+The SOS button is currently only on /user (rendered by `MobileHeader` which is only included on the home page). Other authenticated mobile routes (/user/sessions, /user/practice, /user/discover, /user/profile) don't render the header yet and so don't surface the SOS button.
+
+The brief required SOS to be reachable from every authenticated route. Phase 2 only ports /user, so this is partial — Phase 3 (Therapy / Practice / Discover) will add `MobileHeader` to each of those routes, making SOS reachable everywhere by the time Phase 3 ships.
+
+The bottom-nav (`src/components/dashboard/bottom-nav.tsx`) already includes 5 tabs (Home / Sessions / Practice / Discover / Profile); we did not insert SOS there because the brief said "skip if no bottom nav exists or header button is sufficient" — and header injection in upcoming phases will be sufficient.
+
+### 2026-05-22 — DEFERRED — Upcoming-workshops API + "look back" aggregate
+
+The mobile home's `WorkshopTeaser` renders 3 static example cards instead of real upcoming workshops. The existing `getNextWorkshop` only returns one workshop, not the three a teaser carousel needs. Phase 3's Discover / Workshops port will add `getUpcomingWorkshops(n: number)` and the teaser will switch to real data at that time.
+
+The HomeEngaged "A look back" cream card currently uses generic copy. The design implied a synthesised line ("It's been 5 days since your session with Dr Priya. You've written 2 entries and completed 1 exercise since.") that would need a richer post-session aggregate query. Deferred to Phase 3 alongside the post-session-checkin work.
+
+### 2026-05-22 — DEFERRED — Phase 3 entry checklist
+
+Reminders carried forward into Phase 3:
+- Apply per-page `<MobileHeader />` to /user/sessions, /user/practice, /user/discover, /user/profile (Therapy / Practice / Discover / Profile ports)
+- Add `getUpcomingWorkshops(n)` helper, wire WorkshopTeaser to it
+- Build the "A look back" post-session aggregate
+- Footer Terms/Privacy contrast fix (Phase 1 deferral still open)
+- Marketing homepage `/` Lighthouse Performance 53 (Phase 1 deferral)
+- Motion / animation token extraction (deferred at Phase 1 closure; now we have auth + home + SOS motion data points — by Phase 3's first kinetic surface this becomes actionable)
+
+### 2026-05-22 — Phase 2 closure pending owner device QA
+
+Closure is conditional on `docs/phase-2/wrapup-device-qa.md` returning PASS on:
+- Section A — empty / partial / engaged states + mood sheet persistence
+- Section B — SOS triage three-state flow + real `tel:` / `wa.me` links
+
+A3 (Engaged state with 3+ sessions / 3+ entries / 2+ assignments) is OK to defer if no activity-rich account is handy.
