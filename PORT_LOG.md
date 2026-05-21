@@ -463,3 +463,82 @@ Closure is conditional on `docs/phase-2/wrapup-device-qa.md` returning PASS on:
 - Section B — SOS triage three-state flow + real `tel:` / `wa.me` links
 
 A3 (Engaged state with 3+ sessions / 3+ entries / 2+ assignments) is OK to defer if no activity-rich account is handy.
+
+---
+
+## Phase 3 — Sessions + Booking + Session Detail + Post-Session + Header rollout (DONE)
+
+### 2026-05-22 — DONE — Phase 3 ports
+
+**Scope:** /user/sessions 3-tab mobile (Upcoming / Find / Past), therapist detail page, session detail mobile variant, post-session interstitial (NEW backend), MobileHeader rollout to every authenticated route, Phase 1 footer contrast fix.
+
+**Commits in Phase 3** (oldest first):
+- `aac046e` schema — SessionFollowup model + saveSessionFollowup action + getPendingPostSession / getRecentSessionFollowups queries
+- `e34494a` MobileHeader shell injection (data-no-mobile-header opt-out) + auth-shell footer contrast bump (0.55→0.72; coral→accent-deep on the helpline button)
+- `780e1fc` /user/sessions mobile 3-tab surface with featured Upcoming card + therapist filter chips
+- `9459e41` /user/sessions/book/[doctorId] therapist detail (no inline slot picker per kickoff)
+- `a009094` /user/sessions/[id] mobile variant reusing Phase 1 SessionJoinCta + SessionUserNotes + CancelSessionButton
+- `2ba8d6f` post-session interstitial (2-step: mood+note → rebook pick) wired through MobileShell auto-detection + HomeEngaged "Your last N sessions" feed
+
+**6 commits, ~2,593 insertions / 66 deletions across 17 files** (`git diff --shortstat aac046e^..2ba8d6f`).
+
+### 2026-05-22 — INVARIANT REVISION — MobileHeader is shell-injected (not per-page)
+
+Phase 2 declared "Per-page mobile header (not shell-injected)" as a cross-phase invariant. Phase 3 deliberately reverses that:
+
+- The brief required header visibility on 7 authenticated route trees. Per-page injection would have touched 7 page.tsx files, multiplying risk.
+- The shell-injected pattern with a `data-no-mobile-header` opt-out (CSS `:has()` against the page subtree) covers every authenticated route by default; pages that need their own header chrome (home with state-specific bell, SOS with back-button chrome) opt out explicitly.
+
+**Net effect:** the Phase 2 invariant is superseded. The current rule:
+- Default: MobileShell renders `<MobileHeader />` for every authenticated route.
+- Opt out: page wraps its content in `<div data-no-mobile-header>` and provides its own chrome.
+- Current opt-outs: `/user` (home renders its own header per engagement state), `/user/sos`, `/user/sessions/book/[doctorId]`, `/user/sessions/[id]` (all four render their own back-arrow + custom chrome).
+
+### 2026-05-22 — INVARIANT — `x-pathname` request header
+
+`src/proxy.ts` now sets `x-pathname` on every request. Server Components can read the current route via `(await headers()).get('x-pathname')`.
+
+**Why:** Next App Router doesn't expose `req.url` to RSCs by default; you have to forward via middleware. The pattern is documented in Next docs; we centralise it once in proxy so any RSC can rely on the header.
+
+**Current consumers:**
+- `MobileShell` post-session-interstitial skip-list (`/user/sos`)
+
+**Future consumers in Phases 4–6:** any RSC that needs to vary behavior per-route without prop drilling. Don't reach for `useSearchParams` server-side — read `x-pathname` instead.
+
+### 2026-05-22 — INVARIANT — SessionFollowup is the post-session record
+
+The `SessionFollowup` row is the single source of truth for "has this user completed the post-session interstitial for session X?" The pending-detection query (`getPendingPostSession`) returns the most recent ended session WITHOUT a followup row.
+
+**Apply in Phase 4+:**
+- Any new post-session surface (e.g., late-followup nudge, "rate your therapist" prompt) writes to the existing `SessionFollowup` row by upserting on `sessionId`. Don't create new "did the user see X?" tables for the post-session surface family.
+- "Ended" is computed as `date + SESSION_DURATION_MIN (60 min) < now`. There is no `Session.endsAt` column; using a constant duration aligns with `src/lib/session-window.ts`.
+
+### 2026-05-22 — DEFERRED — Session detail timeline + pre-session work list
+
+The design's session-detail screen has a rich "after this session" timeline (rendered journals + assignments + workshops attended between this session and the next) and a "before this session" pending-work list. Both need new aggregate queries (journal+assignment+workshop joined on date window keyed by session boundaries). Phase 4 candidate alongside Practice / Journal port.
+
+### 2026-05-22 — DEFERRED — Therapist detail richer stats + fuzzy search
+
+- TherapistDetail currently shows Experience + Session price. Design had Sessions delivered (420+) and Rating (4.9★) which need session-count + review-aggregate queries not present in the schema. Deferred to Phase 4 / 5 alongside review surfaces.
+- Find-tab search field is rendered but non-functional — chip filtering is sufficient for the current ~10-therapist catalog. Wire fuzzy search when catalog grows or when search-by-symptom becomes a real path.
+
+### 2026-05-22 — DEFERRED — Cookies banner contrast
+
+Lighthouse `/login` audit now flags only the cookies-banner "Read more" link (~2.34:1) and the inline teal link (~2.33:1) on cream. Phase 1 footer contrast is resolved. Cookies banner is a separate component (`src/components/cookies/*`); fix queued for the next a11y polish sprint.
+
+### 2026-05-22 — Phase 3 closure pending owner device QA
+
+`docs/phase-3/wrapup-device-qa.md` 5 sections (A through E). FAILs gate Phase 3 closure. Section B (Razorpay booking) is the lowest-risk smoke since the payment flow itself wasn't touched — confirm one booking and move on.
+
+### 2026-05-22 — DEFERRED — Phase 4 entry checklist
+
+Reminders carried forward into Phase 4:
+- Practice / Journal mobile ports (currently desktop-only on mobile)
+- Discover mobile port (workshops, NGO, library, presenters)
+- Profile mobile port
+- Notifications mobile port
+- Session detail "after this session" timeline + "before this session" work list
+- Therapist detail aggregate stats (sessions delivered, rating)
+- Cookies banner contrast fix
+- `getUpcomingWorkshops(n)` helper for HomeEngaged WorkshopTeaser (Phase 2 deferral still open)
+- Motion-token extraction (Phase 1 deferral; we now have auth + home + SOS + sessions + post-session motion patterns as data points)
