@@ -341,7 +341,7 @@ function MobileRegisterForm({ state }: { state: RegisterState }) {
                   icon={<Lock size={18} strokeWidth={1.7} />}
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="new-password"
-                  placeholder="Minimum 10 characters"
+                  placeholder="Password"
                   fieldError={form.formState.errors.password?.message}
                   trailing={
                     <button
@@ -371,7 +371,7 @@ function MobileRegisterForm({ state }: { state: RegisterState }) {
                 icon={<Lock size={18} strokeWidth={1.7} />}
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="new-password"
-                placeholder="Repeat your password"
+                placeholder="Confirm password"
                 fieldError={form.formState.errors.confirmPassword?.message}
                 {...form.register('confirmPassword')}
               />
@@ -675,7 +675,7 @@ function DesktopRegisterForm({ state }: { state: RegisterState }) {
             style={inputStyle(!!errors.password)}
             onFocus={(e) => handleFocus(e, !!errors.password)}
             onBlur={(e) => handleBlur(e, !!errors.password)}
-            placeholder="Minimum 10 characters"
+            placeholder="Password"
           />
           <PasswordStrength password={passwordValue} />
           {errors.password && (
@@ -701,7 +701,7 @@ function DesktopRegisterForm({ state }: { state: RegisterState }) {
             style={inputStyle(!!errors.confirmPassword)}
             onFocus={(e) => handleFocus(e, !!errors.confirmPassword)}
             onBlur={(e) => handleBlur(e, !!errors.confirmPassword)}
-            placeholder="Repeat your password"
+            placeholder="Confirm password"
           />
           {errors.confirmPassword && (
             <p className="mt-1.5 text-xs font-medium" style={{ color: '#F96553' }}>

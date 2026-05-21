@@ -256,7 +256,7 @@ function MobileLoginForm() {
           icon={<Lock size={18} strokeWidth={1.7} />}
           type={showPassword ? 'text' : 'password'}
           autoComplete="current-password"
-          placeholder="Enter your password"
+          placeholder="Password"
           fieldError={form.formState.errors.password?.message}
           trailing={
             <button
@@ -491,7 +491,7 @@ function DesktopLoginForm() {
             onBlur={(e) => {
               if (!errors.password) e.currentTarget.style.borderColor = 'transparent'
             }}
-            placeholder="Enter your password"
+            placeholder="Password"
           />
           {errors.password && (
             <p className="mt-1.5 text-xs font-medium" style={{ color: '#F96553' }}>

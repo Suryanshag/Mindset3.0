@@ -336,7 +336,7 @@ function MobileResetPassword(props: ResetPasswordState) {
             icon={<Lock size={18} strokeWidth={1.7} />}
             type={showPassword ? 'text' : 'password'}
             autoComplete="new-password"
-            placeholder="Minimum 10 characters"
+            placeholder="New password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             trailing={
@@ -364,7 +364,7 @@ function MobileResetPassword(props: ResetPasswordState) {
             icon={<Lock size={18} strokeWidth={1.7} />}
             type={showPassword ? 'text' : 'password'}
             autoComplete="new-password"
-            placeholder="Repeat your password"
+            placeholder="Confirm password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
@@ -541,7 +541,7 @@ function DesktopResetPassword(props: ResetPasswordState) {
           <PasswordInput
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Minimum 10 characters"
+            placeholder="New password"
             autoComplete="new-password"
             className={inputClass}
             style={{
@@ -569,7 +569,7 @@ function DesktopResetPassword(props: ResetPasswordState) {
           <PasswordInput
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Repeat your password"
+            placeholder="Confirm password"
             autoComplete="new-password"
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleReset()
