@@ -4,6 +4,7 @@ import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import PageHeader from '@/components/dashboard/page-header'
 import ProductActions from '@/components/products/product-actions'
+import MobileShopDetail from '@/components/mobile/shop-detail'
 
 export default async function ProductDetailPage({
   params,
@@ -39,8 +40,23 @@ export default async function ProductDetailPage({
     isDigital: product.isDigital,
   }
 
+  const cartCount = await prisma.cartItem
+    .aggregate({
+      where: { userId: session.user.id },
+      _sum: { quantity: true },
+    })
+    .then((r) => r._sum.quantity ?? 0)
+    .catch(() => 0)
+
   return (
-    <div>
+    <>
+      {/* Mobile — Phase 5 ported product detail. */}
+      <div className="lg:hidden">
+        <MobileShopDetail p={serialized} cartCount={cartCount} />
+      </div>
+
+      {/* Desktop — existing layout, unchanged. */}
+      <div className="hidden lg:block">
       <PageHeader title={product.name} back="/user/shop" />
 
       <div className="pt-3.5 space-y-4 lg:max-w-[680px] lg:mx-auto">
@@ -101,6 +117,7 @@ export default async function ProductDetailPage({
           </p>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }

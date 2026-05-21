@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import ShopContent from '@/components/dashboard/shop/shop-content'
+import MobileShop from '@/components/mobile/shop'
 
 export default async function ShopPage() {
   const session = await auth()
@@ -33,5 +34,17 @@ export default async function ShopPage() {
     stock: p.stock,
   }))
 
-  return <ShopContent cartCount={cartCount} products={serialized} />
+  return (
+    <>
+      {/* Mobile — Phase 5 ported catalog. */}
+      <div className="lg:hidden">
+        <MobileShop products={serialized} />
+      </div>
+
+      {/* Desktop — existing ShopContent, unchanged. */}
+      <div className="hidden lg:block">
+        <ShopContent cartCount={cartCount} products={serialized} />
+      </div>
+    </>
+  )
 }
