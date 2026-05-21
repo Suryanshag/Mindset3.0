@@ -607,3 +607,103 @@ Carried forward + new additions:
 - `getUpcomingWorkshops(n)` for HomeEngaged WorkshopTeaser
 - Motion-token extraction (Phase 1 deferral; now actionable with auth
   + home + SOS + sessions + post-session + practice motion patterns)
+
+---
+
+## Phase 5 — Discover + Workshops + Library + NGO + Shop + Cart + Checkout (DONE)
+
+### 2026-05-22 — DONE — Phase 5 ports
+
+**Scope:** mobile variants of the commerce + content cluster. Largest
+phase to date (~2,925 LOC design source).
+
+**Commits in Phase 5** (oldest first):
+- `11adbd7` Discover hub — sibling tiles + library section + NGO CTA + cart-button-only-here
+- `b3e7af0` Workshops list + detail — reuses WorkshopRegisterButton (Sprint Workshops-Paid)
+- `1e8d2ca` Library — "Continue reading" hero + owned + Free/Paid grids. LibraryReader skipped (no body field in StudyMaterial)
+- `50cf103` NGO visits — list with photo covers + Registered badges
+- `d479160` Shop catalog + product detail — reuses ProductActions
+- `8ca86b5` Cart — line items + qty stepper + sticky checkout bar. Reuses useCart unchanged
+- `e54cfee` Checkout — minimal mobile chrome (back arrow + display title) over the existing 908-LOC Razorpay flow. Payment infra UNTOUCHED
+
+**7 commits, ~3,781 insertions / 148 deletions across 17 files** (`git diff --shortstat 11adbd7^..e54cfee`).
+
+### 2026-05-22 — INVARIANT — Cart icon lives only in Discover header
+
+Per design intent + brief, the cart icon (with badge) is surfaced
+ONLY in the `/user/discover` mobile header. Other mobile routes do
+NOT show it; `/user/cart` is reached from:
+- Discover header
+- Shop catalog header + Shop detail bottom bar
+- Cart → Checkout flow only
+
+Rationale: cart is a destination, not a global header item. The
+MobileShell-rendered MobileHeader (Phase 3 invariant) does NOT
+include cart chrome anywhere; pages that need it render their own
+header (Discover) or in-content cart link (Shop).
+
+### 2026-05-22 — INVARIANT — Razorpay payment flow stays in one place
+
+The 908-LOC `/user/orders/checkout/page.tsx` Client Component is the
+single source of truth for Razorpay verify-first integration. Mobile
+got a thin chrome wrapper (back arrow + title) hidden on desktop, but
+the payment logic (create-order → verify → success/failure routing)
+is preserved verbatim.
+
+**Apply going forward:** any future mobile redesign of checkout MUST
+either (a) keep using the existing CheckoutPage as-is and add chrome,
+or (b) be paired with a dedicated Sprint Checkout-Mobile that
+refactors state management deliberately. Do NOT duplicate the
+Razorpay handler into a parallel mobile component — divergence is a
+material-incident-class risk for a payments-handling flow.
+
+### 2026-05-22 — DEFERRED to Phase 6 entry checklist
+
+**Schema-blocked deferrals:**
+
+- `JournalEntry.tags` column — Phase 4 chips still visual-only
+- `Product.category` column — Phase 5 shop chips visual-only (`Digital`
+  filter works because it uses the existing `isDigital` boolean)
+- `StudyMaterial.body`/`content` column — Phase 5 Library skipped the
+  standalone LibraryReader; users land on /user/library/[id] which
+  surfaces the `fileUrl`. Real in-app reader needs body text or PDF
+  rendering as a Phase 6 decision.
+
+**Visual port deferrals:**
+
+- Full mobile checkout redesign (per app/checkout.jsx 447 LOC) —
+  would re-implement step state + address + courier UI on top of the
+  same RazorpayCheckout primitive. Sprint Checkout-Mobile.
+- Workshop richer presenter info (bio, credentials section per design)
+  — schema has `instructorName` + `presenter.name` but no bio field
+  visible to users.
+- Therapist detail aggregate stats (sessions delivered, rating) —
+  still deferred from Phase 3.
+- Session detail "after this session" timeline + "before this session"
+  pre-session work list — still deferred from Phase 3.
+
+**Cross-phase polish:**
+
+- Cookies banner contrast fix (Phase 3 deferral)
+- Motion-token extraction (Phase 1 deferral — now actionable with
+  auth + home + SOS + sessions + post-session + practice + commerce
+  motion patterns as data points)
+
+### 2026-05-22 — Phase 5 closure pending owner device QA
+
+`docs/phase-5/wrapup-device-qa.md` 7 sections (A–G). FAILs gate Phase
+5 closure. Section G checkout is the lowest-risk smoke since the
+payment flow itself wasn't touched — verify back button + checkout
+completes through Razorpay test card and lands on /user/orders/[id].
+
+### 2026-05-22 — DEFERRED — Phase 6 entry checklist
+
+Carried forward + new for Phase 6:
+- Profile mobile port (Sprint UI candidate)
+- Notifications mobile port
+- Orders list + detail mobile
+- Schema additions decision: tags + categories + body for materials
+- Cookies banner contrast
+- Motion token extraction
+- Mobile checkout full redesign (if owner prioritizes)
+- Therapist + session aggregate stats backend
