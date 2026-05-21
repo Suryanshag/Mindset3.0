@@ -7,6 +7,7 @@ import PageHeader from '@/components/dashboard/page-header'
 import MoodFace from '@/components/dashboard/mood-face'
 import { MOODS } from '@/lib/constants/mood'
 import { formatSessionDateRelative } from '@/lib/format-date'
+import MobilePractice from '@/components/mobile/practice'
 
 export default async function PracticeHubPage() {
   const session = await auth()
@@ -72,8 +73,24 @@ export default async function PracticeHubPage() {
     pendingCount > 0 ? `${pendingCount} pending` : null,
   ].filter(Boolean).join(' · ')
 
+  // Mobile uses just the days-since count; the hub omits the recent-
+  // entries + pending-preview lists by design (those live on Home).
+  const lastEntryDays = latestEntry
+    ? Math.max(0, Math.floor((Date.now() - latestEntry.entryDate.getTime()) / 86400000))
+    : null
+
   return (
-    <div>
+    <>
+      {/* Mobile — Phase 4 ported Practice hub. */}
+      <div className="lg:hidden">
+        <MobilePractice
+          lastEntryDays={lastEntryDays}
+          pendingAssignments={pendingCount}
+        />
+      </div>
+
+      {/* Desktop — existing layout (Phase 1, unchanged). */}
+      <div className="hidden lg:block">
       <PageHeader title="Practice" subtitle="Your space between sessions" />
 
       <div className="space-y-3.5 pt-3.5">
@@ -198,6 +215,7 @@ export default async function PracticeHubPage() {
           </Link>
         </section>
       )}
-    </div>
+      </div>
+    </>
   )
 }
