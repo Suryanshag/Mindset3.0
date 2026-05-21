@@ -9,6 +9,7 @@ import TabControl from '@/components/dashboard/sessions/tab-control'
 import PageHeader from '@/components/dashboard/page-header'
 import { formatSessionDateRelative, formatSessionDate } from '@/lib/format-date'
 import { joinWindowState } from '@/lib/session-window'
+import MobileSessions from '@/components/mobile/sessions'
 
 const SESSION_DURATION_MIN = 60
 
@@ -28,21 +29,119 @@ export default async function SessionsPage({
   const userId = session.user.id
   const params = await searchParams
   const tab = (params.tab as string) ?? 'upcoming'
+  const mobileTab: 'upcoming' | 'find' | 'past' =
+    tab === 'find' || tab === 'past' ? tab : 'upcoming'
+
+  // Mobile fetches all 3 datasets up-front so the client-side tab
+  // switch is instant (no per-tab network round-trip). Desktop keeps
+  // its tab-scoped fetching since each tab is its own server component.
+  const now = new Date()
+  const [mobileUpcoming, mobilePast, mobileDoctors] = await Promise.all([
+    prisma.session.findMany({
+      where: {
+        userId,
+        date: { gte: now },
+        status: { in: ['PENDING', 'CONFIRMED'] },
+      },
+      select: {
+        id: true,
+        date: true,
+        meetLink: true,
+        status: true,
+        doctor: { select: doctorSelect },
+      },
+      orderBy: { date: 'asc' },
+    }),
+    prisma.session.findMany({
+      where: {
+        userId,
+        OR: [
+          { date: { lt: now } },
+          { status: { in: ['COMPLETED', 'CANCELLED'] } },
+        ],
+      },
+      select: {
+        id: true,
+        date: true,
+        meetLink: true,
+        status: true,
+        doctor: { select: doctorSelect },
+      },
+      orderBy: { date: 'desc' },
+      take: 20,
+    }),
+    prisma.doctor.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        photo: true,
+        designation: true,
+        type: true,
+        specialization: true,
+        experience: true,
+        sessionPrice: true,
+        user: { select: { name: true } },
+      },
+      orderBy: { createdAt: 'asc' },
+    }),
+  ])
 
   return (
-    <div>
-      <PageHeader title="Sessions" subtitle="Your appointments and notes" />
-
-      <div className="pt-3.5">
-        <Suspense>
-          <TabControl />
-        </Suspense>
-
-        {tab === 'upcoming' && <UpcomingTab userId={userId} />}
-        {tab === 'past' && <PastTab userId={userId} />}
-        {tab === 'assignments' && <AssignmentsTab userId={userId} />}
+    <>
+      {/* Mobile — ported Phase 3 sessions surface with 3 tabs. */}
+      <div className="lg:hidden">
+        <MobileSessions
+          initialTab={mobileTab}
+          upcoming={mobileUpcoming.map((s) => ({
+            id: s.id,
+            date: s.date.toISOString(),
+            status: s.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED',
+            meetLink: s.meetLink,
+            doctor: {
+              photo: s.doctor.photo,
+              designation: s.doctor.designation,
+              user: { name: s.doctor.user.name },
+            },
+          }))}
+          past={mobilePast.map((s) => ({
+            id: s.id,
+            date: s.date.toISOString(),
+            status: s.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED',
+            meetLink: s.meetLink,
+            doctor: {
+              photo: s.doctor.photo,
+              designation: s.doctor.designation,
+              user: { name: s.doctor.user.name },
+            },
+          }))}
+          doctors={mobileDoctors.map((d) => ({
+            id: d.id,
+            photo: d.photo,
+            designation: d.designation,
+            type: d.type as 'COUNSELOR' | 'PSYCHOLOGIST',
+            specialization: d.specialization,
+            experience: d.experience,
+            sessionPrice: Number(d.sessionPrice),
+            user: { name: d.user.name },
+          }))}
+        />
       </div>
-    </div>
+
+      {/* Desktop — existing layout unchanged. */}
+      <div className="hidden lg:block">
+        <PageHeader title="Sessions" subtitle="Your appointments and notes" />
+
+        <div className="pt-3.5">
+          <Suspense>
+            <TabControl />
+          </Suspense>
+
+          {tab === 'upcoming' && <UpcomingTab userId={userId} />}
+          {tab === 'past' && <PastTab userId={userId} />}
+          {tab === 'assignments' && <AssignmentsTab userId={userId} />}
+        </div>
+      </div>
+    </>
   )
 }
 
