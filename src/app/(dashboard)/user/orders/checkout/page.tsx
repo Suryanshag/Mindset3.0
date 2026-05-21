@@ -371,8 +371,51 @@ export default function CheckoutPage() {
       ]
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6 text-text">Checkout</h1>
+    <div data-mobile-fullbleed data-no-mobile-header>
+      {/* Mobile chrome — back arrow + display-style title. Hidden on
+          desktop where the existing h1 below takes over. The page's
+          underlying Tailwind layout is already responsive; payment
+          logic (Razorpay verify-first flow) is preserved unchanged. */}
+      <header
+        className="lg:hidden"
+        style={{
+          padding: '14px 20px 8px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => router.push('/user/cart')}
+          aria-label="Back to Cart"
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            background: 'var(--bg-card)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: 'var(--shadow-card)',
+            color: 'var(--text)',
+            border: 'none',
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M19 12H5" />
+            <path d="M11 18l-6-6 6-6" />
+          </svg>
+        </button>
+        <div
+          className="ms-display"
+          style={{ fontSize: 24, color: 'var(--text)' }}
+        >
+          Checkout
+        </div>
+      </header>
+
+      <h1 className="hidden lg:block text-2xl font-bold mb-6 text-text">Checkout</h1>
 
       {/* Step indicator */}
       <div className="flex items-center justify-center mb-8">
