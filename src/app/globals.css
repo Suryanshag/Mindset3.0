@@ -6679,3 +6679,67 @@ body .wp-site-blocks .block-blog-hero__shape {
     from { opacity: 0; transform: translateX(16px); }
     to   { opacity: 1; transform: translateX(0); }
 }
+
+/* ─── Phase 2 mobile design system — utility classes + animations ─────
+   Added 2026-05-21 alongside the mobile primitives port. The Phase 2
+   design (app/home.jsx, app/sos.jsx, app/ui.jsx) references these by
+   name; defining them here lets the port use the inline-style design
+   pattern without each component duplicating font/family/animation
+   declarations. */
+
+/* Headlines + display copy use Barlow Condensed, the brand display face. */
+.ms-display {
+    font-family: var(--font-display, "Barlow Condensed", "Helvetica Neue", Arial, sans-serif);
+    font-weight: 700;
+    letter-spacing: -0.005em;
+    line-height: 1.05;
+}
+
+/* Italic serif used for warm, human copy ("rest of your day", quotes). */
+.ms-serif {
+    font-family: var(--font-serif, "Source Serif 4", Georgia, "Times New Roman", serif);
+    font-style: italic;
+    font-weight: 400;
+}
+
+/* Scroll containers inside the mobile shell hide the native scrollbar
+   so the warm-cream surface isn't broken by a system chrome stripe. */
+.screen-scroll::-webkit-scrollbar { width: 0; height: 0; }
+.screen-scroll { scrollbar-width: none; }
+
+/* MobileShell fullBleed opt-out — pages that render edge-to-edge wrap
+   their content in <div data-mobile-fullbleed>. The shell's <main>
+   has class `mobile-shell-main` and via :has() removes its own
+   horizontal/top padding for that case. The bottom padding (clearance
+   for BottomNav) stays so the page never renders under the tab bar. */
+.mobile-shell-main:has([data-mobile-fullbleed]) {
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+}
+
+/* Two animations the Phase 2 design uses on entrance + sub-card slides.
+   Conservative motion budget: 0.35-0.6s, default delays in inline
+   `animation` props. The motion-token extraction is deferred per PORT_LOG
+   §"Motion / animation defaults — defer extraction" (Phase 1 closeout). */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    /* Honor the OS reduced-motion preference. The design's fade-up /
+       slide-in are decorative; users who opt out should see content
+       immediately, no motion. */
+    .ms-display, .ms-serif { /* no-op selector to anchor the cascade */ }
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+}
