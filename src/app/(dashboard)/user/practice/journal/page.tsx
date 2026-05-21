@@ -1,12 +1,30 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { getJournalEntries } from '@/lib/queries/journal'
+import {
+  getJournalEntries,
+  getJournalStreak,
+  getLastWeekJournal,
+  getPendingJournalPrompt,
+} from '@/lib/queries/journal'
 import Link from 'next/link'
 import { Plus, BookOpen } from 'lucide-react'
 import JournalFilters from '@/components/dashboard/journal/journal-filters'
 import PageHeader from '@/components/dashboard/page-header'
 import { MOODS } from '@/lib/constants/mood'
 import MoodFace from '@/components/dashboard/mood-face'
+import MobileJournalList from '@/components/mobile/journal-list'
+
+// Static rotation when the user has no pending JOURNAL_PROMPT assignment.
+// Day-of-week cycle so the prompt feels fresh but stable within a day.
+const STATIC_PROMPTS = [
+  "What's one small thing that surprised you this week?",
+  'What did your body need today that it didn’t get?',
+  "What's a thought that's been louder than the others?",
+  'What would you tell a younger you about this week?',
+  'Where did you feel most yourself today?',
+  "What's one boundary you held — or wish you had?",
+  'What deserves more attention than you’re giving it?',
+]
 
 export default async function JournalListPage({
   searchParams,
@@ -22,12 +40,28 @@ export default async function JournalListPage({
   const from = typeof params.from === 'string' ? new Date(params.from) : undefined
   const to = typeof params.to === 'string' ? new Date(params.to) : undefined
 
-  const entries = await getJournalEntries(session.user.id, {
-    search,
-    mood: mood && mood >= 1 && mood <= 5 ? mood : undefined,
-    from,
-    to,
-  })
+  // Mobile + desktop share the entry list; mobile additionally needs
+  // the calendar strip + streak + today's prompt.
+  const [entries, streak, weekJournal, pendingPrompt] = await Promise.all([
+    getJournalEntries(session.user.id, {
+      search,
+      mood: mood && mood >= 1 && mood <= 5 ? mood : undefined,
+      from,
+      to,
+    }),
+    getJournalStreak(session.user.id).catch(() => 0),
+    getLastWeekJournal(session.user.id).catch(
+      () => [] as { date: Date; mood: 1 | 2 | 3 | 4 | 5 | null }[]
+    ),
+    getPendingJournalPrompt(session.user.id).catch(() => null),
+  ])
+
+  const todayPromptText =
+    pendingPrompt?.title ??
+    STATIC_PROMPTS[new Date().getDay() % STATIC_PROMPTS.length]
+  const promptHref = pendingPrompt
+    ? `/user/practice/assignments/${pendingPrompt.id}`
+    : '/user/practice/journal/new'
 
   // Group by month
   const grouped = new Map<string, typeof entries>()
@@ -41,7 +75,28 @@ export default async function JournalListPage({
   }
 
   return (
-    <div>
+    <>
+      {/* Mobile — Phase 4 ported Journal list. */}
+      <div className="lg:hidden">
+        <MobileJournalList
+          entries={entries.map((e) => ({
+            id: e.id,
+            title: e.title,
+            body: e.body,
+            mood: (e.mood as 1 | 2 | 3 | 4 | 5 | null) ?? null,
+            entryDate: e.entryDate.toISOString(),
+          }))}
+          weekDays={weekJournal.map((w) => ({
+            date: w.date.toISOString(),
+            mood: w.mood,
+          }))}
+          streak={streak}
+          prompt={{ text: todayPromptText, href: promptHref }}
+        />
+      </div>
+
+      {/* Desktop — existing layout (Phase 1, unchanged). */}
+      <div className="hidden lg:block">
       <PageHeader
         title="Journal"
         subtitle="Private space — only you can read this"
@@ -127,6 +182,7 @@ export default async function JournalListPage({
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }
