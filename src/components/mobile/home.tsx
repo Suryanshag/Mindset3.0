@@ -342,7 +342,7 @@ function HomePartial({
             sub="3 min"
             bg="var(--soft-blue)"
             fg="var(--navy)"
-            href="/user/practice"
+            href="/user/practice/breathe"
           />
           <QuickTile
             icon={<IconPen size={20} />}
