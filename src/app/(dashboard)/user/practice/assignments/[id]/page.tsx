@@ -3,6 +3,9 @@ import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import AssignmentResponseSurface from '@/components/dashboard/assignments/assignment-response'
 import PageHeader from '@/components/dashboard/page-header'
+import MobileAssignmentDetail, {
+  type AssignmentDetailItem,
+} from '@/components/mobile/assignment-detail'
 
 export default async function AssignmentDetailPage({
   params,
@@ -29,8 +32,29 @@ export default async function AssignmentDetailPage({
   const isCompleted = assignment.status === 'COMPLETED' || assignment.status === 'SUBMITTED' || assignment.status === 'REVIEWED'
   const response = assignment.responses[0] ?? null
 
+  const mobileItem: AssignmentDetailItem = {
+    id: assignment.id,
+    type: assignment.type as AssignmentDetailItem['type'],
+    title: assignment.title,
+    description: assignment.description,
+    instructions: assignment.instructions,
+    status: assignment.status as AssignmentDetailItem['status'],
+    dueDate: assignment.dueDate?.toISOString() ?? null,
+    therapistName: assignment.doctor.user.name,
+    responseText: response?.responseText ?? null,
+    responseCompletedAt: response?.completedAt.toISOString() ?? null,
+  }
+
   return (
-    <div>
+    <>
+      {/* Mobile — Phase 4 ported assignment detail with type-specific
+          completion zone. */}
+      <div className="lg:hidden">
+        <MobileAssignmentDetail a={mobileItem} />
+      </div>
+
+      {/* Desktop — existing layout (Phase 1, unchanged). */}
+      <div className="hidden lg:block">
       <PageHeader title={assignment.title} back="/user/practice/assignments" />
 
       <div className="space-y-3.5 pt-3.5 lg:max-w-[680px] lg:mx-auto">
@@ -106,6 +130,7 @@ export default async function AssignmentDetailPage({
         />
       ) : null}
       </div>
-    </div>
+      </div>
+    </>
   )
 }

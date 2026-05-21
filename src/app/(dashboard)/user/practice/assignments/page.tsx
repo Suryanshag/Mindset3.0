@@ -5,6 +5,9 @@ import Link from 'next/link'
 import { ClipboardList, BookOpen, FileText, Wind, Wrench } from 'lucide-react'
 import AssignmentTabs from '@/components/dashboard/assignments/assignment-tabs'
 import PageHeader from '@/components/dashboard/page-header'
+import MobileAssignmentsList, {
+  type AssignmentListItem,
+} from '@/components/mobile/assignments-list'
 
 const TYPE_CONFIG: Record<string, { Icon: typeof BookOpen; color: string; bg: string }> = {
   JOURNAL_PROMPT: { Icon: BookOpen, color: 'text-primary', bg: 'bg-primary-tint' },
@@ -25,23 +28,70 @@ export default async function AssignmentsListPage({
   const params = await searchParams
   const tab = params.tab === 'completed' ? 'completed' : 'pending'
 
-  const assignments = await prisma.assignment
-    .findMany({
-      where: {
-        userId: session.user.id,
-        status: tab === 'pending' ? 'PENDING' : { in: ['COMPLETED', 'SKIPPED', 'SUBMITTED', 'REVIEWED'] },
-      },
-      include: {
-        doctor: { include: { user: { select: { name: true } } } },
-      },
-      orderBy: tab === 'pending'
-        ? [{ dueDate: 'asc' }, { createdAt: 'desc' }]
-        : [{ updatedAt: 'desc' }],
-    })
-    .catch(() => [])
+  const [assignments, mobilePending, mobileCompleted] = await Promise.all([
+    prisma.assignment
+      .findMany({
+        where: {
+          userId: session.user.id,
+          status: tab === 'pending' ? 'PENDING' : { in: ['COMPLETED', 'SKIPPED', 'SUBMITTED', 'REVIEWED'] },
+        },
+        include: {
+          doctor: { include: { user: { select: { name: true } } } },
+        },
+        orderBy: tab === 'pending'
+          ? [{ dueDate: 'asc' }, { createdAt: 'desc' }]
+          : [{ updatedAt: 'desc' }],
+      })
+      .catch(() => []),
+    // Mobile always fetches both tabs up-front for instant client tab switch.
+    prisma.assignment
+      .findMany({
+        where: { userId: session.user.id, status: 'PENDING' },
+        include: {
+          doctor: { include: { user: { select: { name: true } } } },
+        },
+        orderBy: [{ dueDate: 'asc' }, { createdAt: 'desc' }],
+      })
+      .catch(() => []),
+    prisma.assignment
+      .findMany({
+        where: {
+          userId: session.user.id,
+          status: { in: ['COMPLETED', 'SKIPPED', 'SUBMITTED', 'REVIEWED'] },
+        },
+        include: {
+          doctor: { include: { user: { select: { name: true } } } },
+        },
+        orderBy: [{ updatedAt: 'desc' }],
+        take: 50,
+      })
+      .catch(() => []),
+  ])
+
+  const toMobile = (rows: typeof mobilePending): AssignmentListItem[] =>
+    rows.map((a) => ({
+      id: a.id,
+      type: a.type as AssignmentListItem['type'],
+      title: a.title,
+      description: a.description,
+      instructions: a.instructions,
+      status: a.status as AssignmentListItem['status'],
+      dueDate: a.dueDate?.toISOString() ?? null,
+      therapistName: a.doctor.user.name,
+    }))
 
   return (
-    <div>
+    <>
+      {/* Mobile — Phase 4 ported assignments list with pill tabs. */}
+      <div className="lg:hidden">
+        <MobileAssignmentsList
+          pending={toMobile(mobilePending)}
+          completed={toMobile(mobileCompleted)}
+        />
+      </div>
+
+      {/* Desktop — existing layout (Phase 1, unchanged). */}
+      <div className="hidden lg:block">
       <PageHeader title="Assignments" back="/user/practice" />
 
       <div className="space-y-3.5 pt-3.5">
@@ -109,6 +159,7 @@ export default async function AssignmentsListPage({
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   )
 }
