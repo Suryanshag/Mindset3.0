@@ -303,3 +303,93 @@ Surfaced during the 1.4 smoke + screenshot review. Not fixed in 1.4; flagging fo
 - **Onboarding gate end-to-end with real session**: smoke step 2 sets `mindset_onboarded=1` cookie to bypass the `/user` → `/onboarding` redirect. Real first-time users hit the redirect; the gate has not been exercised end-to-end with a fresh authenticated session in 1.4.
 - **Cross-tab `mindset:password-reset-complete` signal** (verified at unit level only): exercise two tabs side-by-side to confirm the listener clears stale UI in tab B when tab A completes a reset.
 - **Email deliverability**: `[EMAIL] ✓` dev-server logs confirm the Resend `send()` returned ok, but `@mindset-test.local` won't be a delivered inbox. A 1.5 pass should send to a real mailbox and confirm the email looks correct (link works, branding, footer).
+
+---
+
+## Phase 1 — sub-phase 1.5 (DONE) + Phase 1 closure
+
+### 2026-05-21 — DONE — 1.4 cleanup commits
+
+Three small standalone commits shipped before 1.5 to resolve UX drift surfaced during the 1.4 closeout. Conventions documented as cross-phase invariants above (kicker color, error tint mapping, motion deferral).
+
+- `fc4993f` /login h1 32px (was 38px, family is 32px)
+- `00a3459` shorten verbose placeholders to fit iPhone SE behind Show toggle
+- `339f1a3` standardize utility sub-card radii — `rounded-2xl` default; `rounded-[26px]` reserved for hero cards only
+
+### 2026-05-21 — DONE — Production build PWA smoke
+
+`npm run build` clean. Manifest, service worker, offline page all serve correctly with expected headers + content. Lighthouse 13.3.0 mobile audit on `/welcome` and `/login`: Best Practices 100, Accessibility 96, Performance 72–81, SEO 66–69 (noindex auth routes always score low). See `docs/phase-1/wrapup-prod-smoke.md` for the full breakdown and `docs/phase-1/lighthouse-login.html` for the archived report.
+
+**Note on the "Lighthouse PWA score ≥ 90" target:** Lighthouse 13 removed the dedicated PWA category in v12+. PWA-style checks now live under Best Practices (100) + a separate installability probe (manually verified — manifest valid, SW serves, icons present, scope correct). The Phase 0 plan's threshold should be re-interpreted as "Best Practices + Accessibility ≥ 90 + installability passes." All three clear.
+
+### 2026-05-21 — FLAGGED for polish — Footer link contrast fails AA
+
+Lighthouse audit of `/login` flagged two contrast failures, both in the AuthShell footer (`src/components/auth/auth-shell.tsx:122`):
+
+- Terms / Privacy links use `color: rgba(30,68,92,0.55)` on cream → 2.94:1 (need 4.5:1)
+- "Need help right now?" coral button — same surface, same fail
+
+Fix is a surgical alpha bump (0.55 → ~0.72) on the muted links + a darker treatment or filled background on the coral helpline button. Not blocking Phase 1 closure; flagging for an early Phase 2 polish commit since Phase 2 starts with home dashboard chrome that shares the same shell.
+
+### 2026-05-21 — DONE — Real-mailbox email deliverability
+
+Sent the 3-email signup+reset flow to `choudharysuryansh1111+phase1smoke@gmail.com` (Gmail sub-addressed to avoid clashing with the owner's real account already in DB). Runner: `scripts/real-mailbox-smoke.mjs`. Welcome + Verification + Reset all triggered by the Resend `send()` call; DB tokens stored with expected expiries (24h / 15min). Owner verification of inbox-vs-spam and link-works pending — captured in `docs/phase-1/wrapup-device-qa.md` section E.
+
+### 2026-05-21 — OWNER-DRIVEN — Real-device QA (deferred to owner's hardware)
+
+Items the CI runner can't honestly verify, packaged as a checklist for the owner to walk through on their own hardware:
+
+- Android Chrome install + maskable icon + standalone display-mode + offline behavior + auth funnel through the installed PWA (Section A)
+- Onboarding gate end-to-end with a brand-new real session (Section B — Phase 1.3 deferral)
+- iOS Safari A2HS sheet + post-install standalone (Section C — Phase 1.2 deferral)
+- Full auth funnel from inside the installed PWA (Section D)
+
+See `docs/phase-1/wrapup-device-qa.md`. The owner reports back PASS/FAIL per row; FAILs gate Phase 1 closure.
+
+### 2026-05-21 — PHASE 1 — DONE
+
+**Scope:** mobile-responsive shell + PWA installability + handoff-design auth restyle.
+
+**Commits:** 27 in Phase 1 (`882a420^..ec07889`).
+**LOC:** 11,040 insertions / 590 deletions across 59 files (`git diff --shortstat 882a420^..ec07889`).
+
+**Routes touched / new:**
+- `/welcome`, `/splash`, `/onboarding` — Phase 1.2 mobile shell
+- `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email` — Phase 1.4 auth restyle (5 routes)
+- `/account-locked` — new route (1.4)
+- `/offline` — PWA offline shell (1.2)
+
+**New components / modules:**
+- `src/components/auth/`: `mobile-field.tsx`, `mobile-back-button.tsx`, `password-strength-bars.tsx`, `mindset-loader.tsx`, `auth-shell.tsx` (mobile-augmented)
+- `src/components/pwa/install-banner.tsx`
+- `src/lib/validations/password-policy.ts` — single-source-of-truth password policy
+- `public/sw.js` — hand-rolled service worker per Next 16 official PWA pattern
+- `public/manifest.webmanifest` + maskable + any-purpose icons (192 + 512)
+- `scripts/screenshot-*.mjs` — 5 per-route screenshot runners + 1 multi-purpose runner
+- `scripts/smoke-auth-funnel.mjs` — 6-step end-to-end funnel smoke
+- `scripts/real-mailbox-smoke.mjs` — 3-email deliverability runner
+
+**Cross-phase invariants established (apply to Phases 2-6):**
+1. Mobile form a11y baseline — 44×44 tap targets, focus-visible rings, iPhone SE 320×568 minimum viewport
+2. React-key on conditional step wrappers — prevents input-state leakage in multi-step forms
+3. Lift shared state out of mobile+desktop variants when redirects depend on derived state
+4. Kicker color convention — `--primary` default, `--accent-deep` reserved for protective/destructive surfaces
+5. Error/warning tint 3-tier semantic mapping — coral (field) / `--accent-tint` (block) / `--soft-pink` (page)
+
+**Deferred to Phase 2 entry checklist:**
+- Motion / animation token extraction (after Phase 2 lands its first kinetic surfaces)
+- Footer Terms/Privacy + helpline-button contrast fix (`auth-shell.tsx:122`)
+- Homepage Performance: 53 — bundle / hero asset optimisation
+- Prod-build auth-funnel smoke flakiness on step 4 (form-input visibility race in prod; harden if it persists)
+- Token-drift §2 `--color-text-muted` sync to design value (cosmetic, blocked on owner approval)
+
+**Deferred to Phase 6 (delete-account + SOS surfaces):**
+- First production uses of `--accent-deep` kicker beyond `/account-locked`
+- First production use of `--soft-pink` page-level tint beyond `/account-locked`
+
+**Tooling and ops:**
+- Per-route Playwright screenshot scripts honor `DEVICE='iPhone SE'` for the 320×568 SE pass
+- End-to-end smoke runs against `ARCJET_KEY=""` to let the live 5-fail lockout exercise complete; in production the per-IP 5/15min limiter remains intact
+- Email-sender pool uses `PrismaPg` adapter with a tight `max:2` pool inside scripts (vs. `max:5` in app code) to avoid eating Neon connection budget during smokes
+
+Phase 1 closure is conditional on the device-QA checklist (`wrapup-device-qa.md`) returning all-PASS or only DEFERRED-with-reason. Owner sign-off pending.
