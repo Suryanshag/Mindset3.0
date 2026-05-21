@@ -10,6 +10,7 @@ import SessionUserNotes from './session-user-notes'
 import RailPortal from '@/components/dashboard/desktop/rail-portal'
 import SessionRail from '@/components/dashboard/desktop/session-rail'
 import { formatSessionDateRelative } from '@/lib/format-date'
+import MobileSessionDetail from '@/components/mobile/session-detail'
 
 const SESSION_DURATION_MIN = 60
 
@@ -77,7 +78,30 @@ export default async function SessionDetailPage({
   const chip = STATUS_CHIP[session.status as SessionStatusKey] ?? STATUS_CHIP.PENDING
 
   return (
-    <div>
+    <>
+      {/* Mobile — Phase 3 ported session detail with tinted hero. */}
+      <div className="lg:hidden">
+        <MobileSessionDetail
+          session={{
+            id: session.id,
+            date: session.date,
+            status: session.status as SessionStatusKey,
+            meetLink: session.meetLink,
+            notes: session.notes,
+            userNotes: session.userNotes,
+            doctorId: session.doctorId,
+            doctor: {
+              photo: session.doctor.photo,
+              designation: session.doctor.designation,
+              type: session.doctor.type as 'COUNSELOR' | 'PSYCHOLOGIST',
+              user: { name: doctorName },
+            },
+          }}
+        />
+      </div>
+
+      {/* Desktop — existing layout (Phase 1, unchanged). */}
+      <div className="hidden lg:block">
       {/* Desktop right-rail: doctor card + book follow-up + cancel + related assignments */}
       <RailPortal>
         <SessionRail
@@ -191,6 +215,7 @@ export default async function SessionDetailPage({
           </Link>
         )}
       </div>
-    </div>
+      </div>
+    </>
   )
 }
