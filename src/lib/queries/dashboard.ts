@@ -143,6 +143,43 @@ export async function getUserStats(userId: string) {
 /**
  * Today's mood check-in for a user (null if not checked in today).
  */
+/**
+ * Last 7 days of MoodCheckIns for the user, oldest-first. Returns an
+ * array of 7 entries (one per day, indexed by day-offset from 6-days-
+ * ago to today). null mood = no check-in that day.
+ *
+ * Used by the Phase 2 mobile home "Your week" chart.
+ */
+export async function getLastWeekMoods(
+  userId: string
+): Promise<{ date: Date; mood: 1|2|3|4|5 | null }[]> {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const sevenDaysAgo = new Date(today)
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
+
+  const rows = await prisma.moodCheckIn.findMany({
+    where: { userId, checkedInDate: { gte: sevenDaysAgo, lte: today } },
+    select: { mood: true, checkedInDate: true },
+  })
+
+  const byDate = new Map<string, number>()
+  for (const r of rows) {
+    const key = new Date(r.checkedInDate).toISOString().slice(0, 10)
+    byDate.set(key, r.mood)
+  }
+
+  const out: { date: Date; mood: 1|2|3|4|5 | null }[] = []
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(sevenDaysAgo)
+    d.setDate(d.getDate() + i)
+    const key = d.toISOString().slice(0, 10)
+    const m = byDate.get(key)
+    out.push({ date: d, mood: (m as 1|2|3|4|5 | undefined) ?? null })
+  }
+  return out
+}
+
 export async function getTodaysMoodCheckIn(userId: string): Promise<{ mood: 1|2|3|4|5 } | null> {
   const today = new Date()
   today.setHours(0, 0, 0, 0)

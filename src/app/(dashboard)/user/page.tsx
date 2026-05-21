@@ -2,17 +2,19 @@ import { auth } from '@/lib/auth'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import Header from '@/components/dashboard/header'
-import MoodCheckIn from '@/components/dashboard/mood-check-in'
-import NextSessionCard from '@/components/dashboard/next-session-card'
-import StatsRow from '@/components/dashboard/stats-row'
-import ProfileCompletionCard from '@/components/dashboard/profile-completion-card'
-import TodaysFocus from '@/components/dashboard/todays-focus'
-import WorkshopBanner from '@/components/dashboard/workshop-banner'
 import ReflectionLanding from '@/components/dashboard/desktop/reflection-landing'
 import RailPortal from '@/components/dashboard/desktop/rail-portal'
 import HomeRail from '@/components/dashboard/desktop/home-rail'
-import { getNextWorkshop, getUnreadNotificationCount, getUpcomingSession, getTodaysMoodCheckIn, getUserStats, getUserEngagementState } from '@/lib/queries/dashboard'
+import MobileHome from '@/components/mobile/home'
+import {
+  getNextWorkshop,
+  getUnreadNotificationCount,
+  getUpcomingSession,
+  getTodaysMoodCheckIn,
+  getUserStats,
+  getUserEngagementState,
+  getLastWeekMoods,
+} from '@/lib/queries/dashboard'
 import { getReflectionLandingData } from '@/lib/queries/reflection'
 import { getCurrentUserBasics } from '@/lib/queries/current-user'
 import { userHasOnboardingActivity } from '@/lib/queries/onboarding'
@@ -46,8 +48,9 @@ export default async function UserHome({
   endOfToday.setHours(23, 59, 59, 999)
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
-  // Fetch all data in parallel — mobile + desktop
-  const [dbUser, workshop, unreadCount, pendingAssignments, upcomingSession, todaysMood, realStats, reflectionData, engagementState] = await Promise.all([
+  // Fetch all data in parallel — mobile + desktop. weekMoods is new for
+  // the Phase 2 mobile home; realStats still feeds the desktop variant.
+  const [dbUser, workshop, unreadCount, pendingAssignments, upcomingSession, todaysMood, realStats, reflectionData, engagementState, weekMoods] = await Promise.all([
     userId ? getCurrentUserBasics(userId).catch(() => null) : Promise.resolve(null),
     getNextWorkshop(userId ?? undefined).catch(() => null),
     userId ? getUnreadNotificationCount(userId).catch(() => 0) : Promise.resolve(0),
@@ -81,87 +84,46 @@ export default async function UserHome({
     userId
       ? getUserEngagementState(userId).catch(() => 'empty' as const)
       : Promise.resolve('empty' as const),
+    userId
+      ? getLastWeekMoods(userId).catch(() => [] as { date: Date; mood: 1|2|3|4|5 | null }[])
+      : Promise.resolve([] as { date: Date; mood: 1|2|3|4|5 | null }[]),
   ])
 
   // Derive user display info from real DB row
   const userName = dbUser?.name ?? session?.user?.name ?? 'User'
-  const avatarUrl = dbUser?.image ?? null
-  const avatarInitials = userName
-    .split(' ')
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
 
-  // Profile completion — computed from real User fields
-  const profileFields = [
-    dbUser?.name,
-    dbUser?.image,
-    dbUser?.phone,
-    dbUser?.dateOfBirth,
-    dbUser?.preferredLanguage,
-    dbUser?.emergencyContact,
-  ]
-  const profileDone = profileFields.filter(Boolean).length
-  const profileTotal = profileFields.length
-
-  const hasAnyStats =
-    realStats.sessionsCompleted > 0 ||
-    realStats.mindfulHours > 0 ||
-    realStats.streak > 0
-
-  // Build TodaysFocus from real assignments
-  const focusAssignment = pendingAssignments[0] ?? null
-  const focusItem = focusAssignment
-    ? {
-        id: focusAssignment.id,
-        type: 'assignment' as const,
-        title: focusAssignment.title,
-        meta:
-          focusAssignment.dueDate &&
-          focusAssignment.dueDate <= endOfToday
-            ? 'Due today'
-            : `From ${focusAssignment.doctor.user.name}`,
-        href: `/user/practice/assignments/${focusAssignment.id}`,
-      }
-    : null
-  const moreCount = Math.max(0, pendingAssignments.length - 1)
+  // Suppress the unused-var warning for the rest of the previously-used
+  // computations (workshop, realStats, etc.) — desktop still uses them
+  // via ReflectionLanding / HomeRail's internal data, and `workshop` +
+  // assignments-from-prisma are preserved for the engaged-state mobile
+  // home (pendingAssignments) and may return for desktop tweaks.
+  void workshop
+  void realStats
 
   return (
     <>
-      {/* Mobile dashboard */}
-      <div className="lg:hidden space-y-3.5">
-        <Header
+      {/* Mobile dashboard — Phase 2 ported home with 3 engagement states. */}
+      <div className="lg:hidden">
+        <MobileHome
+          engagementState={engagementState}
           name={userName}
-          avatarInitials={avatarInitials}
-          avatarUrl={avatarUrl}
-          streak={realStats.streak}
-          unreadNotifications={unreadCount}
+          unreadCount={unreadCount}
+          todaysMood={todaysMood?.mood ?? null}
+          upcomingSession={upcomingSession}
+          pendingAssignments={pendingAssignments.map((a) => ({
+            id: a.id,
+            title: a.title,
+            dueDate: a.dueDate?.toISOString() ?? null,
+            doctor: { user: { name: a.doctor.user.name } },
+          }))}
+          weekMoods={weekMoods.map((m) => ({
+            date: m.date.toISOString(),
+            mood: m.mood,
+          }))}
         />
-        <MoodCheckIn todaysCheckIn={todaysMood} />
-        <NextSessionCard session={upcomingSession} />
-        {hasAnyStats ? (
-          <StatsRow stats={realStats} />
-        ) : (
-          <ProfileCompletionCard done={profileDone} total={profileTotal} />
-        )}
-        {focusItem && (
-          <div>
-            <TodaysFocus item={focusItem} />
-            {moreCount > 0 && (
-              <a
-                href="/user/practice/assignments"
-                className="block text-[11px] text-primary font-medium mt-1.5 ml-1"
-              >
-                + {moreCount} more in your assignments
-              </a>
-            )}
-          </div>
-        )}
-        {workshop && <WorkshopBanner workshop={workshop} />}
       </div>
 
-      {/* Desktop: Reflection landing */}
+      {/* Desktop: Reflection landing (unchanged from Phase 1). */}
       <div className="hidden lg:block">
         {reflectionData ? (
           <>
