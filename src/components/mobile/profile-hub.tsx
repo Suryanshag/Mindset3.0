@@ -3,9 +3,9 @@
 // Phase 6 — Mobile Settings hub. Renders at /user/profile on mobile;
 // desktop keeps the existing two-column layout. Top section ports the
 // EditProfile design's avatar block; below are settings sub-screens
-// grouped into two cards: design rows (Notifications/Privacy/Language/
-// Help) on top, existing functional rows (Addresses/Payments/About) on
-// the bottom, then Sign out.
+// grouped into two cards: design rows (Notifications/Privacy/Help)
+// on top, existing functional rows (Addresses/Payments) on the
+// bottom, then Sign out.
 
 import Link from 'next/link'
 import { signOut } from 'next-auth/react'
@@ -15,7 +15,6 @@ import {
   IconUser,
   IconBell,
   IconShield,
-  IconCompass,
   IconChat,
   IconMapPin,
   IconShop,
@@ -162,13 +161,6 @@ export default function MobileProfileHub({
             label="Privacy & data"
             sub="Password, downloads, deletion"
             href="/user/profile/privacy"
-            trailing={<IconChevR size={16} sw={1.8} />}
-          />
-          <SettingsRow
-            icon={<IconCompass size={18} sw={1.8} />}
-            label="Language"
-            sub="English"
-            href="/user/profile/language"
             trailing={<IconChevR size={16} sw={1.8} />}
             last
           />
