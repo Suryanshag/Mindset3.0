@@ -69,7 +69,6 @@ export default function BreatheFlow() {
   const [step, setStep] = useState<Step>('pre')
   const [ex, setEx] = useState<ExerciseKey>('box')
   const [len, setLen] = useState<LengthId>('5')
-  const [audio, setAudio] = useState(true)
 
   const totalSec = LENGTHS.find((l) => l.id === len)?.s ?? 300
 
@@ -81,8 +80,6 @@ export default function BreatheFlow() {
           setEx={setEx}
           len={len}
           setLen={setLen}
-          audio={audio}
-          setAudio={setAudio}
           onBegin={() => setStep('during')}
           onBack={() => router.push('/user/practice')}
         />
@@ -109,8 +106,6 @@ function BreathePre({
   setEx,
   len,
   setLen,
-  audio,
-  setAudio,
   onBegin,
   onBack,
 }: {
@@ -118,8 +113,6 @@ function BreathePre({
   setEx: (e: ExerciseKey) => void
   len: LengthId
   setLen: (l: LengthId) => void
-  audio: boolean
-  setAudio: (v: boolean) => void
   onBegin: () => void
   onBack: () => void
 }) {
@@ -246,72 +239,6 @@ function BreathePre({
               </button>
             )
           })}
-        </div>
-      </section>
-
-      <section style={{ padding: '22px 20px 0' }}>
-        <div
-          style={{
-            background: 'rgba(255,255,255,0.55)',
-            borderRadius: 18,
-            padding: '14px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 14,
-          }}
-        >
-          <div style={{ flex: 1 }}>
-            <div
-              style={{
-                fontSize: 14,
-                fontWeight: 700,
-                color: 'var(--navy)',
-              }}
-            >
-              Audio cues
-            </div>
-            <div
-              style={{
-                fontSize: 12,
-                color: 'var(--navy)',
-                opacity: 0.7,
-                marginTop: 2,
-              }}
-            >
-              Soft chime on phase change.
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setAudio(!audio)}
-            aria-label="Toggle audio cues"
-            aria-pressed={audio}
-            style={{
-              width: 44,
-              height: 26,
-              borderRadius: 999,
-              background: audio
-                ? 'var(--navy)'
-                : 'rgba(30,68,92,0.20)',
-              position: 'relative',
-              transition: 'background .2s',
-              border: 'none',
-            }}
-          >
-            <span
-              style={{
-                position: 'absolute',
-                top: 3,
-                left: audio ? 21 : 3,
-                width: 20,
-                height: 20,
-                borderRadius: '50%',
-                background: '#fff',
-                transition: 'left .2s',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.20)',
-              }}
-            />
-          </button>
         </div>
       </section>
 
