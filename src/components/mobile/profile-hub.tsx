@@ -88,20 +88,6 @@ export default function MobileProfileHub({
         >
           {user.email}
         </div>
-        <Link
-          href="/user/profile/personal"
-          style={{
-            marginTop: 14,
-            padding: '8px 18px',
-            borderRadius: 999,
-            background: 'var(--primary)',
-            color: 'var(--on-dark)',
-            fontSize: 13,
-            fontWeight: 700,
-          }}
-        >
-          Edit profile
-        </Link>
       </section>
 
       {/* Therapist card — keeps the existing dashboard feature */}
