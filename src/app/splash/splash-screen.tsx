@@ -97,8 +97,10 @@ export default function SplashScreen({ targetUrl }: SplashScreenProps) {
         }}
       />
 
-      {/* Brand mark + wordmark + tagline. mark spins slowly behind the
-          animated scale-in. */}
+      {/* Brand mark + wordmark + tagline. Logo stays still per
+          Mobile-Polish-1; the outer scale-in is the only motion on the
+          mark itself. The float blobs + progress hairline give the
+          surface motion without the user-reported rotating-icon issue. */}
       <div
         style={{
           animation: 'ms-mark-in 1.1s cubic-bezier(.2,.8,.2,1) both',
@@ -107,20 +109,18 @@ export default function SplashScreen({ targetUrl }: SplashScreenProps) {
           alignItems: 'center',
         }}
       >
-        <div style={{ animation: 'ms-mark-spin 14s linear infinite' }}>
-          <Image
-            src="/icons/icon-192.png"
-            alt=""
-            width={92}
-            height={92}
-            priority
-            aria-hidden="true"
-            style={{
-              borderRadius: 28,
-              filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.18))',
-            }}
-          />
-        </div>
+        <Image
+          src="/icons/icon-192.png"
+          alt=""
+          width={92}
+          height={92}
+          priority
+          aria-hidden="true"
+          style={{
+            borderRadius: 28,
+            filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.18))',
+          }}
+        />
         <div
           className="mt-5"
           style={{
