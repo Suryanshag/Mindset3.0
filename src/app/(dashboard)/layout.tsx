@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
+import NavigationLoader from '@/components/navigation-loader'
 
 export default async function DashboardLayout({
   children,
@@ -12,5 +13,10 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
-  return <>{children}</>
+  return (
+    <>
+      <NavigationLoader />
+      {children}
+    </>
+  )
 }
