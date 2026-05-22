@@ -835,3 +835,103 @@ Carried forward:
 - Therapist + session aggregate stats backend
 - Real-data Notifications backend (current is visual-only)
 - i18n implementation (Language screen is visual-only)
+
+## Phase 7 — Notifications port + auth recovery audit (DONE)
+
+### 2026-05-22 — DONE — Phase 7 ports
+
+**Scope:** Mobile-styled Notifications screen with optimistic mark-all-read;
+audit + token polish on auth recovery surfaces.
+
+**Commits in Phase 7** (oldest first):
+- `f441ef9` Mobile notifications + optimistic mark-all-read (7.1)
+- `dd74a76` Account-locked soft-pink token polish + entity escapes (7.2d)
+
+**Phase 7.2a / 7.2b / 7.2c — no commits, intentionally.**
+
+The Phase 7 brief described /forgot-password, /reset-password, and
+/verify-email as "basic mobile-responsive" screens needing a "richer
+2-stage flow port." When audited against `/tmp/mindset-design/app/auth-
+recovery.jsx`, the existing implementations (shipped during Sprint
+Auth-Revamp + sub-phase 1.4) were already at parity AND richer than the
+design:
+
+- `/forgot-password` has the design's input → sent two-stage flow + 60s
+  cooldown + design microcopy ("What's your email?", "We sent a link to
+  {email}"), AND additionally: cross-tab `completedElsewhere` detection
+  + amber 15-minute expiry warning.
+- `/reset-password` has the design's `_strength()` 4-level meter via
+  `PasswordStrengthBars` + "Passwords match" / "Don't match yet"
+  indicator + Show/Hide toggle, AND additionally: full
+  token-status state machine (invalid / expired / used / valid).
+- `/verify-email-sent` has the design's 60s cooldown + "Wrong email?
+  Edit" link, AND additionally: a sign-out-then-route-to-/register flow
+  for the edit path (more honest than the design's plain hash).
+
+Converting Tailwind utility classes to pure inline-style was rejected
+as cosmetic churn that would regress working code. Recorded with owner
+2026-05-22.
+
+### 2026-05-22 — INVARIANT — Sprint H2 auto-mark-on-load coexists with mobile optimistic UI
+
+The server page `/user/notifications` continues to:
+1. snapshot notifications WITHOUT mutation
+2. compute `hasUnread = notifications.some(n => !n.readAt)`
+3. THEN `updateMany` to mark all unread as read
+4. `revalidatePath('/user')` so the spine bell badge clears
+
+The mobile component receives both `notifications` (pre-mutation) and
+`hasUnreadOnLoad` (the boolean from step 2). It renders unread visuals
+on the snapshot, NOT on a fresh read — so a user opening the page sees
+"green dots" exactly once and then they disappear on next mount.
+
+The "Mark all read" button stays useful for the new-notifications-while-
+on-page scenario: hit a row from another tab/source, refresh, the new
+unread shows, tap "Mark all read" → optimistic local flip + server
+call. Pattern: optimistic UI mutates `items` state first; `startTransition`
+fires the server action with no await; UI is already coherent before
+the round-trip completes.
+
+**Apply going forward:** if any future mobile screen reads notifications
+from a different cache path, ALSO pass the pre-mutation `hasUnread` so
+the button stays visible after Sprint H2's auto-mark.
+
+### 2026-05-22 — INVARIANT — Auth recovery is Sprint Auth-Revamp's domain
+
+`/forgot-password`, `/reset-password`, `/verify-email`, and
+`/account-locked` are owned by `src/lib/auth.ts`, `src/lib/actions/
+auth.ts`, `src/lib/auth-events.ts`, `src/components/auth/*`, and
+`src/lib/validations/password-policy.ts` — all delivered in Sprint
+Auth-Revamp + sub-phase 1.4.
+
+**Apply going forward:** future visual changes to these surfaces should
+be `style={}` overrides on the existing Tailwind structure, OR token
+swaps (per 7.2d's color-mix change). Do NOT rewrite the Mobile/Desktop
+split or the `useResetPasswordState()` / `useForgotPasswordState()`
+hooks unless a real bug is being fixed.
+
+### 2026-05-22 — DEFERRED to Phase 8 entry checklist
+
+Carried forward + new for Phase 8 (TWA / Android wrapper):
+- Deletion executor cron (Phase 6 deferral)
+- Orders list + detail mobile (Phase 5/6 deferral)
+- Real-data Notifications backend (push notifications wired to
+  Notification rows + service worker push API). Phase 7 ships
+  visual only; push is a Phase 8+ post-launch sprint.
+- In-app real-time notification updates (no WebSocket / SSE in
+  Phase 7 per brief; revisit when Notifications real-data lands)
+- Schema additions decision: tags + categories + body for materials
+- Cookies banner contrast
+- Motion token extraction
+- Mobile checkout full redesign (if owner prioritizes)
+- Therapist + session aggregate stats backend
+- i18n implementation (Language screen is visual-only)
+
+**Phase 8 entry items (new):**
+- Bubblewrap CLI setup for TWA Android wrapper
+- `public/.well-known/assetlinks.json` for Digital Asset Links
+- Play Console listing + AAB upload pipeline
+- Service worker push subscription registration (paired with the
+  Notifications real-data backend)
+- App icon adaptive layers (foreground + background per Android
+  design guidelines)
