@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import NotificationList from '@/components/dashboard/notification-list'
+import MobileNotifications from '@/components/mobile/notifications'
 
 export default async function NotificationsPage() {
   const session = await auth()
@@ -36,18 +37,27 @@ export default async function NotificationsPage() {
     revalidatePath('/user/notifications')
   }
 
+  const serialized = notifications.map((n) => ({
+    id: n.id,
+    kind: n.kind,
+    title: n.title,
+    body: n.body,
+    link: n.link,
+    createdAt: n.createdAt.toISOString(),
+    readAt: n.readAt?.toISOString() ?? null,
+  }))
+
   return (
-    <NotificationList
-      notifications={notifications.map((n) => ({
-        id: n.id,
-        kind: n.kind,
-        title: n.title,
-        body: n.body,
-        link: n.link,
-        createdAt: n.createdAt.toISOString(),
-        readAt: n.readAt?.toISOString() ?? null,
-      }))}
-      hasUnread={hasUnread}
-    />
+    <>
+      <div className="lg:hidden">
+        <MobileNotifications
+          notifications={serialized}
+          hasUnreadOnLoad={hasUnread}
+        />
+      </div>
+      <div className="hidden lg:block">
+        <NotificationList notifications={serialized} hasUnread={hasUnread} />
+      </div>
+    </>
   )
 }
