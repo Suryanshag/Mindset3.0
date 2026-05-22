@@ -10,7 +10,7 @@ import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { IconArrowLeft, IconCalendar } from './icons'
-import { Avatar } from './ui'
+import AvatarUpload from '@/components/dashboard/avatar-upload'
 
 type ProfileData = {
   name: string
@@ -19,6 +19,7 @@ type ProfileData = {
   dateOfBirth: string
   preferredLanguage: string
   emergencyContact: string
+  image: string | null
 }
 
 export default function MobileEditProfile() {
@@ -35,6 +36,7 @@ export default function MobileEditProfile() {
     dateOfBirth: '',
     preferredLanguage: '',
     emergencyContact: '',
+    image: null,
   })
 
   useEffect(() => {
@@ -54,6 +56,7 @@ export default function MobileEditProfile() {
               : '',
             preferredLanguage: u.preferredLanguage ?? '',
             emergencyContact: u.emergencyContact ?? '',
+            image: u.image ?? null,
           })
         }
       })
@@ -179,7 +182,25 @@ export default function MobileEditProfile() {
               alignItems: 'center',
             }}
           >
-            <Avatar name={form.name || 'User'} size={92} color="var(--accent)" />
+            {/* Mobile-Polish-1 T7: restored avatar upload (regression from
+                Phase 6 mobile port). Reuses the desktop AvatarUpload
+                component verbatim — same uploadAvatar server action +
+                Cloudinary backend + client-side compression. The OS
+                file picker on mobile surfaces Camera + Gallery options;
+                we don't add `capture="user"` because some Android
+                versions then force-camera and remove the gallery path. */}
+            <AvatarUpload
+              currentUrl={form.image}
+              initials={
+                (form.name || 'U')
+                  .split(' ')
+                  .map((w) => w[0])
+                  .join('')
+                  .toUpperCase()
+                  .slice(0, 2)
+              }
+              size={92}
+            />
           </section>
 
           <section style={{ padding: '20px 20px 0' }}>
