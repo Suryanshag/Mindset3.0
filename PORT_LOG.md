@@ -707,3 +707,131 @@ Carried forward + new for Phase 6:
 - Motion token extraction
 - Mobile checkout full redesign (if owner prioritizes)
 - Therapist + session aggregate stats backend
+
+## Phase 6 — Profile + Settings + Account Delete (DONE)
+
+### 2026-05-22 — DONE — Phase 6 ports
+
+**Scope:** mobile variants of Settings hub + 4 sub-screens + EditProfile
++ Account-delete 4-step flow. Backend: AccountDeletion model, 30-day
+grace deletion with login-cancels semantics, DPDP-compliant data export.
+
+**New schema (additive only):**
+- `User.deletionRequestedAt DateTime?` — set when grace window starts,
+  cleared on next successful login.
+- `model AccountDeletion` — audit row, intentionally NO foreign key to
+  User so the trail survives hard-deletion. Captures reason, free text,
+  IP, UA, scheduledFor (now+30d). `kind` enum: REQUESTED / CANCELLED /
+  EXECUTED.
+
+**New backend (src/lib/actions/account.ts):**
+- `requestAccountDeletion` — server action, idempotent within the
+  grace window; writes both the audit row and the User flag in one
+  `$transaction`.
+- `cancelDeletionOnLogin` — fired (fire-and-forget) from both NextAuth
+  Credentials authorize() success path AND `events.signIn` (Google).
+  Clears the flag and writes a CANCELLED audit row.
+- `signOutAfterDeletionRequest` — used by Step 4 of the delete flow to
+  log the user out so the grace window starts cleanly.
+- `requestDataExport` — DPDP-compliant data export: profile + content
+  (journal/mood/notes) + transactional history (sessions/payments/
+  orders/registrations). Excludes password hash, auth events, security
+  counters, account-deletion audit rows (sensitive operational records),
+  and engagement telemetry.
+- `getDeletionStatus` — read-only helper for future UI surfacing.
+
+**New mobile screens** (all preserve desktop via `lg:hidden` / `hidden lg:block`):
+- `src/components/mobile/profile-hub.tsx` — `/user/profile` settings hub
+- `src/components/mobile/edit-profile.tsx` — `/user/profile/personal`
+  with Sprint Bug 3 sticky-phone behavior preserved
+- `src/components/mobile/settings-shell.tsx` — reusable SettingsShell +
+  SettingsRow primitives
+- `src/components/mobile/settings-notifications.tsx` — visual only with
+  "coming soon" banner
+- `src/components/mobile/settings-privacy.tsx` — overview card + Change
+  password + Download my data + Delete my account
+- `src/components/mobile/settings-language.tsx` — 6 language options
+  visually selectable (no i18n persistence)
+- `src/components/mobile/settings-help.tsx` — FAQ accordion + Chat
+  (mailto) + WhatsApp community. NO "Call our team" row (no staffed
+  support line per owner 2026-05-22).
+- `src/components/mobile/account-delete.tsx` — 4-step flow
+
+**Routes added/wired:**
+- `/user/profile/privacy` (new)
+- `/user/profile/language` (new)
+- `/user/profile/delete` (new, mobile-only, desktop shows informational
+  placeholder)
+- existing `/user/profile`, `/user/profile/personal`, `/user/profile/
+  notifications`, `/user/profile/help` updated with `lg:hidden` split
+
+**Owner decisions confirmed 2026-05-22:**
+
+1. *Retention claims on DelStep1 + Privacy screen*: omit specifics, link
+   to /privacy. The design's "RCI 3 years, tax law, audit 1 year" copy
+   was NOT shipped — legal hasn't signed off on those numbers.
+2. *Account-delete Step 4 copy*: 30-day grace + cancel-by-logging-back-in
+   (per brief) + `hello@mindset.org.in` as backup channel (hybrid).
+   Design's "within 7 days + 24h email cancel" copy was NOT shipped.
+3. *Help screen Call row*: omitted. No staffed support phone yet.
+
+### 2026-05-22 — INVARIANT — Account-deletion audit row outlives the user
+
+The `AccountDeletion` table has NO foreign-key relation to `User`. This
+is intentional: when the eventual deletion job removes a user, the
+DPDP-required record of (a) the user's deletion consent, (b) the
+processing window, and (c) any cancellation has to remain. The model
+stores `userEmail` at request time so the row is still identifiable
+after the user row is gone.
+
+**Apply going forward:** do NOT add a `user User?` relation field with
+`onDelete: SetNull` to AccountDeletion — that creates a needless join
+path AND would lose the row entirely on hard-delete. Read history by
+`userId` string match.
+
+### 2026-05-22 — INVARIANT — Deletion is cancelled by next successful login
+
+Cancellation has TWO entry points, both fire-and-forget:
+- Credentials path: `src/lib/auth.ts` authorize() success branch
+- Google path: `src/lib/auth.ts` events.signIn
+
+Both call `cancelDeletionOnLogin(userId, email)`. The semantics: as long
+as you can prove you still control the account (by logging in), the
+grace window resets to "not requested." There is no email-cancel
+channel implemented as code — only as a fallback documented in Step 4
+copy that resolves to the support inbox.
+
+**Apply going forward:** do NOT add a UI "Cancel deletion" button that
+runs without re-auth. Login IS the consent gate. If a future product
+need requires in-session cancel, add re-auth + an explicit
+`AccountDeletion` row with kind=CANCELLED.
+
+### 2026-05-22 — DEFERRED — Deletion executor job + admin tooling
+
+The 30-day grace window starts but no scheduled job yet executes the
+deletion at `scheduledFor`. Phase 6 ships the consent + audit layer
+only. Until the executor lands, requested-deletion users keep using the
+product normally (their next login cancels), and accounts with
+expired-but-unexecuted `deletionRequestedAt` remain accessible.
+
+**Required for production runway:**
+- Daily cron/Vercel-cron that finds `User.deletionRequestedAt` rows
+  where `scheduledFor < now`, hard-deletes the user, and writes an
+  `AccountDeletion { kind: EXECUTED }` audit row.
+- Admin UI to list pending deletions + manual override
+- Email notification at T-7d and T-1d reminding the user they can still
+  cancel by logging in
+- Update `docs/operations.md` with the operational runbook
+
+### 2026-05-22 — DEFERRED to Phase 7 entry checklist
+
+Carried forward:
+- Deletion executor cron (above)
+- Orders list + detail mobile
+- Schema additions decision: tags + categories + body for materials
+- Cookies banner contrast
+- Motion token extraction
+- Mobile checkout full redesign (if owner prioritizes)
+- Therapist + session aggregate stats backend
+- Real-data Notifications backend (current is visual-only)
+- i18n implementation (Language screen is visual-only)

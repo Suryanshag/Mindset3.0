@@ -146,3 +146,68 @@ attempt, e.g.:
 [EMAIL] ✓ session-booking-confirmation sent to c***@gmail.com
 [EMAIL] ✗ doctor-new-booking failed for d***@mindset.org.in: <error>
 ```
+
+## Account deletion (post-2026-05-22 — Phase 6)
+
+DPDP-aligned: users can request account deletion from
+`/user/profile/delete`. A 30-day grace window starts immediately; the
+window resets if the user logs in again before `scheduledFor`.
+
+**Tables involved**
+- `User.deletionRequestedAt` — set on request, cleared on cancel.
+- `account_deletions` — audit table. No FK to User; row outlives
+  hard-deletion of the user. Row kinds: REQUESTED / CANCELLED /
+  EXECUTED.
+
+**What's automated today**
+- Request flow + audit write — see `src/lib/actions/account.ts`
+  (`requestAccountDeletion`).
+- Cancel-on-login — fires from both Credentials authorize() success
+  and Google `events.signIn` in `src/lib/auth.ts`. Logs a CANCELLED
+  row with the current request IP/UA.
+- Data export (`requestDataExport`) — wired to the Privacy screen.
+  Returns a `mindset-export-YYYY-MM-DD.json` blob containing profile +
+  journal entries + mood check-ins + sessions + payments + assignments
+  + workshop registrations + orders + addresses + NGO + study material
+  + cart. Excluded: password hash, auth events, security counters,
+  account-deletion audit rows.
+
+**What's NOT automated yet (operational gaps)**
+1. **Executor job**: nothing yet hard-deletes the User row at
+   `scheduledFor`. A daily cron is needed (see PORT_LOG Phase 6
+   "Deletion executor job + admin tooling" deferral). Until that lands,
+   expired pending deletions remain accessible — the user can still
+   "cancel" indefinitely by logging in.
+2. **Reminder emails**: no T-7d / T-1d reminder yet.
+3. **Admin dashboard**: query directly against Postgres:
+   ```sql
+   -- pending deletions, soonest first
+   SELECT id, email, "deletion_requested_at"
+   FROM "User"
+   WHERE "deletion_requested_at" IS NOT NULL
+   ORDER BY "deletion_requested_at" ASC;
+
+   -- audit trail for a user (by id string, NOT FK)
+   SELECT kind, reason, "scheduled_for", "created_at"
+   FROM account_deletions
+   WHERE "user_id" = '<USER_ID>'
+   ORDER BY "created_at" DESC;
+   ```
+
+**Manual cancellation request via email**
+If a user emails `hello@mindset.org.in` instead of logging in:
+1. Verify identity from the email's `From` address against the User
+   row.
+2. Update via Prisma Studio (or direct SQL): clear
+   `User.deletionRequestedAt`, insert one `account_deletions` row with
+   `kind = 'CANCELLED'`, `reason = 'support-channel cancel'`.
+3. Reply confirming the cancellation.
+
+**Manual execution before the grace window expires**
+Only if the user explicitly requests immediate deletion (waiving the
+grace period). Document the waiver in the support email thread, then:
+1. Insert one `account_deletions { kind: 'EXECUTED', reason:
+   'user-requested-immediate', user_email: <email>, user_id: <id> }`.
+2. Hard-delete the User row. Cascade rules on related tables (sessions,
+   cart, journal, etc.) handle the rest; rows like SessionFollowup that
+   use `onDelete: Cascade` go with the user automatically.
