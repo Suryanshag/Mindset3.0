@@ -76,7 +76,7 @@ function MobileLocked({ isUnlocked, display }: ChildProps) {
             color: 'var(--text)',
           }}
         >
-          We've paused this<br />account for safety.
+          We&rsquo;ve paused this<br />account for safety.
         </h1>
         <p
           className="mt-2.5 text-sm leading-relaxed"
@@ -93,7 +93,7 @@ function MobileLocked({ isUnlocked, display }: ChildProps) {
       <div
         className="mt-7 rounded-[26px] p-5 flex flex-col items-center"
         style={{
-          background: 'rgba(250, 167, 157, 0.18)',
+          background: 'color-mix(in srgb, var(--soft-pink) 35%, transparent)',
           animation: 'ms-fade-up .6s .1s both',
         }}
       >
@@ -184,7 +184,7 @@ function DesktopLocked({ isUnlocked, display }: ChildProps) {
     <div>
       <div
         className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
-        style={{ background: 'rgba(250, 167, 157, 0.18)' }}
+        style={{ background: 'color-mix(in srgb, var(--soft-pink) 35%, transparent)' }}
         aria-hidden="true"
       >
         {isUnlocked ? (
@@ -197,7 +197,7 @@ function DesktopLocked({ isUnlocked, display }: ChildProps) {
         className="text-2xl sm:text-3xl font-bold mb-2"
         style={{ color: 'var(--navy)', fontFamily: 'var(--font-heading)' }}
       >
-        We've paused this account for safety
+        We&rsquo;ve paused this account for safety
       </h2>
       <p className="text-sm mb-2" style={{ color: 'rgba(30,68,92,0.6)' }}>
         Too many sign-in attempts. Try again in 15 minutes, or reset your password now.
@@ -205,7 +205,7 @@ function DesktopLocked({ isUnlocked, display }: ChildProps) {
 
       <div
         className="mt-3 mb-6 inline-flex items-baseline gap-2 px-4 py-2 rounded-xl"
-        style={{ background: 'rgba(250, 167, 157, 0.12)' }}
+        style={{ background: 'color-mix(in srgb, var(--soft-pink) 22%, transparent)' }}
         aria-live="polite"
         aria-label={isUnlocked ? 'Account unlocked' : `Time remaining: ${display}`}
       >
