@@ -291,6 +291,28 @@ export default function MobileWorkshopDetail({
         </p>
       </section>
 
+      {/* Poster — reuses coverImageUrl per Mobile-Polish-1 T4. The
+          hero up top renders the same asset at 55% opacity behind a
+          tint; this section renders it again at full opacity as a
+          standalone "card" beneath the description so users who only
+          scan can see the workshop's promotional artwork clearly. */}
+      {w.coverImageUrl && (
+        <section style={{ padding: '20px 20px 0' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={w.coverImageUrl}
+            alt={`${w.title} poster`}
+            style={{
+              width: '100%',
+              height: 'auto',
+              borderRadius: 18,
+              boxShadow: 'var(--shadow-card)',
+              display: 'block',
+            }}
+          />
+        </section>
+      )}
+
       {/* Meet link card — registered + joinable */}
       {isRegistered && joinable && w.meetLink && (
         <section style={{ padding: '20px 20px 0' }}>
