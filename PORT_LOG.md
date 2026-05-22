@@ -935,3 +935,83 @@ Carried forward + new for Phase 8 (TWA / Android wrapper):
   Notifications real-data backend)
 - App icon adaptive layers (foreground + background per Android
   design guidelines)
+
+## Sprint Mobile-Polish-1 (DONE)
+
+### 2026-05-22 — DONE — 9 user-reported issues + 1 bonus
+
+**Scope:** Surface polish from Suryansh's real-device Android testing
+of the Phase 1-7 mobile PWA. No new schema, no new dependencies (the
+avatar upload restore reuses the existing endpoint).
+
+**Commits in order** (oldest first):
+- `dc99541` T1 — remove logo rotation on PWA cold launch
+- `88d1217` T2 — daily-rotating reflection quote on home (30-quote pool)
+- `6ee9ad3` T3 — remove non-functional Breathe audio toggle
+- `9ddd704` T4 — workshop detail renders coverImageUrl as poster
+- `02f52ad` T5 — library detail single Read CTA on mobile + no Download
+- `7a07b57` T6 — dedupe profile Edit CTAs on mobile
+- `a639592` T7 — restore avatar upload regression on mobile EditProfile
+- `e267df6` T8 — remove Language tab entirely (route + component + row)
+- `dcb8dd3` T9a — hide reCAPTCHA v3 badge globally
+- `124881b` T10 — minimal top-bar route-transition loader (bonus)
+
+**13 files changed, 195 insertions / 234 deletions** across the sprint
+(`git diff --shortstat de8d4dd..HEAD`). Net negative LOC because T3
+deletion + T8 file removals outweighed T2 + T10 additions.
+
+### 2026-05-22 — DECISIONS — Owner-confirmed during Mobile-Polish-1
+
+1. **Workshop poster** (T4): reuse existing `coverImageUrl` instead of
+   adding a new `posterUrl` schema field. The same asset doubles as
+   tinted hero AND full-bleed poster below "What you'll get." If a
+   future design needs separate hero + portrait poster assets, the
+   schema field gets added then.
+2. **reCAPTCHA disclosure** (T9b): deferred. No marketing `/terms` or
+   `/privacy` pages exist yet — `/privacy-policy` and `/cookies` are
+   the only legal-adjacent surfaces today. T9a (hiding the badge) ships
+   alone; T9b ships when the marketing legal pages do.
+3. **Language tab** (T8): REMOVED, not hidden. Multi-language is not on
+   the soft-launch roadmap and the visual-only "coming soon" surface
+   was confusing users. Re-introduce only when i18n actually ships.
+
+### 2026-05-22 — INVARIANT — Splash logo stays static
+
+Removed the `ms-mark-spin 14s linear infinite` wrapper from
+`src/app/splash/splash-screen.tsx` and dropped the now-unused
+`@keyframes ms-mark-spin` from globals.css. The outer `ms-mark-in`
+scale-in still provides entry motion; the float blobs + progress
+hairline give the surface life without the user-reported drift.
+
+**Apply going forward:** the brand mark on splash / PWA cold launch /
+TWA splash MUST stay still. Motion is for the entry transition only.
+If a future surface needs a "loading" affordance on the icon, use a
+ring/halo around the static mark rather than rotating the mark itself.
+
+### 2026-05-22 — INVARIANT — Avatar upload uses the shared component
+
+The mobile EditProfile screen reuses `src/components/dashboard/avatar-
+upload.tsx` verbatim. Same `uploadAvatar` server action, same
+Cloudinary backend, same browser-image-compression pipeline. The
+`accept="image/*"` attribute (no `capture="user"`) gives the user
+both Camera and Gallery options via the OS file picker.
+
+**Apply going forward:** do NOT create a parallel mobile-only avatar
+upload component. If mobile needs a camera-only flow for a specific
+surface (e.g. a verification selfie), add a `capture` prop to the
+shared component rather than forking it.
+
+### 2026-05-22 — DEFERRED to Phase 8 entry checklist
+
+Carried forward + new from Mobile-Polish-1:
+- reCAPTCHA disclosure (T9b) — needs marketing `/terms` and `/privacy`
+  pages
+- Bonus: TWA's native Android splash icon should ALSO not rotate;
+  verify Bubblewrap config when wrapping (default Bubblewrap splash
+  doesn't rotate, but worth a manual check)
+- Existing Phase 8 carry-forwards unchanged: TWA setup, Bubblewrap
+  CLI, assetlinks.json, push subscription, real-data Notifications
+  backend, deletion executor cron (Phase 6 deferral), Orders mobile,
+  schema decisions (tags / categories / materials body), cookies
+  banner contrast, motion token extraction, mobile checkout full
+  redesign, therapist + session aggregate stats.
