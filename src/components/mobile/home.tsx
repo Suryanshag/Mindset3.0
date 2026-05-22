@@ -26,6 +26,7 @@ import {
 } from './icons'
 import MobileHeader from './header'
 import MoodSheet from './mood-sheet'
+import { getDailyQuote } from '@/lib/daily-quote'
 
 // Shape from getUpcomingSession() in src/lib/queries/dashboard.ts.
 // Inlined so this client component doesn't import the Prisma type and
@@ -1127,6 +1128,7 @@ function MoodWeek({ weekMoods }: { weekMoods: WeekMood[] }) {
 }
 
 function ReflectionOfDay() {
+  const quote = getDailyQuote()
   return (
     <Card padding={20} bg="var(--bg-cream)" radius={22}>
       <div
@@ -1153,8 +1155,17 @@ function ReflectionOfDay() {
           marginBottom: 0,
         }}
       >
-        “You don’t have to see the whole staircase. Just take the first step.”
+        &ldquo;{quote.text}&rdquo;
       </p>
+      <div
+        style={{
+          fontSize: 12,
+          color: 'var(--text-muted)',
+          marginTop: 6,
+        }}
+      >
+        &mdash; {quote.author}
+      </div>
       <Link
         href="/user/practice/journal/new"
         style={{
