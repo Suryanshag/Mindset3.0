@@ -22,6 +22,10 @@ model User {
   failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
   lockedUntil         DateTime? @map("locked_until")
   lastLoginAt         DateTime? @map("last_login_at")
+  // Set when the user requests account deletion. Triggers the 30-day
+  // grace window — a successful login any time before scheduledFor
+  // clears this field and writes an AccountDeletion cancellation row.
+  deletionRequestedAt DateTime? @map("deletion_requested_at")
   createdAt          DateTime   @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -704,4 +708,32 @@ model EmailVerificationToken {
   @@index([token])
   @@index([userId])
   @@map("email_verification_tokens")
+}
+
+// Audit log of account deletion events. Intentionally has NO foreign-key
+// relation to User — when the deletion job removes the user row, the audit
+// trail must survive (DPDP-required record of consent + processing).
+// userId is stored as a plain string; userEmail is captured at request time
+// so we still have a usable identifier after hard-delete.
+model AccountDeletion {
+  id            String                @id @default(cuid())
+  userId        String                @map("user_id")
+  userEmail     String                @map("user_email")
+  kind          AccountDeletionKind   @default(REQUESTED)
+  reason        String?               @db.Text
+  freeText      String?               @db.Text @map("free_text")
+  ip            String?
+  userAgent     String?               @map("user_agent")
+  scheduledFor  DateTime?             @map("scheduled_for")
+  createdAt     DateTime              @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([kind, scheduledFor])
+  @@map("account_deletions")
+}
+
+enum AccountDeletionKind {
+  REQUESTED
+  CANCELLED
+  EXECUTED
 }

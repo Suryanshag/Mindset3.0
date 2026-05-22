@@ -7,6 +7,7 @@ import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import type { Role } from '@prisma/client'
 import { logAuthEvent } from '@/lib/auth-events'
+import { cancelDeletionOnLogin } from '@/lib/actions/account'
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -131,6 +132,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           .catch((err) => console.error('[AUTH_POST_LOGIN_UPDATE_FAILED]', err))
         logAuthEvent({ userId: user.id, kind: 'LOGIN_SUCCESS' })
           .catch((err) => console.error('[AUTH_EVENT_LOG_FAILED]', err))
+        // Account-deletion cancellation: a successful login during the
+        // 30-day grace period cancels the pending deletion. Fire-and-forget
+        // so it doesn't gate the auth response.
+        cancelDeletionOnLogin(user.id, user.email)
+          .catch((err) => console.error('[ACCOUNT_DELETION_CANCEL_FAILED]', err))
 
         return {
           id: user.id,
@@ -212,6 +218,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         console.error('[AUTH] signIn lastLoginAt update failed', err)
       }
       await logAuthEvent({ userId: user.id, kind: 'LOGIN_GOOGLE_SUCCESS' })
+      // Account-deletion cancellation on Google sign-in. user.email is
+      // present on Google success (NextAuth populates it from the OAuth
+      // profile); fall back to a lookup if needed.
+      if (user.email) {
+        cancelDeletionOnLogin(user.id, user.email)
+          .catch((err) => console.error('[ACCOUNT_DELETION_CANCEL_FAILED]', err))
+      }
     },
   },
 })
