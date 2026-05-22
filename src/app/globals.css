@@ -6748,3 +6748,13 @@ body .wp-site-blocks .block-blog-hero__shape {
         transition-duration: 0.001ms !important;
     }
 }
+
+/* Mobile-Polish-1 T9a: hide Google reCAPTCHA v3 badge. The badge has
+   `position: fixed; visibility: visible` set via inline styles by the
+   reCAPTCHA script, so `!important` is required to win the specificity
+   battle. Google's TOS still requires that we disclose reCAPTCHA usage
+   on /terms and /privacy when hidden — T9b is tracked in PORT_LOG and
+   ships when the marketing legal pages do. */
+.grecaptcha-badge {
+    visibility: hidden !important;
+}
