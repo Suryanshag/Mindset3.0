@@ -14,6 +14,7 @@ import {
 import AvatarUpload from '@/components/dashboard/avatar-upload'
 import SignOutButton from '@/components/dashboard/sign-out-button'
 import PageHeader from '@/components/dashboard/page-header'
+import MobileProfileHub from '@/components/mobile/profile-hub'
 
 const settingsItems = [
   { label: 'Personal info', href: '/user/profile/personal', Icon: UserCircle },
@@ -74,7 +75,30 @@ export default async function ProfilePage() {
     : null
 
   return (
-    <div>
+    <>
+      {/* Mobile — Phase 6 ported settings hub */}
+      <div className="lg:hidden">
+        <MobileProfileHub
+          user={{
+            name: user.name,
+            email: user.email,
+            image: user.image,
+          }}
+          therapist={
+            therapist
+              ? {
+                  name: therapist.name,
+                  specialty: therapist.specialty,
+                  photo: therapist.photo,
+                  doctorId: therapist.doctorId,
+                }
+              : null
+          }
+        />
+      </div>
+
+      {/* Desktop — preserved from Phase 1 */}
+      <div className="hidden lg:block">
       <PageHeader title="Profile" subtitle="Account and settings" />
 
       <div className="space-y-5 pt-3.5">
@@ -156,6 +180,7 @@ export default async function ProfilePage() {
       {/* Sign out */}
       <SignOutButton />
       </div>
-    </div>
+      </div>
+    </>
   )
 }

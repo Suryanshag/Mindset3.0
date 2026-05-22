@@ -1,6 +1,7 @@
 import { Mail, MessageCircle, AlertTriangle, ChevronRight } from 'lucide-react'
 import PageHeader from '@/components/dashboard/page-header'
 import { SUPPORT_EMAIL, WHATSAPP_GROUP_URL } from '@/lib/constants/contact'
+import MobileSettingsHelp from '@/components/mobile/settings-help'
 
 const items = [
   {
@@ -31,7 +32,11 @@ const items = [
 
 export default function HelpPage() {
   return (
-    <div>
+    <>
+      <div className="lg:hidden">
+        <MobileSettingsHelp />
+      </div>
+      <div className="hidden lg:block">
       <PageHeader title="Help & support" back="/user/profile" />
 
       <div className="pt-5">
@@ -64,6 +69,7 @@ export default function HelpPage() {
           ))}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }

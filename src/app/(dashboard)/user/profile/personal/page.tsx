@@ -4,6 +4,7 @@ import { useState, useEffect, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import PageHeader from '@/components/dashboard/page-header'
 import { Loader2 } from 'lucide-react'
+import MobileEditProfile from '@/components/mobile/edit-profile'
 
 interface ProfileData {
   name: string
@@ -100,19 +101,28 @@ export default function PersonalInfoPage() {
 
   if (loading) {
     return (
-      <div>
-        <PageHeader title="Personal info" back="/user/profile" />
-        <div className="space-y-3.5 pt-5">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-[72px] rounded-2xl bg-bg-card animate-pulse" />
-          ))}
+      <>
+        <div className="lg:hidden">
+          <MobileEditProfile />
         </div>
-      </div>
+        <div className="hidden lg:block">
+          <PageHeader title="Personal info" back="/user/profile" />
+          <div className="space-y-3.5 pt-5">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-[72px] rounded-2xl bg-bg-card animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </>
     )
   }
 
   return (
-    <div>
+    <>
+      <div className="lg:hidden">
+        <MobileEditProfile />
+      </div>
+      <div className="hidden lg:block">
       <PageHeader title="Personal info" back="/user/profile" />
 
       <div className="space-y-3.5 pt-5">
@@ -173,7 +183,8 @@ export default function PersonalInfoPage() {
           {saving ? <Loader2 size={18} className="animate-spin" /> : 'Save changes'}
         </button>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
 

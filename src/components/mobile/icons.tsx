@@ -331,3 +331,23 @@ export const IconPhone = (p: LeafIconProps) => (
     <path d="M5 4h3l1.5 4-2 1.5a12 12 0 0 0 6 6l1.5-2 4 1.5V18a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z" />
   </Icon>
 )
+
+// Phase 6 — settings screens.
+export const IconChat = (p: LeafIconProps) => (
+  <Icon {...p}>
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z" />
+  </Icon>
+)
+
+export const IconDownload = (p: LeafIconProps) => (
+  <Icon {...p}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+  </Icon>
+)
+
+export const IconMail = (p: LeafIconProps) => (
+  <Icon {...p}>
+    <path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
+    <path d="m22 6-10 7L2 6" />
+  </Icon>
+)
