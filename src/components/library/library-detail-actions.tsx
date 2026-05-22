@@ -99,12 +99,15 @@ export default function LibraryDetailActions({ materialId, title, price, isOwned
   }
 
   const readUrl = `/api/user/ebooks/${materialId}/serve`
-  const downloadUrl = `/api/user/ebooks/${materialId}/serve?download=1`
 
   if (isOwned || isFree) {
     return (
       <>
-        <div className="space-y-2">
+        {/* Desktop inline Read button. Mobile-Polish-1 T5: hidden on
+            mobile to dedupe against the sticky-bottom CTA below. The
+            Download button (which used to live here) is gone entirely
+            per product decision — library is in-app reading only. */}
+        <div className="hidden lg:block">
           <a
             href={readUrl}
             target="_blank"
@@ -113,12 +116,6 @@ export default function LibraryDetailActions({ materialId, title, price, isOwned
             style={{ background: 'var(--color-primary)' }}
           >
             Read →
-          </a>
-          <a
-            href={downloadUrl}
-            className="block text-center text-[13px] font-medium text-primary py-2"
-          >
-            Download
           </a>
         </div>
 
