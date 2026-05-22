@@ -6671,6 +6671,13 @@ body .wp-site-blocks .block-blog-hero__shape {
     50%  { transform: translateX(0%); }
     100% { transform: translateX(220%); }
 }
+/* Mobile-Polish-1 T10: route-transition top-bar pulse. Used by
+   src/app/(dashboard)/loading.tsx. Wider sweep + ease-in-out so the
+   indicator reads as "still working" rather than "done." */
+@keyframes ms-route-loader {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
 @keyframes ms-slide-in {
     from { opacity: 0; transform: translateX(16px); }
     to   { opacity: 1; transform: translateX(0); }
