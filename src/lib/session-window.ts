@@ -6,7 +6,7 @@
  * over the end of the call.
  *
  * Session statuses (from prisma SessionStatus enum):
- *   PENDING | CONFIRMED | COMPLETED | CANCELLED
+ *   PENDING | CONFIRMED | COMPLETED | CANCELLED | NO_SHOW
  *
  * Only CONFIRMED can present a Join link — PENDING means payment hasn't
  * landed yet, so the Meet link is not yet provisioned.
@@ -30,6 +30,7 @@ export function joinWindowState(
   status: string
 ): JoinWindowState {
   if (status === 'CANCELLED') return 'cancelled'
+  if (status === 'NO_SHOW') return 'ended'
 
   const start = (startsAt instanceof Date ? startsAt : new Date(startsAt)).getTime()
   const end = start + durationMin * 60 * 1000

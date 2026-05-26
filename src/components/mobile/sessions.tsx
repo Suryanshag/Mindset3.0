@@ -25,7 +25,7 @@ import {
 type SessionItem = {
   id: string
   date: string // ISO
-  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
+  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW'
   meetLink: string | null
   doctor: {
     photo: string | null
@@ -65,6 +65,7 @@ const FIFTEEN_MIN_MS = 15 * 60 * 1000
 // also recompute here for live "Join in 3h" countdown labels).
 function joinState(dateIso: string, status: string): 'cancelled' | 'open' | 'too_early' | 'ended' {
   if (status === 'CANCELLED') return 'cancelled'
+  if (status === 'NO_SHOW') return 'ended'
   const start = new Date(dateIso).getTime()
   const end = start + SESSION_DURATION_MIN * 60 * 1000
   const now = Date.now()
@@ -705,7 +706,9 @@ function PastTab({ sessions }: { sessions: SessionItem[] }) {
               >
                 {s.status === 'CANCELLED'
                   ? 'Cancelled'
-                  : s.doctor.designation}
+                  : s.status === 'NO_SHOW'
+                    ? 'Marked no-show'
+                    : s.doctor.designation}
               </div>
             </div>
             <div

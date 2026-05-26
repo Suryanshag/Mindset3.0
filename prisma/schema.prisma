@@ -106,6 +106,9 @@ model Doctor {
   bio            String     @db.Text
   sessionPrice   Decimal    @db.Decimal(10, 2)
   isActive       Boolean    @default(true)
+  panNumber      String?    @map("pan_number")
+  upiId          String?    @map("upi_id")
+  payoutFullName String?    @map("payout_full_name")
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 
@@ -114,6 +117,23 @@ model Doctor {
   assignments Assignment[]
   slots       AvailableSlot[]
   earnings    DoctorEarning[]
+  leaves      DoctorLeave[]
+  payouts     Payout[]
+}
+
+model DoctorLeave {
+  id        String   @id @default(cuid())
+  doctorId  String   @map("doctor_id")
+  startDate DateTime @map("start_date") @db.Date
+  endDate   DateTime @map("end_date") @db.Date
+  reason    String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt       @map("updated_at")
+
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([doctorId, startDate, endDate])
+  @@map("doctor_leaves")
 }
 
 enum DoctorType {
@@ -164,6 +184,7 @@ enum SessionStatus {
   CONFIRMED
   COMPLETED
   CANCELLED
+  NO_SHOW
 }
 
 enum PaymentStatus {
@@ -501,19 +522,45 @@ model DoctorEarning {
   doctorAmount   Decimal       @db.Decimal(10, 2)
   platformAmount Decimal       @db.Decimal(10, 2)
   status         EarningStatus @default(PENDING)
+  payoutId       String?       @map("payout_id")
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
   doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  payout  Payout? @relation(fields: [payoutId], references: [id], onDelete: SetNull)
 
   @@index([doctorId])
+  @@index([payoutId])
 }
 
 enum EarningStatus {
   PENDING
   PAID
+}
+
+model Payout {
+  id              String        @id @default(cuid())
+  doctorId        String        @map("doctor_id")
+  amount          Decimal       @db.Decimal(10, 2)
+  method          PayoutMethod  @default(UPI)
+  transactionRef  String?       @map("transaction_ref")
+  note            String?       @db.Text
+  paidAt          DateTime      @default(now()) @map("paid_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  doctor   Doctor          @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  earnings DoctorEarning[]
+
+  @@index([doctorId, paidAt(sort: Desc)])
+  @@map("payouts")
+}
+
+enum PayoutMethod {
+  UPI
+  BANK_TRANSFER
+  OTHER
 }
 
 model PasswordResetToken {
@@ -567,6 +614,11 @@ enum NotificationKind {
   SYSTEM
   ASSIGNMENT_NEW
   ASSIGNMENT_COMPLETED
+  // ── doctor-facing kinds ──
+  SESSION_BOOKED
+  SESSION_CANCELLED_BY_USER
+  ASSIGNMENT_SUBMITTED
+  EARNING_PAID
 }
 
 model JournalEntry {

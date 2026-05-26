@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import {
-  Loader2, ChevronLeft, ChevronRight,
-  Calendar, Zap, X, Check
+  Loader2, ChevronLeft, ChevronRight, ChevronDown,
+  Calendar, Zap, X, Check, Plane, AlertCircle,
 } from 'lucide-react'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import SlotAIAgent from '@/components/dashboard/doctor/slot-ai-agent'
 import {
   format,
@@ -20,6 +21,28 @@ interface Slot {
   id: string
   date: string
   isBooked: boolean
+}
+
+interface Leave {
+  id: string
+  startDate: string
+  endDate: string
+  reason: string | null
+  createdAt: string
+}
+
+const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+function isDateOnLeave(d: Date, leaves: Leave[]): boolean {
+  const dayStart = new Date(d)
+  dayStart.setHours(0, 0, 0, 0)
+  return leaves.some((l) => {
+    const ls = new Date(l.startDate)
+    ls.setHours(0, 0, 0, 0)
+    const le = new Date(l.endDate)
+    le.setHours(23, 59, 59, 999)
+    return dayStart >= ls && dayStart <= le
+  })
 }
 
 // All possible hours in a day (7am to 9pm)
@@ -53,8 +76,30 @@ export default function DoctorSlotsPage() {
   const [bulkEndDate, setBulkEndDate] = useState('')
   const [bulkStartHour, setBulkStartHour] = useState(9)
   const [bulkEndHour, setBulkEndHour] = useState(17)
-  const [bulkSkipSunday, setBulkSkipSunday] = useState(true)
+  const [bulkMode, setBulkMode] = useState<'uniform' | 'per-day'>('uniform')
+  const [bulkDays, setBulkDays] = useState<Record<number, boolean>>({
+    0: false, 1: true, 2: true, 3: true, 4: true, 5: true, 6: true,
+  })
+  const [perDayHours, setPerDayHours] = useState<Record<number, { start: number; end: number }>>({
+    0: { start: 10, end: 17 },
+    1: { start: 10, end: 17 },
+    2: { start: 10, end: 17 },
+    3: { start: 10, end: 17 },
+    4: { start: 10, end: 17 },
+    5: { start: 10, end: 17 },
+    6: { start: 12, end: 16 },
+  })
   const [isBulkAdding, setIsBulkAdding] = useState(false)
+
+  // Leave / Time Off state
+  const [leaves, setLeaves] = useState<Leave[]>([])
+  const [showLeavePanel, setShowLeavePanel] = useState(false)
+  const [leaveStart, setLeaveStart] = useState('')
+  const [leaveEnd, setLeaveEnd] = useState('')
+  const [leaveReason, setLeaveReason] = useState('')
+  const [isAddingLeave, setIsAddingLeave] = useState(false)
+  const [leaveError, setLeaveError] = useState('')
+  const [bookedWarning, setBookedWarning] = useState(0)
 
   const showSuccess = (msg: string) => {
     setSuccess(msg)
@@ -75,6 +120,59 @@ export default function DoctorSlotsPage() {
   }
 
   useEffect(() => { fetchSlots() }, [])
+
+  useEffect(() => {
+    fetch('/api/doctor/leaves')
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setLeaves(d.data) })
+      .catch(() => {})
+  }, [])
+
+  async function handleAddLeave() {
+    setLeaveError('')
+    setBookedWarning(0)
+    setIsAddingLeave(true)
+    try {
+      const res = await fetch('/api/doctor/leaves', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          startDate: leaveStart,
+          endDate: leaveEnd,
+          reason: leaveReason || undefined,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setLeaves((prev) => [data.data.leave, ...prev])
+        if (data.data.bookedSessionsInRange > 0) {
+          setBookedWarning(data.data.bookedSessionsInRange)
+        }
+        setLeaveStart('')
+        setLeaveEnd('')
+        setLeaveReason('')
+      } else {
+        setLeaveError(data.error || 'Failed to add leave')
+      }
+    } catch {
+      setLeaveError('Failed to add leave')
+    } finally {
+      setIsAddingLeave(false)
+    }
+  }
+
+  async function handleDeleteLeave(id: string) {
+    if (!window.confirm('Cancel this leave period? Your slots in this range will reappear for booking.')) return
+    try {
+      const res = await fetch(`/api/doctor/leaves/${id}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (data.success) {
+        setLeaves((prev) => prev.filter((l) => l.id !== id))
+      }
+    } catch {
+      // Silent — non-critical, user can retry.
+    }
+  }
 
   // Group slots by date
   const slotsByDate = useMemo(() => {
@@ -179,8 +277,12 @@ export default function DoctorSlotsPage() {
       setError('Please select start and end dates')
       return
     }
-    if (bulkStartHour > bulkEndHour) {
+    if (bulkMode === 'uniform' && bulkStartHour > bulkEndHour) {
       setError('Start time must be before end time')
+      return
+    }
+    if (!Object.values(bulkDays).some(Boolean)) {
+      setError('Pick at least one working day')
       return
     }
 
@@ -191,19 +293,27 @@ export default function DoctorSlotsPage() {
       const start = new Date(bulkStartDate)
       const end = new Date(bulkEndDate)
       const dates: string[] = []
+      let skippedForLeave = 0
 
       const current = new Date(start)
       while (current <= end) {
-        // Skip Sundays if enabled
-        if (!(bulkSkipSunday && current.getDay() === 0)) {
-          // Skip past dates
-          if (!isPast(current) || isToday(current)) {
-            for (let h = bulkStartHour; h <= bulkEndHour; h++) {
-              const d = new Date(current)
-              d.setHours(h, 0, 0, 0)
-              // Skip past hours on today
-              if (!isBefore(d, new Date())) {
-                dates.push(d.toISOString())
+        const weekday = current.getDay()
+
+        if (bulkDays[weekday]) {
+          if (isDateOnLeave(current, leaves)) {
+            skippedForLeave++
+          } else {
+            const hours = bulkMode === 'per-day'
+              ? perDayHours[weekday]
+              : { start: bulkStartHour, end: bulkEndHour }
+
+            if (hours.start <= hours.end && (!isPast(current) || isToday(current))) {
+              for (let h = hours.start; h <= hours.end; h++) {
+                const d = new Date(current)
+                d.setHours(h, 0, 0, 0)
+                if (!isBefore(d, new Date())) {
+                  dates.push(d.toISOString())
+                }
               }
             }
           }
@@ -212,7 +322,11 @@ export default function DoctorSlotsPage() {
       }
 
       if (dates.length === 0) {
-        setError('No valid future slots in selected range')
+        setError(
+          skippedForLeave > 0
+            ? `No slots created — all matching days are within an active leave period`
+            : 'No valid future slots in selected range'
+        )
         setIsBulkAdding(false)
         return
       }
@@ -230,7 +344,9 @@ export default function DoctorSlotsPage() {
 
       await fetchSlots(false)
       setShowBulk(false)
-      showSuccess(`Added ${dates.length} slots`)
+      showSuccess(
+        `Added ${dates.length} slots${skippedForLeave > 0 ? ` (${skippedForLeave} day${skippedForLeave === 1 ? '' : 's'} skipped — on leave)` : ''}`
+      )
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Bulk add failed'
       setError(message)
@@ -274,7 +390,8 @@ export default function DoctorSlotsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <SlotAIAgent onSlotsChanged={() => fetchSlots(false)} />
+          {/* AI agent hidden — free model was unreliable. Restore when migrating to paid model. */}
+          {/* <SlotAIAgent onSlotsChanged={() => fetchSlots(false)} /> */}
           <button
             onClick={() => setShowBulk(prev => !prev)}
             className="flex items-center gap-2 px-4 py-2.5 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors font-medium text-sm"
@@ -298,6 +415,113 @@ export default function DoctorSlotsPage() {
           <p className="text-green-700 text-sm font-medium">{success}</p>
         </div>
       )}
+
+      {/* Leave / Time Off Section */}
+      <div className="mb-6 bg-white rounded-xl border border-gray-100 shadow-sm">
+        <button
+          onClick={() => setShowLeavePanel(prev => !prev)}
+          className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <Plane className="w-5 h-5" style={{ color: 'var(--coral)' }} />
+            <div className="text-left">
+              <h2 className="font-semibold text-gray-900">Time Off</h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {leaves.length === 0
+                  ? 'No upcoming leave periods'
+                  : `${leaves.filter(l => new Date(l.endDate) >= new Date()).length} upcoming leave period(s)`}
+              </p>
+            </div>
+          </div>
+          <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showLeavePanel ? 'rotate-180' : ''}`} />
+        </button>
+
+        {showLeavePanel && (
+          <div className="border-t border-gray-100 p-5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+              <input
+                type="date"
+                value={leaveStart}
+                onChange={(e) => setLeaveStart(e.target.value)}
+                min={format(new Date(), 'yyyy-MM-dd')}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              />
+              <input
+                type="date"
+                value={leaveEnd}
+                onChange={(e) => setLeaveEnd(e.target.value)}
+                min={leaveStart || format(new Date(), 'yyyy-MM-dd')}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              />
+              <button
+                onClick={handleAddLeave}
+                disabled={!leaveStart || !leaveEnd || isAddingLeave}
+                className="px-4 py-2 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                style={{ background: 'var(--coral)' }}
+              >
+                {isAddingLeave ? 'Adding...' : 'Add Leave'}
+              </button>
+            </div>
+
+            <input
+              type="text"
+              value={leaveReason}
+              onChange={(e) => setLeaveReason(e.target.value)}
+              placeholder="Reason (optional, e.g. vacation, conference)"
+              maxLength={500}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-4"
+            />
+
+            {leaveError && (
+              <p className="text-sm text-red-600 mb-3">{leaveError}</p>
+            )}
+
+            {bookedWarning > 0 && (
+              <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-amber-800">
+                  You have {bookedWarning} booked session(s) in this range. They are NOT auto-cancelled. Please reach out to those patients and cancel manually via Calendar.
+                </p>
+              </div>
+            )}
+
+            {leaves.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Current &amp; Upcoming</p>
+                {leaves.map((l) => {
+                  const past = new Date(l.endDate) < new Date()
+                  return (
+                    <div
+                      key={l.id}
+                      className={`flex items-center justify-between p-3 rounded-lg bg-gray-50 ${past ? 'opacity-60' : ''}`}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900">
+                          {format(new Date(l.startDate), 'MMM d, yyyy')}
+                          {' → '}
+                          {format(new Date(l.endDate), 'MMM d, yyyy')}
+                        </p>
+                        {l.reason && (
+                          <p className="text-xs text-gray-500 truncate mt-0.5">{l.reason}</p>
+                        )}
+                      </div>
+                      {!past && (
+                        <button
+                          onClick={() => handleDeleteLeave(l.id)}
+                          className="ml-3 p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+                          title="Cancel this leave"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Bulk Add Panel */}
       {showBulk && (
@@ -340,64 +564,131 @@ export default function DoctorSlotsPage() {
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                From Time
-              </label>
-              <select
-                value={bulkStartHour}
-                onChange={e => setBulkStartHour(Number(e.target.value))}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-teal-500 outline-none cursor-pointer"
-              >
-                {ALL_HOURS.map(h => (
-                  <option key={h} value={h}>
-                    {formatHour(h)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                To Time
-              </label>
-              <select
-                value={bulkEndHour}
-                onChange={e => setBulkEndHour(Number(e.target.value))}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-teal-500 outline-none cursor-pointer"
-              >
-                {ALL_HOURS.map(h => (
-                  <option key={h} value={h}>
-                    {formatHour(h)}
-                  </option>
-                ))}
-              </select>
+          </div>
+
+          {/* Mode selector */}
+          <div className="flex gap-2 mb-4">
+            <button
+              type="button"
+              onClick={() => setBulkMode('uniform')}
+              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                bulkMode === 'uniform' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-700'
+              }`}
+            >
+              Same hours every day
+            </button>
+            <button
+              type="button"
+              onClick={() => setBulkMode('per-day')}
+              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                bulkMode === 'per-day' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-700'
+              }`}
+            >
+              Different hours per weekday
+            </button>
+          </div>
+
+          {/* Weekday checkboxes */}
+          <div className="mb-4">
+            <p className="text-sm font-medium text-gray-700 mb-2">Working days</p>
+            <div className="flex flex-wrap gap-2">
+              {WEEKDAY_LABELS.map((label, idx) => {
+                const active = bulkDays[idx]
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setBulkDays(prev => ({ ...prev, [idx]: !prev[idx] }))}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      active ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-500'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
-          {/* Skip Sunday toggle */}
-          <button
-            type="button"
-            onClick={() => setBulkSkipSunday(prev => !prev)}
-            className="flex items-center gap-3 mb-5 p-3 bg-gray-50 rounded-xl border border-gray-200 w-full hover:bg-gray-100 transition-colors"
-          >
-            <div className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${bulkSkipSunday ? 'bg-teal-600' : 'bg-gray-300'}`}>
-              <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${bulkSkipSunday ? 'translate-x-5' : 'translate-x-0'}`} />
+          {/* Uniform-mode hours */}
+          {bulkMode === 'uniform' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  From Time
+                </label>
+                <select
+                  value={bulkStartHour}
+                  onChange={e => setBulkStartHour(Number(e.target.value))}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-teal-500 outline-none cursor-pointer"
+                >
+                  {ALL_HOURS.map(h => (
+                    <option key={h} value={h}>{formatHour(h)}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  To Time
+                </label>
+                <select
+                  value={bulkEndHour}
+                  onChange={e => setBulkEndHour(Number(e.target.value))}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-teal-500 outline-none cursor-pointer"
+                >
+                  {ALL_HOURS.map(h => (
+                    <option key={h} value={h}>{formatHour(h)}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <span className="text-sm text-gray-700 font-medium">
-              Skip Sundays
-            </span>
-          </button>
+          )}
 
-          {/* Preview count */}
+          {/* Per-day hours */}
+          {bulkMode === 'per-day' && (
+            <div className="mb-4 space-y-2">
+              <p className="text-sm font-medium text-gray-700 mb-2">Hours per day</p>
+              {WEEKDAY_LABELS.map((label, idx) => {
+                if (!bulkDays[idx]) return null
+                return (
+                  <div key={idx} className="flex items-center gap-2">
+                    <span className="w-12 text-sm font-medium text-gray-700">{label}</span>
+                    <select
+                      value={perDayHours[idx].start}
+                      onChange={(e) => setPerDayHours(prev => ({
+                        ...prev,
+                        [idx]: { ...prev[idx], start: Number(e.target.value) },
+                      }))}
+                      className="px-2 py-1 border border-gray-300 rounded text-sm"
+                    >
+                      {ALL_HOURS.map(h => <option key={h} value={h}>{formatHour(h)}</option>)}
+                    </select>
+                    <span className="text-gray-400">to</span>
+                    <select
+                      value={perDayHours[idx].end}
+                      onChange={(e) => setPerDayHours(prev => ({
+                        ...prev,
+                        [idx]: { ...prev[idx], end: Number(e.target.value) },
+                      }))}
+                      className="px-2 py-1 border border-gray-300 rounded text-sm"
+                    >
+                      {ALL_HOURS.map(h => <option key={h} value={h}>{formatHour(h)}</option>)}
+                    </select>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Preview */}
           {bulkStartDate && bulkEndDate && (
             <div className="mb-4 p-3 bg-teal-50 rounded-xl border border-teal-100">
               <p className="text-sm text-teal-700">
-                Will generate slots from{' '}
-                <strong>{formatHour(bulkStartHour)}</strong>
-                {' '}to{' '}
-                <strong>{formatHour(bulkEndHour)}</strong>
-                {' '}({bulkEndHour - bulkStartHour + 1} slots/day)
-                {bulkSkipSunday ? ', skipping Sundays' : ''}
+                {bulkMode === 'uniform'
+                  ? <>Slots <strong>{formatHour(bulkStartHour)}</strong>–<strong>{formatHour(bulkEndHour)}</strong> on selected days</>
+                  : <>Custom hours per weekday on selected days</>}
+                {' · '}
+                {Object.values(bulkDays).filter(Boolean).length} of 7 weekdays active
               </p>
             </div>
           )}
@@ -458,6 +749,7 @@ export default function DoctorSlotsPage() {
               const daySlots = slotsByDate[key] ?? []
               const bookedCount = daySlots.filter(s => s.isBooked).length
               const availCount = daySlots.filter(s => !s.isBooked).length
+              const onLeave = inMonth && isDateOnLeave(date, leaves)
 
               return (
                 <button
@@ -484,6 +776,13 @@ export default function DoctorSlotsPage() {
                     }
                   `}
                 >
+                  {onLeave && !isSelected && (
+                    <span
+                      className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full"
+                      style={{ background: 'var(--coral)' }}
+                      title="On leave"
+                    />
+                  )}
                   <span className={`
                     text-sm font-medium
                     ${isSelected ? 'text-white' :
@@ -514,7 +813,7 @@ export default function DoctorSlotsPage() {
           </div>
 
           {/* Legend */}
-          <div className="px-4 py-3 border-t border-gray-100 flex items-center gap-4 text-xs text-gray-500">
+          <div className="px-4 py-3 border-t border-gray-100 flex items-center gap-4 text-xs text-gray-500 flex-wrap">
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-teal-600" />
               Available
@@ -522,6 +821,10 @@ export default function DoctorSlotsPage() {
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-blue-500" />
               Booked
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--coral)' }} />
+              On leave
             </span>
           </div>
         </div>

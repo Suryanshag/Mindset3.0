@@ -15,7 +15,25 @@ import {
   addMonths,
   subMonths,
 } from 'date-fns'
-import { ChevronLeft, ChevronRight, CheckCircle, Loader2, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CheckCircle, Loader2, X, UserX } from 'lucide-react'
+import DoctorMobileTopBar from '@/components/dashboard/doctor/mobile-top-bar'
+import DaySheet from '@/components/dashboard/doctor/mobile/day-sheet'
+import { STATUS_CFG as MOBILE_STATUS_CFG } from '@/components/dashboard/doctor/mobile/status-badge'
+
+interface Leave {
+  id: string
+  startDate: string
+  endDate: string
+}
+
+function dayIsOnLeave(d: Date, leaves: Leave[]): boolean {
+  const dayStart = new Date(d); dayStart.setHours(0, 0, 0, 0)
+  return leaves.some((l) => {
+    const ls = new Date(l.startDate); ls.setHours(0, 0, 0, 0)
+    const le = new Date(l.endDate); le.setHours(23, 59, 59, 999)
+    return dayStart >= ls && dayStart <= le
+  })
+}
 
 const MEET_TIP_STORAGE_KEY = 'mindset.meetLinkTip.dismissed'
 
@@ -44,6 +62,7 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   CONFIRMED: { bg: '#dcfce7', text: '#166534' },
   COMPLETED: { bg: '#dbeafe', text: '#1e40af' },
   CANCELLED: { bg: '#fee2e2', text: '#991b1b' },
+  NO_SHOW: { bg: '#f3f4f6', text: '#374151' },
 }
 
 function canMarkComplete(s: Session): boolean {
@@ -59,11 +78,18 @@ function isActiveButTooEarly(s: Session): boolean {
   return !canMarkComplete(s)
 }
 
+function canMarkNoShow(s: Session): boolean {
+  if (s.status !== 'CONFIRMED') return false
+  const start = new Date(s.date).getTime()
+  return Date.now() >= start + 15 * 60 * 1000
+}
+
 export default function DoctorCalendarPage() {
   const searchParams = useSearchParams()
   const highlightId = searchParams.get('highlight')
 
   const [sessions, setSessions] = useState<Session[]>([])
+  const [leaves, setLeaves] = useState<Leave[]>([])
   const [loading, setLoading] = useState(true)
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -75,6 +101,7 @@ export default function DoctorCalendarPage() {
   const [savingMeetLink, setSavingMeetLink] = useState(false)
   const [meetLinkError, setMeetLinkError] = useState('')
   const [completingId, setCompletingId] = useState<string | null>(null)
+  const [markingNoShowId, setMarkingNoShowId] = useState<string | null>(null)
   const [tipDismissed, setTipDismissed] = useState(true) // default true until we read storage
   const highlightAppliedRef = useRef(false)
   const highlightedSessionRef = useRef<HTMLDivElement | null>(null)
@@ -86,6 +113,14 @@ export default function DoctorCalendarPage() {
         if (res.success) setSessions(res.data)
       })
       .finally(() => setLoading(false))
+  }, [])
+
+  // Leaves drive the coral on-leave dot on the mobile month grid.
+  useEffect(() => {
+    fetch('/api/doctor/leaves')
+      .then((r) => r.json())
+      .then((res) => { if (res.success) setLeaves(res.data) })
+      .catch(() => {})
   }, [])
 
   // Read tip-dismissed flag once on mount.
@@ -216,10 +251,201 @@ export default function DoctorCalendarPage() {
     }
   }
 
+  async function handleMarkNoShow(sessionId: string) {
+    const confirmed = window.confirm(
+      'Mark this session as no-show? The patient will not be refunded, and this cannot be undone.'
+    )
+    if (!confirmed) return
+
+    setMarkingNoShowId(sessionId)
+    try {
+      const res = await fetch(`/api/doctor/sessions/${sessionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'NO_SHOW' }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setSessions((prev) =>
+          prev.map((s) => (s.id === sessionId ? { ...s, status: 'NO_SHOW' } : s))
+        )
+      } else {
+        toast.error(data.error || 'Failed to mark no-show')
+      }
+    } finally {
+      setMarkingNoShowId(null)
+    }
+  }
+
+  // ── Mobile helpers (used by mobile day-sheet) ──
+  async function mobileSaveNotes(sessionId: string, notes: string): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/doctor/sessions/${sessionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, notes } : s)))
+        return true
+      }
+      return false
+    } catch { return false }
+  }
+  async function mobileMarkStatus(sessionId: string, status: 'COMPLETED' | 'NO_SHOW'): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/doctor/sessions/${sessionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, status } : s)))
+        return true
+      }
+      toast.error(data.error || `Failed to mark ${status.toLowerCase()}`)
+      return false
+    } catch { return false }
+  }
+
   if (loading) return <div className="p-8 text-gray-500">Loading calendar...</div>
 
   return (
-    <div>
+    <>
+      {/* ═══ Mobile Layout (Sprint 2A) ═══ */}
+      <div className="lg:hidden">
+        <DoctorMobileTopBar title="Calendar" />
+
+        <div className="px-4 mt-1">
+          <div className="flex items-center mb-2.5">
+            <button
+              onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+              aria-label="Previous month"
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{ background: 'var(--bg-card)', boxShadow: 'var(--shadow-card)' }}
+            >
+              <ChevronLeft size={14} strokeWidth={2} />
+            </button>
+            <div className="ms-display text-[22px] mx-auto" style={{ color: 'var(--text)' }}>
+              {format(currentMonth, 'MMMM yyyy')}
+            </div>
+            <button
+              onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+              aria-label="Next month"
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{ background: 'var(--bg-card)', boxShadow: 'var(--shadow-card)' }}
+            >
+              <ChevronRight size={14} strokeWidth={2} />
+            </button>
+          </div>
+        </div>
+
+        <div className="px-2">
+          <div className="grid grid-cols-7 gap-0.5 px-2 pb-1.5">
+            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+              <div
+                key={i}
+                className="text-center text-[10.5px] font-extrabold uppercase py-1"
+                style={{ letterSpacing: '0.10em', color: 'var(--text-muted)' }}
+              >
+                {d}
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-7 gap-1 px-2">
+            {Array.from({ length: startPadding }).map((_, i) => (
+              <div key={`m-pad-${i}`} className="aspect-square" />
+            ))}
+            {days.map((day) => {
+              const daySessions = sessions.filter((s) => isSameDay(new Date(s.date), day))
+              const onLeave = dayIsOnLeave(day, leaves)
+              const today = isToday(day)
+              return (
+                <button
+                  key={`m-${day.toISOString()}`}
+                  onClick={() => setSelectedDate(day)}
+                  className="aspect-square rounded-[10px] p-1 relative flex flex-col items-stretch"
+                  style={{
+                    background: 'var(--bg-card)',
+                    border: today ? '2px solid var(--navy)' : '1px solid var(--border)',
+                  }}
+                >
+                  <div className="text-[11.5px] font-bold" style={{ color: 'var(--text)' }}>
+                    {format(day, 'd')}
+                  </div>
+                  <div className="flex-1 flex items-end justify-start gap-[2px] flex-wrap">
+                    {daySessions.slice(0, 4).map((s) => (
+                      <span
+                        key={s.id}
+                        className="w-[5px] h-[5px] rounded-full"
+                        style={{ background: MOBILE_STATUS_CFG[s.status as keyof typeof MOBILE_STATUS_CFG]?.dot ?? 'var(--primary)' }}
+                      />
+                    ))}
+                    {daySessions.length > 4 && (
+                      <span
+                        className="text-[8px] font-extrabold"
+                        style={{ color: 'var(--text-muted)' }}
+                      >
+                        +{daySessions.length - 4}
+                      </span>
+                    )}
+                  </div>
+                  {onLeave && (
+                    <span
+                      className="absolute top-[3px] right-[3px] w-[5px] h-[5px] rounded-full"
+                      style={{ background: 'var(--accent)' }}
+                      title="On leave"
+                    />
+                  )}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Legend */}
+          <div
+            className="flex flex-wrap gap-2.5 px-3.5 pt-3.5 pb-1 text-[10.5px]"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            {Object.entries(MOBILE_STATUS_CFG).map(([k, c]) => (
+              <span key={k} className="inline-flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: c.dot }} />
+                {c.label}
+              </span>
+            ))}
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--accent)' }} />
+              On leave
+            </span>
+          </div>
+        </div>
+
+        {selectedDate && (
+          <DaySheet
+            day={selectedDate}
+            sessions={sessions
+              .filter((s) => isSameDay(new Date(s.date), selectedDate))
+              .map((s) => ({
+                id: s.id,
+                date: s.date,
+                meetLink: s.meetLink,
+                status: s.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW',
+                paymentStatus: s.paymentStatus,
+                notes: s.notes,
+                user: s.user,
+              }))}
+            onClose={() => setSelectedDate(null)}
+            onSaveNotes={mobileSaveNotes}
+            onMarkStatus={mobileMarkStatus}
+          />
+        )}
+      </div>
+
+      {/* ═══ Desktop Layout (unchanged) ═══ */}
+      <div className="hidden lg:block">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Calendar</h1>
 
       <div className="flex gap-6 flex-col lg:flex-row">
@@ -419,6 +645,20 @@ export default function DoctorCalendarPage() {
                         {completingId === s.id ? 'Marking...' : 'Mark as Completed'}
                       </button>
                     )}
+                    {canMarkNoShow(s) && (
+                      <button
+                        onClick={() => handleMarkNoShow(s.id)}
+                        disabled={markingNoShowId === s.id}
+                        className="w-full mt-2 flex items-center justify-center gap-1.5 text-xs px-3 py-2 rounded-lg bg-gray-600 text-white font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
+                      >
+                        {markingNoShowId === s.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <UserX className="w-3.5 h-3.5" />
+                        )}
+                        {markingNoShowId === s.id ? 'Marking...' : 'Mark No-Show'}
+                      </button>
+                    )}
                     {isActiveButTooEarly(s) && (
                       <p className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg mt-2 border border-amber-100">
                         Available to mark complete 45 min after session starts
@@ -465,6 +705,7 @@ export default function DoctorCalendarPage() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }

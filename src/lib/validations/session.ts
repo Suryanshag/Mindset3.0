@@ -6,7 +6,7 @@ export const bookSessionSchema = z.object({
 })
 
 export const updateSessionSchema = z.object({
-  status: z.enum(['CONFIRMED', 'COMPLETED', 'CANCELLED']).optional(),
+  status: z.enum(['CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW']).optional(),
   notes: z.string().max(5000).optional(),
   meetLink: z.string().url().optional(),
 })

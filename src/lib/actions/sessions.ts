@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { razorpay } from '@/lib/razorpay'
 import { sendSessionCancelled } from '@/lib/email-service'
 import { revalidatePath } from 'next/cache'
+import { formatSessionDate } from '@/lib/format-date'
 
 // Refund policy (canonical, mirrors docs/refund-policy-audit.md):
 //   > 24h before session start  → 100% refund
@@ -71,16 +72,13 @@ export async function cancelSession(sessionId: string) {
         },
       })
 
-      // Notify the doctor (existing behavior, kept as SESSION_REMINDER
-      // until the dedicated SESSION_CANCELLED enum value lands in
-      // Sprint Refund-Automation Task 3).
       await tx.notification
         .create({
           data: {
             userId: session.doctor.user.id,
-            kind: 'SESSION_REMINDER',
+            kind: 'SESSION_CANCELLED_BY_USER',
             title: 'Session cancelled',
-            body: 'A patient has cancelled their upcoming session.',
+            body: `${userName} cancelled their session scheduled for ${formatSessionDate(session.date)}`,
             link: `/doctor/calendar`,
           },
         })

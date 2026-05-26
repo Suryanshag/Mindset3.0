@@ -33,9 +33,39 @@ export async function GET(
       return NextResponse.json({ error: 'Doctor not found' }, { status: 404 })
     }
 
-    return NextResponse.json(doctor)
+    // Filter out slots that fall within any active leave range. Slots
+    // stay in the DB (non-destructive) — we just hide them from public
+    // booking while doctor is on leave.
+    const leaves = await prisma.doctorLeave.findMany({
+      where: {
+        doctorId: doctor.id,
+        endDate: { gte: new Date() },
+      },
+      select: { startDate: true, endDate: true },
+    })
+
+    const filteredSlots = leaves.length === 0
+      ? doctor.slots
+      : doctor.slots.filter((s) => !isOnLeave(s.date, leaves))
+
+    return NextResponse.json({ ...doctor, slots: filteredSlots })
   } catch (error) {
     console.error('[DOCTOR_DETAIL_ERROR]', error)
     return NextResponse.json({ error: 'Failed to fetch doctor' }, { status: 500 })
   }
+}
+
+function isOnLeave(
+  slotDate: Date,
+  leaves: { startDate: Date; endDate: Date }[]
+): boolean {
+  const dayStart = new Date(slotDate)
+  dayStart.setHours(0, 0, 0, 0)
+  return leaves.some((l) => {
+    const ls = new Date(l.startDate)
+    ls.setHours(0, 0, 0, 0)
+    const le = new Date(l.endDate)
+    le.setHours(23, 59, 59, 999)
+    return dayStart >= ls && dayStart <= le
+  })
 }

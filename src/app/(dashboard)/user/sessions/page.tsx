@@ -57,7 +57,7 @@ export default async function SessionsPage({
         userId,
         OR: [
           { date: { lt: now } },
-          { status: { in: ['COMPLETED', 'CANCELLED'] } },
+          { status: { in: ['COMPLETED', 'CANCELLED', 'NO_SHOW'] } },
         ],
       },
       select: {
@@ -95,7 +95,7 @@ export default async function SessionsPage({
           upcoming={mobileUpcoming.map((s) => ({
             id: s.id,
             date: s.date.toISOString(),
-            status: s.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED',
+            status: s.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW',
             meetLink: s.meetLink,
             doctor: {
               photo: s.doctor.photo,
@@ -106,7 +106,7 @@ export default async function SessionsPage({
           past={mobilePast.map((s) => ({
             id: s.id,
             date: s.date.toISOString(),
-            status: s.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED',
+            status: s.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW',
             meetLink: s.meetLink,
             doctor: {
               photo: s.doctor.photo,
@@ -365,7 +365,7 @@ async function PastTab({ userId }: { userId: string }) {
       userId,
       OR: [
         { date: { lt: now } },
-        { status: { in: ['COMPLETED', 'CANCELLED'] } },
+        { status: { in: ['COMPLETED', 'CANCELLED', 'NO_SHOW'] } },
       ],
     },
     select: {
@@ -400,6 +400,7 @@ async function PastTab({ userId }: { userId: string }) {
         const statusLabel =
           s.status === 'CANCELLED' ? 'Cancelled' :
           s.status === 'COMPLETED' ? 'Completed' :
+          s.status === 'NO_SHOW' ? 'Marked no-show' :
           'Ended'
         const statusCls =
           s.status === 'CANCELLED'

@@ -8,6 +8,9 @@ import {
   Package,
   Star,
   Bell,
+  Calendar,
+  ClipboardList,
+  IndianRupee,
 } from 'lucide-react'
 import { markNotificationRead, markAllNotificationsRead } from '@/lib/actions/notifications'
 import { formatSessionTime } from '@/lib/format-date'
@@ -33,6 +36,10 @@ const kindIcons: Record<string, typeof Bell> = {
   ORDER: Package,
   REVIEW_PROMPT: Star,
   SYSTEM: Bell,
+  SESSION_BOOKED: CalendarDays,
+  SESSION_CANCELLED_BY_USER: Calendar,
+  ASSIGNMENT_SUBMITTED: ClipboardList,
+  EARNING_PAID: IndianRupee,
 }
 
 /** "2026-05-17" for the given Date, computed against Asia/Kolkata so a

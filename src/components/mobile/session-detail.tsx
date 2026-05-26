@@ -17,7 +17,7 @@ import CancelSessionButton from '@/app/(dashboard)/user/sessions/[id]/cancel-but
 
 const SESSION_DURATION_MIN = 60
 
-type Status = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
+type Status = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW'
 
 type Props = {
   session: {
@@ -42,6 +42,7 @@ const STATUS_LABEL: Record<Status, string> = {
   CONFIRMED: 'Confirmed',
   COMPLETED: 'Completed',
   CANCELLED: 'Cancelled',
+  NO_SHOW: 'Marked no-show',
 }
 
 function formatHeroDate(d: Date): string {

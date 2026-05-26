@@ -49,6 +49,7 @@ export async function POST(
         include: {
           doctor: {
             select: {
+              userId: true,
               user: { select: { name: true, email: true } },
             },
           },
@@ -65,6 +66,16 @@ export async function POST(
             submittedAt: new Date(),
           }
         )
+
+        prisma.notification.create({
+          data: {
+            userId: submittedAssignment.doctor.userId,
+            kind: 'ASSIGNMENT_SUBMITTED',
+            title: 'Assignment submitted',
+            body: `${submittedAssignment.user.name ?? 'A patient'} submitted "${submittedAssignment.title}" for review`,
+            link: `/doctor/assignments?status=SUBMITTED`,
+          },
+        }).catch((err) => console.error('[NOTIFY] doctor assignment notify failed:', err))
       }
     } catch (err) {
       console.error('[ASSIGNMENT] Submit email failed:', err)

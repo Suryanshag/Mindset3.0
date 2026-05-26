@@ -8,6 +8,12 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit",
+    "smoke:sprint1a": "npx tsx scripts/smoke-test-sprint-1a.ts",
+    "smoke:sprint1b": "npx tsx scripts/smoke-test-sprint-1b.ts",
+    "smoke:sprint1c": "npx tsx scripts/smoke-test-sprint-1c.ts",
+    "smoke:sprint1d": "npx tsx scripts/smoke-test-sprint-1d.ts",
+    "smoke:sprint2a": "npx tsx scripts/smoke-test-sprint-2a.ts",
+    "smoke:sprint2b": "npx tsx scripts/smoke-test-sprint-2b.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

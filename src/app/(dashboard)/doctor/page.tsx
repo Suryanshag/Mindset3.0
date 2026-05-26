@@ -1,8 +1,13 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
-import { Calendar, TrendingUp, ClipboardList, IndianRupee } from 'lucide-react'
+import { Calendar, TrendingUp, ClipboardList, IndianRupee, Landmark, ChevronRight, ArrowRight } from 'lucide-react'
 import { formatSessionTime } from '@/lib/format-date'
+import DoctorMobileTopBar from '@/components/dashboard/doctor/mobile-top-bar'
+import NextSessionHero from '@/components/dashboard/doctor/mobile/next-session-hero'
+import StatTile from '@/components/dashboard/doctor/mobile/stat-tile'
+import MobileSessionCard from '@/components/dashboard/doctor/mobile/session-card'
 
 function getGreeting() {
   const hour = new Date().getHours()
@@ -38,7 +43,7 @@ export default async function DoctorOverview() {
   endOfWeek.setDate(startOfWeek.getDate() + 7)
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
-  const [todaySessions, weekSessionCount, pendingReviews, monthEarnings, recentSubmissions, upcomingCount, totalPatients, pendingEarnings] =
+  const [todaySessions, weekSessionCount, pendingReviews, monthEarnings, recentSubmissions, upcomingCount, totalPatients, pendingEarnings, nextSession] =
     await Promise.all([
       prisma.session.findMany({
         where: {
@@ -52,6 +57,7 @@ export default async function DoctorOverview() {
           date: true,
           meetLink: true,
           status: true,
+          paymentStatus: true,
           user: { select: { name: true } },
         },
       }),
@@ -95,6 +101,22 @@ export default async function DoctorOverview() {
         where: { doctorId: doctor.id, status: 'PENDING' },
         _sum: { doctorAmount: true },
       }),
+      // Next upcoming PENDING/CONFIRMED session (drives the mobile hero card)
+      prisma.session.findFirst({
+        where: {
+          doctorId: doctor.id,
+          date: { gte: now },
+          status: { in: ['PENDING', 'CONFIRMED'] },
+        },
+        orderBy: { date: 'asc' },
+        select: {
+          id: true,
+          date: true,
+          meetLink: true,
+          status: true,
+          user: { select: { name: true } },
+        },
+      }),
     ])
 
   const pendingAmount = Number(pendingEarnings._sum.doctorAmount ?? 0)
@@ -113,90 +135,157 @@ export default async function DoctorOverview() {
 
   const doctorName = session.user.name ?? 'Doctor'
 
+  const kicker = now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })
+  const lastName = (doctorName.split(/\s+/).pop() || doctorName)
+  const heroTitle = doctorName.toLowerCase().startsWith('dr') ? doctorName : `Dr ${lastName}`
+
+  const todayForCard = todaySessions.map((s) => ({
+    id: s.id,
+    date: s.date.toISOString(),
+    status: s.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW',
+    paymentStatus: s.paymentStatus,
+    meetLink: s.meetLink,
+    user: { name: s.user.name },
+  }))
+  const nextSessionForHero = nextSession
+    ? {
+        id: nextSession.id,
+        date: nextSession.date.toISOString(),
+        status: nextSession.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW',
+        meetLink: nextSession.meetLink,
+        user: { name: nextSession.user.name },
+      }
+    : null
+
   return (
     <div>
-      {/* ═══ Mobile Header ═══ */}
-      <div className="lg:hidden -m-6 -mt-20 mb-6">
-        <div className="bg-gradient-to-br from-slate-900 to-teal-900 text-white px-5 pt-20 pb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <p className="text-slate-400 text-sm">{getGreeting()},</p>
-              <h1 className="text-xl font-bold mt-0.5">{doctorName}</h1>
-              <p className="text-teal-400 text-sm">{doctor.designation}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-2xl font-bold text-white">
-                {pendingAmount > 0 ? `₹${pendingAmount.toLocaleString('en-IN')}` : '₹0'}
-              </p>
-              <p className="text-xs text-slate-400">pending payout</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: 'Today', value: todaySessions.length },
-              { label: 'Upcoming', value: upcomingCount },
-              { label: 'Patients', value: totalPatients },
-            ].map((stat) => (
-              <div key={stat.label} className="bg-white/10 rounded-2xl p-3 text-center">
-                <p className="text-2xl font-bold text-white">{stat.value}</p>
-                <p className="text-xs text-slate-400 mt-0.5">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* ═══ Mobile Layout (rebuilt — Sprint 2A) ═══ */}
+      <div className="lg:hidden">
+        <DoctorMobileTopBar kicker={kicker} title={heroTitle} doctorName={doctorName} />
 
-        {/* Today's sessions — mobile */}
-        <div className="px-4 -mt-4 space-y-4">
-          <div className="bg-white rounded-3xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Today&apos;s Sessions</p>
-            {todaySessions.length === 0 ? (
-              <p className="text-gray-400 text-sm text-center py-4">No sessions today</p>
-            ) : (
-              <div className="space-y-3">
-                {todaySessions.map((s) => (
-                  <div key={s.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
-                    <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-sm flex-shrink-0">
-                      {s.user.name?.charAt(0) ?? 'P'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 text-sm truncate">{s.user.name}</p>
-                      <p className="text-xs text-gray-500">
-                        {formatSessionTime(s.date)}
-                      </p>
-                    </div>
-                    <span className={`text-xs px-2 py-1 rounded-lg font-medium flex-shrink-0 ${
-                      s.status === 'CONFIRMED' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-                    }`}>
-                      {s.status}
-                    </span>
-                  </div>
-                ))}
+        {/* Hero: next session */}
+        <section className="px-4 pt-2">
+          <NextSessionHero next={nextSessionForHero} />
+        </section>
+
+        {/* Stat tiles */}
+        <section className="px-4 pt-3.5 grid grid-cols-3 gap-2">
+          <StatTile value={todaySessions.length} label="Today" accent="var(--accent)" />
+          <StatTile value={upcomingCount} label="This week" accent="var(--primary)" />
+          <StatTile value={totalPatients} label="Patients" accent="var(--navy)" />
+        </section>
+
+        {/* Pending payout strip — informational only (payouts page is
+            desktop-only; no dead-end tap). */}
+        <section className="px-4 pt-3.5">
+          <div
+            className="w-full flex items-center gap-2.5 rounded-[14px] px-3.5 py-3"
+            style={{ background: 'var(--bg-card)', boxShadow: 'var(--shadow-card)' }}
+          >
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: 'var(--bg-app)', color: 'var(--text-muted)' }}
+            >
+              <Landmark size={14} strokeWidth={1.8} />
+            </div>
+            <div className="flex-1 text-[12.5px]" style={{ color: 'var(--text)' }}>
+              Pending payout ·{' '}
+              <b className="ms-display text-[16px]">₹{pendingAmount.toLocaleString('en-IN')}</b>
+              {' · '}
+              <span style={{ color: 'var(--text-muted)' }}>Sent Mondays</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Today's sessions */}
+        <section className="px-4 pt-5">
+          <div className="flex items-center gap-2 mb-2.5">
+            <div
+              className="text-[11px] font-extrabold uppercase"
+              style={{ letterSpacing: '0.14em', color: 'var(--text-muted)' }}
+            >
+              Today&apos;s sessions
+            </div>
+            <Link
+              href="/doctor/sessions"
+              className="ml-auto inline-flex items-center gap-1 text-[12px] font-extrabold"
+              style={{ color: 'var(--primary)' }}
+            >
+              View all <ArrowRight size={12} strokeWidth={2.2} />
+            </Link>
+          </div>
+          <div className="grid gap-2">
+            {todayForCard.length === 0 ? (
+              <div
+                className="rounded-[16px] p-[18px] text-center"
+                style={{ background: 'var(--bg-card)', color: 'var(--text-muted)', fontSize: 13 }}
+              >
+                No sessions today. Take the morning.
               </div>
+            ) : (
+              todayForCard.map((s) => (
+                <MobileSessionCard key={s.id} s={s} compact />
+              ))
             )}
           </div>
+        </section>
 
-          {recentSubmissions.length > 0 && (
-            <div className="bg-white rounded-3xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Needs Review</p>
-              <div className="space-y-3">
-                {recentSubmissions.map((a) => (
-                  <div key={a.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
-                    <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-sm flex-shrink-0">
-                      {a.user.name?.charAt(0) ?? 'U'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 text-sm truncate">{a.title}</p>
-                      <p className="text-xs text-gray-500">{a.user.name}</p>
-                    </div>
-                    <span className="text-xs px-2 py-1 rounded-lg font-medium bg-orange-100 text-orange-800 flex-shrink-0">
-                      Review
-                    </span>
-                  </div>
-                ))}
+        {/* Needs review */}
+        {recentSubmissions.length > 0 && (
+          <section className="px-4 pt-5">
+            <div className="flex items-center gap-2 mb-2.5">
+              <div
+                className="text-[11px] font-extrabold uppercase"
+                style={{ letterSpacing: '0.14em', color: 'var(--text-muted)' }}
+              >
+                Needs review
               </div>
+              <span
+                className="rounded-full text-[10.5px] font-extrabold"
+                style={{
+                  background: 'var(--accent)',
+                  color: 'var(--on-dark, var(--cream))',
+                  padding: '2px 8px',
+                }}
+              >
+                {pendingReviews}
+              </span>
+              <Link
+                href="/doctor/assignments"
+                className="ml-auto inline-flex items-center gap-1 text-[12px] font-extrabold"
+                style={{ color: 'var(--primary)' }}
+              >
+                View all <ArrowRight size={12} strokeWidth={2.2} />
+              </Link>
             </div>
-          )}
-        </div>
+            <div className="grid gap-2">
+              {recentSubmissions.map((a) => (
+                <Link
+                  key={a.id}
+                  href="/doctor/assignments"
+                  className="flex items-center gap-3 rounded-[16px] p-3.5"
+                  style={{ background: 'var(--bg-card)', boxShadow: 'var(--shadow-card)' }}
+                >
+                  <div
+                    className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
+                    style={{ background: 'var(--accent-tint)', color: 'var(--accent-deep)' }}
+                  >
+                    <ClipboardList size={16} strokeWidth={1.8} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[13px] font-extrabold truncate" style={{ color: 'var(--text)' }}>
+                      {a.title}
+                    </div>
+                    <div className="text-[11.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                      {a.user.name} · submitted {new Date(a.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                    </div>
+                  </div>
+                  <ChevronRight size={16} strokeWidth={1.8} style={{ color: 'var(--text-muted)' }} />
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       {/* ═══ Desktop Layout (unchanged) ═══ */}

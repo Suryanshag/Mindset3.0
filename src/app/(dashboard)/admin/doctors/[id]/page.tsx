@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter, useParams } from 'next/navigation'
+import { Wallet, AlertCircle } from 'lucide-react'
 import { uploadToCloudinary } from '@/lib/cloudinary-upload'
 
 interface Doctor {
@@ -17,6 +18,9 @@ interface Doctor {
   bio: string
   sessionPrice: string
   isActive: boolean
+  panNumber: string | null
+  upiId: string | null
+  payoutFullName: string | null
   user: { id: string; name: string; email: string; phone: string | null }
 }
 
@@ -39,6 +43,9 @@ export default function EditDoctorPage() {
     sessionPrice: 0,
     isActive: true,
     photo: '',
+    panNumber: '',
+    upiId: '',
+    payoutFullName: '',
   })
 
   useEffect(() => {
@@ -59,6 +66,9 @@ export default function EditDoctorPage() {
               sessionPrice: Number(found.sessionPrice),
               isActive: found.isActive,
               photo: found.photo || '',
+              panNumber: found.panNumber ?? '',
+              upiId: found.upiId ?? '',
+              payoutFullName: found.payoutFullName ?? '',
             })
           }
         }
@@ -215,6 +225,60 @@ export default function EditDoctorPage() {
               id="isActive"
             />
             <label htmlFor="isActive" className="text-sm font-medium text-gray-700">Active</label>
+          </div>
+
+          {/* Payout Details */}
+          <div className="mt-6 pt-6 border-t border-gray-100">
+            <div className="flex items-center gap-2 mb-3">
+              <Wallet className="w-5 h-5" style={{ color: 'var(--coral)' }} />
+              <h2 className="text-base font-semibold text-gray-900">Payout Details</h2>
+            </div>
+            <p className="text-xs text-gray-500 mb-4">
+              Used for weekly payouts. Edit only for support cases — doctor manages these themselves on their profile.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">PAN Number</label>
+                <input
+                  type="text"
+                  value={form.panNumber}
+                  onChange={(e) => setForm({ ...form, panNumber: e.target.value.toUpperCase() })}
+                  placeholder="ABCDE1234F"
+                  maxLength={10}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name (as on PAN)</label>
+                <input
+                  type="text"
+                  value={form.payoutFullName}
+                  onChange={(e) => setForm({ ...form, payoutFullName: e.target.value })}
+                  placeholder="Full name on PAN card"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">UPI ID</label>
+                <input
+                  type="text"
+                  value={form.upiId}
+                  onChange={(e) => setForm({ ...form, upiId: e.target.value })}
+                  placeholder="yourname@okhdfcbank"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 font-mono"
+                />
+              </div>
+            </div>
+
+            {(!form.panNumber || !form.upiId) && (
+              <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-800">
+                  Payout details incomplete — earnings cannot be settled until both PAN and UPI are filled.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

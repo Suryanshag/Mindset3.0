@@ -14,13 +14,14 @@ import MobileSessionDetail from '@/components/mobile/session-detail'
 
 const SESSION_DURATION_MIN = 60
 
-type SessionStatusKey = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
+type SessionStatusKey = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW'
 
 const STATUS_CHIP: Record<SessionStatusKey, { label: string; cls: string }> = {
   PENDING: { label: 'Pending', cls: 'bg-accent-tint text-accent' },
   CONFIRMED: { label: 'Confirmed', cls: 'bg-primary-tint text-primary' },
   COMPLETED: { label: 'Completed', cls: 'bg-bg-card text-text-faint' },
   CANCELLED: { label: 'Cancelled', cls: 'bg-red-100 text-red-700' },
+  NO_SHOW: { label: 'Marked no-show', cls: 'bg-gray-100 text-gray-700' },
 }
 
 export default async function SessionDetailPage({
@@ -42,7 +43,7 @@ export default async function SessionDetailPage({
   })
   if (!session) notFound()
 
-  const isPast = session.status === 'COMPLETED' || session.date < new Date()
+  const isPast = session.status === 'COMPLETED' || session.status === 'NO_SHOW' || session.date < new Date()
   const relatedAssignments = isPast
     ? await prisma.assignment.findMany({
         where: {

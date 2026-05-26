@@ -27,9 +27,15 @@ export async function PATCH(
       return errorResponse('Doctor not found', 404)
     }
 
+    const data: Record<string, unknown> = { ...parsed.data }
+    if (data.panNumber === '') data.panNumber = null
+    if (data.upiId === '') data.upiId = null
+    if (data.payoutFullName === '') data.payoutFullName = null
+    if (typeof data.panNumber === 'string') data.panNumber = data.panNumber.toUpperCase()
+
     const updated = await prisma.doctor.update({
       where: { id },
-      data: parsed.data,
+      data,
       include: {
         user: { select: { id: true, name: true, email: true, phone: true } },
       },

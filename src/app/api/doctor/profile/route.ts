@@ -46,9 +46,15 @@ export async function PATCH(req: Request) {
       return errorResponse(parsed.error.issues[0]?.message ?? 'Invalid input')
     }
 
+    const data: Record<string, unknown> = { ...parsed.data }
+    if (data.panNumber === '') data.panNumber = null
+    if (data.upiId === '') data.upiId = null
+    if (data.payoutFullName === '') data.payoutFullName = null
+    if (typeof data.panNumber === 'string') data.panNumber = data.panNumber.toUpperCase()
+
     const updated = await prisma.doctor.update({
       where: { id: result.doctor.id },
-      data: parsed.data,
+      data,
       include: {
         user: {
           select: { name: true, email: true, phone: true, role: true },

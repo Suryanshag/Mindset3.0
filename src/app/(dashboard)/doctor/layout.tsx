@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import DoctorSidebar from '@/components/dashboard/doctor/sidebar'
+import DoctorMobileShell from '@/components/dashboard/doctor/mobile-shell'
+import DoctorDesktopShell from '@/components/dashboard/doctor/desktop-shell'
 
 const ROLE_HOME: Record<string, string> = {
   ADMIN: '/admin',
@@ -24,12 +25,14 @@ export default async function DoctorDashboardLayout({
     redirect(ROLE_HOME[role] ?? '/')
   }
 
+  const doctorName = session.user.name ?? 'Doctor'
+
   return (
-    <div className="flex min-h-screen">
-      <DoctorSidebar doctorName={session.user.name ?? 'Doctor'} />
-      <main className="flex-1 p-6 pt-20 pb-24 lg:pt-8 lg:pb-8 lg:p-8" style={{ background: '#f8f9fa' }}>
-        {children}
-      </main>
-    </div>
+    <>
+      <div className="lg:hidden">
+        <DoctorMobileShell>{children}</DoctorMobileShell>
+      </div>
+      <DoctorDesktopShell doctorName={doctorName}>{children}</DoctorDesktopShell>
+    </>
   )
 }

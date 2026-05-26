@@ -18,6 +18,7 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   CONFIRMED: { bg: '#dcfce7', text: '#166534' },
   COMPLETED: { bg: '#dbeafe', text: '#1e40af' },
   CANCELLED: { bg: '#fee2e2', text: '#991b1b' },
+  NO_SHOW: { bg: '#f3f4f6', text: '#374151' },
   PAID: { bg: '#dcfce7', text: '#166534' },
   FAILED: { bg: '#fee2e2', text: '#991b1b' },
 }
@@ -148,6 +149,7 @@ export default function AdminSessionsPage() {
           <option value="CONFIRMED">Confirmed</option>
           <option value="COMPLETED">Completed</option>
           <option value="CANCELLED">Cancelled</option>
+          <option value="NO_SHOW">No-Show</option>
         </select>
       </div>
 
@@ -189,6 +191,7 @@ export default function AdminSessionsPage() {
                           <option value="CONFIRMED">Confirmed</option>
                           <option value="COMPLETED">Completed</option>
                           <option value="CANCELLED">Cancelled</option>
+                          <option value="NO_SHOW">No-Show</option>
                         </select>
                         <input type="url" placeholder="Meet link" value={editForm.meetLink} onChange={(e) => setEditForm({ ...editForm, meetLink: e.target.value })} className="text-xs px-2 py-1 border rounded w-full" />
                         <div className="flex gap-1">

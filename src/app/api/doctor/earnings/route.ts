@@ -28,6 +28,9 @@ export async function GET() {
               user: { select: { name: true } },
             },
           },
+          payout: {
+            select: { id: true, paidAt: true, method: true },
+          },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -56,6 +59,9 @@ export async function GET() {
         platformAmount: Number(e.platformAmount),
         status: e.status,
         createdAt: e.createdAt,
+        payoutId: e.payoutId,
+        paidAt: e.payout?.paidAt ?? null,
+        paymentMethod: e.payout?.method ?? null,
       })),
       summary: {
         totalEarned: Number(totalAgg._sum.doctorAmount ?? 0),

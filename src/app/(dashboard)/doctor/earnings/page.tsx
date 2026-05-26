@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { TrendingUp, Clock, CheckCircle, IndianRupee, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
@@ -13,6 +14,8 @@ interface Earning {
   doctorAmount: number
   status: 'PENDING' | 'PAID'
   createdAt: string
+  paidAt: string | null
+  paymentMethod: 'UPI' | 'BANK_TRANSFER' | 'OTHER' | null
 }
 
 interface Summary {
@@ -55,9 +58,18 @@ export default function DoctorEarningsPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Earnings</h1>
-        <p className="text-gray-500 text-sm mt-1">You receive 50% of each session fee</p>
+      <div className="flex items-center justify-between mb-6 gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Earnings</h1>
+          <p className="text-gray-500 text-sm mt-1">You receive 50% of each session fee</p>
+        </div>
+        <Link
+          href="/doctor/payouts"
+          className="text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+          style={{ background: 'var(--coral)', color: '#fff' }}
+        >
+          Payout History →
+        </Link>
       </div>
 
       {/* Stat cards */}
@@ -145,7 +157,9 @@ export default function DoctorEarningsPage() {
                           earning.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
                         }`}
                       >
-                        {earning.status === 'PAID' ? 'Paid' : 'Pending'}
+                        {earning.status === 'PAID'
+                          ? `Paid${earning.paidAt ? ` · ${format(toZonedTime(new Date(earning.paidAt), IST), 'MMM d')}` : ''}`
+                          : 'Pending'}
                       </span>
                     </div>
                     <div className="flex items-center gap-3 mt-2 pt-2 border-t border-gray-50">
@@ -210,7 +224,9 @@ export default function DoctorEarningsPage() {
                                 : 'bg-amber-100 text-amber-700'
                             }`}
                           >
-                            {earning.status === 'PAID' ? 'Paid' : 'Pending'}
+                            {earning.status === 'PAID'
+                              ? `Paid${earning.paidAt ? ` · ${format(toZonedTime(new Date(earning.paidAt), IST), 'MMM d')}` : ''}`
+                              : 'Pending'}
                           </span>
                         </td>
                       </tr>

@@ -22,6 +22,7 @@ const STATUS_COLORS: Record<string, { bg: string; text: string; dot: string }> =
   CONFIRMED: { bg: '#D1FAE5', text: '#065F46', dot: 'var(--teal)' },
   COMPLETED: { bg: '#F3F4F6', text: '#374151', dot: '#9CA3AF' },
   CANCELLED: { bg: '#FEE2E2', text: '#991B1B', dot: 'var(--coral)' },
+  NO_SHOW: { bg: '#F3F4F6', text: '#374151', dot: '#9CA3AF' },
 }
 
 export default function SessionTimeline({ sessions }: { sessions: Session[] }) {

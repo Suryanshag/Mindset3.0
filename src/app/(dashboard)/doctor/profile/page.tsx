@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { Wallet, AlertCircle } from 'lucide-react'
 import { uploadToCloudinary } from '@/lib/cloudinary-upload'
 
 interface DoctorProfile {
@@ -15,6 +16,9 @@ interface DoctorProfile {
   experience: number
   bio: string
   sessionPrice: string
+  panNumber: string | null
+  upiId: string | null
+  payoutFullName: string | null
   user: { name: string; email: string; phone: string | null }
 }
 
@@ -31,6 +35,9 @@ export default function DoctorProfilePage() {
     experience: 0,
     bio: '',
     sessionPrice: 0,
+    panNumber: '',
+    upiId: '',
+    payoutFullName: '',
   })
 
   useEffect(() => {
@@ -46,6 +53,9 @@ export default function DoctorProfilePage() {
             experience: res.data.experience,
             bio: res.data.bio,
             sessionPrice: Number(res.data.sessionPrice),
+            panNumber: res.data.panNumber ?? '',
+            upiId: res.data.upiId ?? '',
+            payoutFullName: res.data.payoutFullName ?? '',
           })
         }
       })
@@ -224,6 +234,65 @@ export default function DoctorProfilePage() {
         >
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
+      </div>
+
+      {/* Payout Details */}
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Wallet className="w-5 h-5" style={{ color: 'var(--coral)' }} />
+          <h2 className="text-lg font-semibold text-gray-900">Payout Details</h2>
+        </div>
+        <p className="text-sm text-gray-500 mb-4">
+          Required for weekly payout settlement. Mindset only sees this; it is never shared with patients.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">PAN Number</label>
+            <input
+              type="text"
+              value={form.panNumber}
+              onChange={(e) => setForm({ ...form, panNumber: e.target.value.toUpperCase() })}
+              placeholder="ABCDE1234F"
+              maxLength={10}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+            />
+            <p className="text-xs text-gray-400 mt-1">Format: 5 letters + 4 digits + 1 letter</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name (as on PAN)</label>
+            <input
+              type="text"
+              value={form.payoutFullName}
+              onChange={(e) => setForm({ ...form, payoutFullName: e.target.value })}
+              placeholder="Full name on PAN card"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <p className="text-xs text-gray-400 mt-1">Only fill if different from account name</p>
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">UPI ID</label>
+            <input
+              type="text"
+              value={form.upiId}
+              onChange={(e) => setForm({ ...form, upiId: e.target.value })}
+              placeholder="yourname@okhdfcbank"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+            />
+            <p className="text-xs text-gray-400 mt-1">Used for weekly payouts. Verify carefully.</p>
+          </div>
+        </div>
+
+        {(!form.panNumber || !form.upiId) && (
+          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-amber-800">
+              Complete these fields to receive payouts. Without them, earnings will accumulate but cannot be settled.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )

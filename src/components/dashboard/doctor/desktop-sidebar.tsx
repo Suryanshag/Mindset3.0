@@ -2,31 +2,32 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { signOut, useSession } from 'next-auth/react'
 import {
   LayoutDashboard,
   CalendarDays,
+  ListChecks,
   Users,
   ClipboardList,
   Clock,
   IndianRupee,
-  TrendingUp,
+  Wallet,
   UserCircle,
   LogOut,
   Globe,
-  Menu,
-  X,
+  Bell,
 } from 'lucide-react'
-import MobileBottomNav from '@/components/dashboard/mobile-bottom-nav'
 
 const NAV_ITEMS = [
   { href: '/doctor', label: 'Overview', icon: LayoutDashboard, exact: true },
   { href: '/doctor/calendar', label: 'Calendar', icon: CalendarDays },
+  { href: '/doctor/sessions', label: 'Sessions', icon: ListChecks },
   { href: '/doctor/patients', label: 'My Patients', icon: Users },
   { href: '/doctor/assignments', label: 'Assignments', icon: ClipboardList },
   { href: '/doctor/slots', label: 'My Slots', icon: Clock },
   { href: '/doctor/earnings', label: 'Earnings', icon: IndianRupee },
+  { href: '/doctor/payouts', label: 'Payouts', icon: Wallet },
   { href: '/doctor/profile', label: 'Profile', icon: UserCircle },
 ]
 
@@ -36,20 +37,30 @@ function getInitials(name: string) {
   return name.slice(0, 2).toUpperCase()
 }
 
-export default function DoctorSidebar({ doctorName }: { doctorName: string }) {
+export default function DoctorDesktopSidebar({ doctorName }: { doctorName: string }) {
   const { data: authSession } = useSession()
   const displayName = authSession?.user?.name ?? doctorName
   const pathname = usePathname()
   const router = useRouter()
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    fetch('/api/doctor/notifications/unread-count')
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setUnreadCount(d.data.count) })
+      .catch(() => {})
+  }, [pathname])
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href
     return pathname === href || pathname.startsWith(href + '/')
   }
 
-  const sidebarContent = (
-    <div className="flex flex-col h-full">
+  return (
+    <aside
+      className="hidden lg:flex w-64 min-h-screen flex-shrink-0 flex-col"
+      style={{ background: 'var(--navy)' }}
+    >
       {/* Doctor info */}
       <div className="p-5 border-b border-white/10">
         <div className="flex items-center gap-3">
@@ -67,6 +78,16 @@ export default function DoctorSidebar({ doctorName }: { doctorName: string }) {
               Doctor
             </p>
           </div>
+          <Link
+            href="/doctor/notifications"
+            className="relative p-1.5 ml-auto"
+            aria-label="Notifications"
+          >
+            <Bell size={16} style={{ color: 'rgba(255,248,235,0.7)' }} />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500" />
+            )}
+          </Link>
         </div>
       </div>
 
@@ -78,7 +99,6 @@ export default function DoctorSidebar({ doctorName }: { doctorName: string }) {
             <Link
               key={href}
               href={href}
-              onClick={() => setMobileOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
               style={{
                 background: active ? 'var(--coral)' : 'transparent',
@@ -119,72 +139,6 @@ export default function DoctorSidebar({ doctorName }: { doctorName: string }) {
           Sign Out
         </button>
       </div>
-    </div>
-  )
-
-  const bottomNavItems = [
-    { href: '/doctor', label: 'Home', icon: LayoutDashboard, exact: true },
-    { href: '/doctor/calendar', label: 'Calendar', icon: CalendarDays },
-    { href: '/doctor/patients', label: 'Patients', icon: Users },
-    { href: '/doctor/assignments', label: 'Tasks', icon: ClipboardList },
-    { href: '/doctor/earnings', label: 'Earnings', icon: TrendingUp },
-  ]
-
-  return (
-    <>
-      {/* Mobile top bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100/80 flex items-center justify-between px-4 h-14 shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setMobileOpen(true)}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            aria-label="Open menu"
-          >
-            <Menu size={20} style={{ color: 'var(--navy)' }} />
-          </button>
-          <span className="font-semibold text-sm" style={{ color: 'var(--navy)' }}>
-            Mindset
-          </span>
-        </div>
-        <span className="text-xs bg-coral-50 text-coral-700 px-2.5 py-1 rounded-full font-semibold" style={{ background: '#fef2f2', color: '#b91c1c' }}>
-          Doctor
-        </span>
-      </div>
-
-      {/* Mobile bottom nav */}
-      <MobileBottomNav items={bottomNavItems} />
-
-      {/* Mobile sidebar overlay */}
-      {mobileOpen && (
-        <div
-          className="lg:hidden fixed inset-0 z-50 flex"
-          onClick={() => setMobileOpen(false)}
-        >
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-          <div
-            className="relative w-72 max-w-[85vw] h-full shadow-2xl flex flex-col"
-            style={{ background: 'var(--navy)', animation: 'slideInLeft 0.2s ease-out' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setMobileOpen(false)}
-              className="absolute top-4 right-4 p-1 rounded-lg hover:bg-white/10 transition-colors"
-              style={{ color: 'var(--cream)' }}
-            >
-              <X size={20} />
-            </button>
-            {sidebarContent}
-          </div>
-        </div>
-      )}
-
-      {/* Desktop sidebar */}
-      <aside
-        className="hidden lg:block w-64 min-h-screen flex-shrink-0"
-        style={{ background: 'var(--navy)' }}
-      >
-        {sidebarContent}
-      </aside>
-    </>
+    </aside>
   )
 }

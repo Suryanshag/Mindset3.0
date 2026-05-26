@@ -42,6 +42,73 @@ export async function PATCH(
       return errorResponse(parsed.error.issues[0]?.message ?? 'Invalid input')
     }
 
+    // Handle NO_SHOW status with 15-min rule + earnings (50/50 split)
+    if (parsed.data.status === 'NO_SHOW') {
+      if (existingSession.status !== 'CONFIRMED') {
+        return errorResponse('Only confirmed sessions can be marked no-show', 400)
+      }
+
+      const sessionStart = new Date(existingSession.date)
+      const fifteenMinAfter = new Date(sessionStart.getTime() + 15 * 60 * 1000)
+      if (new Date() < fifteenMinAfter) {
+        return errorResponse('Session cannot be marked no-show before 15 minutes have passed', 400)
+      }
+
+      if (existingSession.earning) {
+        return errorResponse('Session already has an earning recorded', 400)
+      }
+
+      const payment = await prisma.payment.findFirst({
+        where: {
+          sessionId: id,
+          status: 'PAID',
+          type: 'SESSION',
+        },
+        select: { id: true, amount: true },
+      })
+
+      const updated = await prisma.$transaction(async (tx) => {
+        const updatedSession = await tx.session.update({
+          where: { id },
+          data: { status: 'NO_SHOW' },
+          select: {
+            id: true,
+            date: true,
+            meetLink: true,
+            status: true,
+            paymentStatus: true,
+            notes: true,
+            createdAt: true,
+            user: {
+              select: { id: true, name: true, email: true, phone: true },
+            },
+          },
+        })
+
+        if (payment) {
+          const grossAmount = Number(payment.amount)
+          const doctorAmount = (grossAmount * 0.5).toFixed(2)
+          const platformAmount = (grossAmount * 0.5).toFixed(2)
+
+          await tx.doctorEarning.create({
+            data: {
+              doctorId: doctor.id,
+              sessionId: id,
+              paymentId: payment.id,
+              grossAmount: payment.amount,
+              doctorAmount,
+              platformAmount,
+              status: 'PENDING',
+            },
+          })
+        }
+
+        return updatedSession
+      }, { maxWait: 8000, timeout: 15000 })
+
+      return successResponse({ ...updated, earningCreated: !!payment })
+    }
+
     // Handle COMPLETED status with 45-min rule + earnings
     if (parsed.data.status === 'COMPLETED') {
       if (existingSession.status !== 'CONFIRMED') {

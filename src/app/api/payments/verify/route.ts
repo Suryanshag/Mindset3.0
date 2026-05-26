@@ -8,7 +8,8 @@ import {
   sendSessionBookingConfirmation,
   sendDoctorNewBookingNotification,
 } from '@/lib/email-service'
-import { formatSessionDateLong } from '@/lib/format-date'
+import { formatSessionDateLong, formatSessionDate } from '@/lib/format-date'
+import { format as formatDate } from 'date-fns'
 
 /**
  * Client-side payment confirmation. The Razorpay checkout handler
@@ -196,6 +197,7 @@ export async function POST(req: NextRequest) {
             user: { select: { name: true, email: true } },
             doctor: {
               select: {
+                userId: true,
                 user: { select: { name: true, email: true } },
               },
             },
@@ -229,6 +231,16 @@ export async function POST(req: NextRequest) {
           }).catch((err) => {
             console.error('[VERIFY] Session notification create failed:', err)
           })
+
+          prisma.notification.create({
+            data: {
+              userId: fullSession.doctor.userId,
+              kind: 'SESSION_BOOKED',
+              title: 'New session booked',
+              body: `${fullSession.user.name ?? 'A patient'} booked a session for ${formatSessionDate(fullSession.date)}`,
+              link: `/doctor/calendar?date=${formatDate(fullSession.date, 'yyyy-MM-dd')}`,
+            },
+          }).catch((err) => console.error('[NOTIFY] doctor booking notify failed:', err))
         }
       } catch (err) {
         console.error(

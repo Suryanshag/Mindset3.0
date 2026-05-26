@@ -15,6 +15,8 @@ export async function markNotificationRead(notificationId: string) {
 
   revalidatePath('/user/notifications')
   revalidatePath('/user')
+  revalidatePath('/doctor/notifications')
+  revalidatePath('/doctor')
   return { ok: true }
 }
 
@@ -29,5 +31,7 @@ export async function markAllNotificationsRead() {
 
   revalidatePath('/user/notifications')
   revalidatePath('/user')
+  revalidatePath('/doctor/notifications')
+  revalidatePath('/doctor')
   return { ok: true }
 }

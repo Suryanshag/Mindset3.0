@@ -6753,6 +6753,12 @@ body .wp-site-blocks .block-blog-hero__shape {
     to   { opacity: 1; transform: translateX(0); }
 }
 
+/* Bottom-sheet slide-up — used by the doctor mobile day-sheet. */
+@keyframes sheetUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
     /* Honor the OS reduced-motion preference. The design's fade-up /
        slide-in are decorative; users who opt out should see content
