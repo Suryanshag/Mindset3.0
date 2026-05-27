@@ -49,3 +49,6 @@ test-results/
 # Smoke-test screenshots
 tmp-*.png
 .env.vercel*
+
+# Local pair-smoke harness — not part of automated CI
+scripts/pair-smoke-*.ts
