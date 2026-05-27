@@ -7,7 +7,7 @@
 //
 // Cache strategy summary:
 //   /_next/static/*, /fonts/*, /icons/*, /images/* → CacheFirst (long-lived)
-//   /user/* HTML                                   → NetworkFirst, 3s timeout, /offline fallback
+//   /user/* HTML, /doctor/* HTML                   → NetworkFirst, 3s timeout, /offline fallback
 //   App shell + everything else                    → NetworkFirst, 5s timeout, /offline fallback
 //   GET requests only — mutations, /api/*, /api/auth/* fall through to network
 //
@@ -17,7 +17,7 @@
 // worker take control without a page reload (acceptable since the SW only
 // caches non-sensitive shells; logged-in data goes through the live API).
 
-const CACHE_VERSION = 'mindset-v1'
+const CACHE_VERSION = 'mindset-v2'
 const APP_SHELL_CACHE = CACHE_VERSION + '-shell'
 const STATIC_CACHE = CACHE_VERSION + '-static'
 const PAGES_CACHE = CACHE_VERSION + '-pages'
@@ -82,10 +82,15 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // User dashboard HTML — NetworkFirst with a tight 3s timeout to keep
-  // perceived load fast on flaky networks, falling back to a cached
-  // version and finally /offline.
-  if (url.pathname.startsWith('/user')) {
+  // User dashboard HTML + doctor dashboard HTML — NetworkFirst with a tight
+  // 3s timeout to keep perceived load fast on flaky networks, falling back
+  // to a cached version and finally /offline. Both surfaces are authed,
+  // session-rendered shells; the data layer always re-fetches live, so
+  // serving a stale shell while a doctor's session list loads is acceptable.
+  if (
+    url.pathname.startsWith('/user') ||
+    url.pathname.startsWith('/doctor')
+  ) {
     event.respondWith(
       networkFirstWithTimeout(PAGES_CACHE, request, 3000, '/offline')
     )
