@@ -6,12 +6,15 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: '/',
     name: 'Mindset',
     short_name: 'Mindset',
     description:
       'Mental health care — accessible, affordable, stigma-free. Talk to qualified therapists, journal, and access self-care resources.',
     start_url: '/splash?source=pwa',
     scope: '/',
+    lang: 'en-IN',
+    dir: 'ltr',
     display: 'standalone',
     orientation: 'portrait',
     theme_color: '#F7F2EA',
