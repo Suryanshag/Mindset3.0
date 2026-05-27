@@ -85,6 +85,102 @@ export function formatSessionDateLong(d: Date | string): string {
   return `${weekday}, ${day} ${month} ${year} at ${formatSessionTime(date)} IST`
 }
 
+// ─── Boundary helpers (IST calendar-day math) ─────────────────────────────
+//
+// Vercel runs Node in UTC. Indian users see their calendar day as IST
+// (UTC+5:30). Any Prisma `where: { date: { gte: ..., lt: ... } }` that
+// bounds a "today / this week / this month" query must use these helpers,
+// or the cutoff falls 5h30m short and sessions/moods/etc. land in the
+// wrong bucket. Works identically in Node and browsers — both ship
+// `Intl.DateTimeFormat` with `timeZone: 'Asia/Kolkata'` natively.
+
+const IST_OFFSET_MIN = 5 * 60 + 30
+const IST_OFFSET_MS = IST_OFFSET_MIN * 60 * 1000
+
+/**
+ * UTC instant corresponding to 00:00:00.000 IST of the calendar day
+ * containing `d`. Use as inclusive lower bound (`gte`) in Prisma queries.
+ *
+ * Example: startOfDayIST('2026-05-27T18:30:00Z') === '2026-05-27T18:30:00Z'
+ * (the input is already IST May 28 00:00, so the IST day containing it
+ * is May 28, whose UTC start is the same instant)
+ */
+export function startOfDayIST(d: Date | string): Date {
+  const { year, month, day } = istDateParts(toDate(d))
+  return new Date(Date.UTC(year, month - 1, day) - IST_OFFSET_MS)
+}
+
+/**
+ * UTC instant corresponding to 00:00:00.000 IST of the day AFTER `d`'s
+ * IST calendar day. Use as exclusive upper bound (`lt`) — preferred over
+ * `endOfDayIST` + `lte` since it sidesteps millisecond rounding edges.
+ */
+export function startOfNextDayIST(d: Date | string): Date {
+  const { year, month, day } = istDateParts(toDate(d))
+  return new Date(Date.UTC(year, month - 1, day + 1) - IST_OFFSET_MS)
+}
+
+/**
+ * UTC instant corresponding to 23:59:59.999 IST of `d`'s IST calendar
+ * day. Use only when you must pair with `lte`. Otherwise prefer
+ * `startOfNextDayIST` + `lt`.
+ */
+export function endOfDayIST(d: Date | string): Date {
+  return new Date(startOfNextDayIST(d).getTime() - 1)
+}
+
+/**
+ * UTC instant for 00:00 IST of the Monday of `d`'s IST week.
+ * Weeks are Monday-start (ISO convention used across the app).
+ */
+export function startOfWeekIST(d: Date | string): Date {
+  const { year, month, day } = istDateParts(toDate(d))
+  // Compute weekday of the IST calendar day. UTC-midnight of that date
+  // shares its weekday with the IST date (calendar day = same number).
+  const dayOfWeek = new Date(Date.UTC(year, month - 1, day)).getUTCDay() // 0=Sun
+  const daysFromMonday = (dayOfWeek + 6) % 7 // 0 if Mon, 6 if Sun
+  return new Date(Date.UTC(year, month - 1, day - daysFromMonday) - IST_OFFSET_MS)
+}
+
+/**
+ * UTC instant for 23:59:59.999 IST of the Sunday closing `d`'s IST week.
+ * For exclusive upper bound, use `new Date(startOfWeekIST(d).getTime() + 7*86400000)`.
+ */
+export function endOfWeekIST(d: Date | string): Date {
+  return new Date(startOfWeekIST(d).getTime() + 7 * 24 * 60 * 60 * 1000 - 1)
+}
+
+/**
+ * UTC instant for 00:00 IST of the 1st of `d`'s IST month.
+ */
+export function startOfMonthIST(d: Date | string): Date {
+  const { year, month } = istDateParts(toDate(d))
+  return new Date(Date.UTC(year, month - 1, 1) - IST_OFFSET_MS)
+}
+
+/**
+ * UTC instant for 23:59:59.999 IST of the last day of `d`'s IST month.
+ */
+export function endOfMonthIST(d: Date | string): Date {
+  const { year, month } = istDateParts(toDate(d))
+  // Date.UTC with month=N rolls over to N+1 month — day 1 of next month
+  // minus 1ms = end of current month (UTC). Then shift back by IST offset.
+  return new Date(Date.UTC(year, month, 1) - IST_OFFSET_MS - 1)
+}
+
+/**
+ * For `@db.Date` columns. Returns a Date object representing UTC
+ * midnight of `d`'s IST calendar day — Prisma serializes this as the
+ * date portion for storage. Reading from `@db.Date` returns UTC midnight
+ * already (so this helper is a no-op for round-trips, but needed for
+ * the WRITE path where the application is constructing the date from
+ * a local-time `new Date()`).
+ */
+export function dateOnlyIST(d: Date | string): Date {
+  const { year, month, day } = istDateParts(toDate(d))
+  return new Date(Date.UTC(year, month - 1, day))
+}
+
 // ─── Internals ─────────────────────────────────────────────────────────────
 
 function istDateParts(d: Date): { year: number; month: number; day: number } {
