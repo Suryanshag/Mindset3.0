@@ -117,7 +117,7 @@ export default function DoctorPatientsPage() {
                     <div className="text-[14px] font-extrabold truncate" style={{ color: 'var(--text)' }}>
                       {p.name}
                     </div>
-                    <div className="text-[11.5px] mt-1" style={{ color: 'var(--text-muted)' }}>
+                    <div className="text-[11.5px] mt-1 truncate" style={{ color: 'var(--text-muted)' }}>
                       {p.totalSessions} session{p.totalSessions === 1 ? '' : 's'}
                       {p.lastSessionDate ? ` · last ${relativeShort(p.lastSessionDate)}` : ''}
                     </div>

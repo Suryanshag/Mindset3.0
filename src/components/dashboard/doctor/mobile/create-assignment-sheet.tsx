@@ -134,7 +134,7 @@ export default function CreateAssignmentSheet({ open, onClose, patientPreset, on
           <CALabel>Patient</CALabel>
           {patientPreset ? (
             <div
-              className="rounded-[14px] text-[14px] font-bold"
+              className="rounded-[14px] text-[14px] font-bold truncate"
               style={{
                 padding: '12px 14px',
                 background: 'var(--bg-app)',

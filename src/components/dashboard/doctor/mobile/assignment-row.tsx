@@ -74,10 +74,10 @@ export default function AssignmentRow({ assignment, onClick }: Props) {
           {scfg.label}
         </span>
       </div>
-      <div className="text-[14px] font-extrabold mt-2 leading-[1.25]" style={{ color: 'var(--text)' }}>
+      <div className="text-[14px] font-extrabold mt-2 leading-[1.25] truncate" style={{ color: 'var(--text)' }}>
         {assignment.title}
       </div>
-      <div className="text-[11.5px] mt-1" style={{ color: 'var(--text-muted)' }}>
+      <div className="text-[11.5px] mt-1 truncate" style={{ color: 'var(--text-muted)' }}>
         {secondary}
       </div>
     </button>

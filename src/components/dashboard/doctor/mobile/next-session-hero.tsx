@@ -98,7 +98,7 @@ export default function NextSessionHero({ next, durationMin = 60 }: Props) {
         >
           Next session
         </div>
-        <div className="ms-display text-[30px] mt-1.5 leading-[1.05]">
+        <div className="ms-display text-[30px] mt-1.5 leading-[1.05] truncate">
           {next.user.name ?? 'Patient'}
         </div>
         <div className="flex items-center gap-2.5 mt-2 text-[13px]">

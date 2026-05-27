@@ -91,7 +91,7 @@ export default function DoctorNotificationsMobile({ notifications: initial }: Pr
   ) : null
 
   return (
-    <div>
+    <div className="pb-[calc(env(safe-area-inset-bottom)+88px)]">
       <DoctorMobileTopBar showBack title="Notifications" rightSlot={markAllSlot} />
 
       {items.length === 0 ? (
@@ -120,12 +120,12 @@ export default function DoctorNotificationsMobile({ notifications: initial }: Pr
             return (
               <section key={g}>
                 <div
-                  className="text-[10.5px] font-extrabold uppercase mt-4 mb-2 px-1.5"
+                  className="text-[10.5px] font-extrabold uppercase mt-3 mb-1.5 px-1.5"
                   style={{ letterSpacing: '0.14em', color: 'var(--text-muted)' }}
                 >
                   {GROUP_LABELS[g]}
                 </div>
-                <div className="grid gap-1.5">
+                <div className="grid gap-1">
                   {list.map((n) => (
                     <NotificationRow
                       key={n.id}

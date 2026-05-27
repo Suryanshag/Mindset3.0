@@ -71,7 +71,7 @@ export default function ProfileSheet({ open, onClose }: Props) {
             <div className="text-[17px] font-extrabold truncate" style={{ color: 'var(--text)' }}>
               {name}
             </div>
-            <div className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+            <div className="text-[12px] mt-0.5 truncate" style={{ color: 'var(--text-muted)' }}>
               Doctor
             </div>
           </div>

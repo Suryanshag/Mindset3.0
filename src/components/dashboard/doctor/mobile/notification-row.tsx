@@ -80,7 +80,7 @@ export default function NotificationRow({ notification, onClick }: Props) {
           {notification.title}
         </div>
         <div
-          className="text-[11.5px] truncate mt-0.5"
+          className="text-[11.5px] line-clamp-2 leading-[1.35]"
           style={{ color: 'var(--text-muted)' }}
         >
           {notification.body}
