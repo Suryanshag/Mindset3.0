@@ -64,6 +64,22 @@ async function downscale(size) {
     .toBuffer()
 }
 
+// ICO entries must be embedded as RGBA PNGs — Next 16's Turbopack ICO
+// decoder hard-fails on RGB ("The PNG is not in RGBA format!"). Palette
+// mode strips back to RGB even with ensureAlpha(), so the ICO path uses
+// non-palette PNG with an explicit alpha channel. Entries are tiny (16/32px)
+// so the size cost is negligible.
+async function downscaleRgba(size) {
+  return sharp(MASTER)
+    .resize(size, size, {
+      kernel: sharp.kernel.lanczos3,
+      fit: 'cover',
+    })
+    .ensureAlpha()
+    .png({ compressionLevel: 9, palette: false })
+    .toBuffer()
+}
+
 // Build a multi-resolution ICO (sharp can't write ICO directly).
 // Embeds each entry as PNG — supported by every browser since IE11.
 function buildIco(entries) {
@@ -127,8 +143,9 @@ async function main() {
   }
 
   // Multi-res favicon.ico — 16 + 32 PNGs packed into an ICO container.
-  const fav16 = await downscale(16)
-  const fav32 = await downscale(32)
+  // ICO entries use RGBA (non-palette) per Next 16's decoder requirement.
+  const fav16 = await downscaleRgba(16)
+  const fav32 = await downscaleRgba(32)
   const ico = buildIco([
     { size: 16, png: fav16 },
     { size: 32, png: fav32 },
