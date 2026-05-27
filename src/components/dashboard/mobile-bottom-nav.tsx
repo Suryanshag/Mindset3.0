@@ -13,13 +13,20 @@ interface NavItem {
 
 interface MobileBottomNavProps {
   items: NavItem[]
+  /** Optional test-only attribute so smoke tests can scope clicks to
+   *  this nav (the desktop sidebar also renders a <nav> hidden via CSS
+   *  but still in DOM, which makes plain `nav` selectors ambiguous). */
+  testId?: string
 }
 
-export default function MobileBottomNav({ items }: MobileBottomNavProps) {
+export default function MobileBottomNav({ items, testId }: MobileBottomNavProps) {
   const pathname = usePathname()
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-2 safe-area-bottom">
+    <nav
+      data-testid={testId}
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-2 safe-area-bottom"
+    >
       <div
         className="flex items-center justify-around h-16 rounded-2xl backdrop-blur-xl"
         style={{

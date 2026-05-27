@@ -129,53 +129,61 @@ export default function MobileSessionCard({
         </div>
       </div>
 
-      {/* Primary action — only ONE shows at a time to keep glanceable */}
-      {showJoin ? (
-        <a
-          href={s.meetLink!}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="inline-flex items-center gap-1.5 rounded-full text-[12px] font-extrabold shrink-0"
-          style={{
-            padding: '8px 14px',
-            background: 'var(--accent)',
-            color: 'var(--on-dark, var(--cream))',
-          }}
-        >
-          <Video size={12} strokeWidth={2.2} />
-          Join
-        </a>
-      ) : showComplete ? (
-        <button
-          onClick={(e) => { e.stopPropagation(); patch('COMPLETED') }}
-          disabled={busy !== null}
-          className="inline-flex items-center gap-1.5 rounded-full text-[12px] font-extrabold shrink-0 disabled:opacity-50"
-          style={{ padding: '8px 14px', background: '#2A7A4A', color: 'var(--on-dark, var(--cream))' }}
-        >
-          {busy === 'complete'
-            ? <Loader2 size={12} className="animate-spin" />
-            : <CheckCircle size={12} strokeWidth={2.2} />}
-          {busy === 'complete' ? 'Marking…' : 'Mark complete'}
-        </button>
-      ) : showNoShow ? (
-        <button
-          onClick={(e) => { e.stopPropagation(); patch('NO_SHOW') }}
-          disabled={busy !== null}
-          className="inline-flex items-center gap-1.5 rounded-full text-[12px] font-extrabold shrink-0 disabled:opacity-50"
-          style={{
-            padding: '8px 14px',
-            background: 'transparent',
-            color: 'var(--text-muted)',
-            border: '1.5px solid var(--border-strong)',
-          }}
-        >
-          {busy === 'noshow'
-            ? <Loader2 size={12} className="animate-spin" />
-            : <UserX size={12} strokeWidth={2.2} />}
-          {busy === 'noshow' ? 'Marking…' : 'No-show'}
-        </button>
-      ) : null}
+      {/* Action buttons — render all applicable independently so the
+          doctor can mark no-show even while the join window is open.
+          Visual priority via stack order: Join → Mark complete → No-show.
+          At most 2 ever apply at once (showNoShow blocks once
+          showComplete kicks in at 45min). */}
+      <div className="flex flex-col items-end gap-1.5 shrink-0">
+        {showJoin && (
+          <a
+            href={s.meetLink!}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1.5 rounded-full text-[12px] font-extrabold"
+            style={{
+              padding: '8px 14px',
+              background: 'var(--accent)',
+              color: 'var(--on-dark, var(--cream))',
+            }}
+          >
+            <Video size={12} strokeWidth={2.2} />
+            Join
+          </a>
+        )}
+        {showComplete && (
+          <button
+            onClick={(e) => { e.stopPropagation(); patch('COMPLETED') }}
+            disabled={busy !== null}
+            className="inline-flex items-center gap-1.5 rounded-full text-[12px] font-extrabold disabled:opacity-50"
+            style={{ padding: '8px 14px', background: '#2A7A4A', color: 'var(--on-dark, var(--cream))' }}
+          >
+            {busy === 'complete'
+              ? <Loader2 size={12} className="animate-spin" />
+              : <CheckCircle size={12} strokeWidth={2.2} />}
+            {busy === 'complete' ? 'Marking…' : 'Mark complete'}
+          </button>
+        )}
+        {showNoShow && (
+          <button
+            onClick={(e) => { e.stopPropagation(); patch('NO_SHOW') }}
+            disabled={busy !== null}
+            className="inline-flex items-center gap-1.5 rounded-full text-[12px] font-extrabold disabled:opacity-50"
+            style={{
+              padding: '8px 14px',
+              background: 'transparent',
+              color: 'var(--text-muted)',
+              border: '1.5px solid var(--border-strong)',
+            }}
+          >
+            {busy === 'noshow'
+              ? <Loader2 size={12} className="animate-spin" />
+              : <UserX size={12} strokeWidth={2.2} />}
+            {busy === 'noshow' ? 'Marking…' : 'No-show'}
+          </button>
+        )}
+      </div>
     </div>
   )
 }

@@ -18,5 +18,5 @@ const ITEMS = [
 ]
 
 export default function DoctorBottomNavMobile() {
-  return <MobileBottomNav items={ITEMS} />
+  return <MobileBottomNav items={ITEMS} testId="doctor-mobile-bottom-nav" />
 }
