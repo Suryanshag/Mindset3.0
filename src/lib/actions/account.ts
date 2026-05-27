@@ -66,6 +66,8 @@ export async function requestAccountDeletion(
     null
   const userAgent = h.get('user-agent')?.slice(0, 500) ?? null
 
+  // UTC: relative duration (now + grace period). Stored as DateTime,
+  // not user-facing as a date, so timezone-agnostic.
   const now = new Date()
   const scheduledFor = new Date(now.getTime() + GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000)
 

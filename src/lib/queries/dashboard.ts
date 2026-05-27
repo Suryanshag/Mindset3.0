@@ -8,6 +8,8 @@ import { formatSessionTime, startOfDayIST, dateOnlyIST } from '@/lib/format-date
  * Returns null if none found.
  */
 export async function getNextWorkshop(userId?: string): Promise<Workshop | null> {
+  // UTC: relative duration window (now + 14d). Not IST-sensitive because
+  // both bounds are computed from the same instant.
   const now = new Date()
   const twoWeeks = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000)
 

@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { createLeaveSchema } from '@/lib/validations/doctor'
+import { dateOnlyIST } from '@/lib/format-date'
 
 export async function GET() {
   try {
@@ -46,8 +47,13 @@ export async function POST(req: Request) {
       return errorResponse(parsed.error.issues[0]?.message ?? 'Invalid input')
     }
 
-    const start = new Date(parsed.data.startDate)
-    const end = new Date(parsed.data.endDate)
+    // startDate/endDate write to @db.Date columns. Inputs are date-only
+    // strings from <input type="date"> which new Date() parses as UTC
+    // midnight — already correct. dateOnlyIST is a defensive wrapper
+    // that normalizes any future caller passing a full DateTime instant
+    // (e.g. "2026-05-27T20:00:00Z") to the IST calendar day.
+    const start = dateOnlyIST(new Date(parsed.data.startDate))
+    const end = dateOnlyIST(new Date(parsed.data.endDate))
 
     if (end < start) return errorResponse('End date must be on or after start date')
 
