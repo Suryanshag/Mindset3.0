@@ -19,6 +19,7 @@ import { ChevronLeft, ChevronRight, CheckCircle, Loader2, X, UserX } from 'lucid
 import DoctorMobileTopBar from '@/components/dashboard/doctor/mobile-top-bar'
 import DaySheet from '@/components/dashboard/doctor/mobile/day-sheet'
 import { STATUS_CFG as MOBILE_STATUS_CFG } from '@/components/dashboard/doctor/mobile/status-badge'
+import { startOfDayIST, startOfNextDayIST } from '@/lib/format-date'
 
 interface Leave {
   id: string
@@ -27,11 +28,11 @@ interface Leave {
 }
 
 function dayIsOnLeave(d: Date, leaves: Leave[]): boolean {
-  const dayStart = new Date(d); dayStart.setHours(0, 0, 0, 0)
+  const dayStart = startOfDayIST(d)
   return leaves.some((l) => {
-    const ls = new Date(l.startDate); ls.setHours(0, 0, 0, 0)
-    const le = new Date(l.endDate); le.setHours(23, 59, 59, 999)
-    return dayStart >= ls && dayStart <= le
+    const ls = startOfDayIST(l.startDate)
+    const le = startOfNextDayIST(l.endDate)
+    return dayStart >= ls && dayStart < le
   })
 }
 

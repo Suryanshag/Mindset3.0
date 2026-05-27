@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
+import { startOfDayIST, startOfNextDayIST } from '@/lib/format-date'
 import { NextRequest } from 'next/server'
 
 export async function GET(req: NextRequest) {
@@ -20,8 +21,10 @@ export async function GET(req: NextRequest) {
 
     const view = req.nextUrl.searchParams.get('view') ?? 'all'
     const now = new Date()
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000)
+    // IST calendar day — server runs UTC on Vercel, so we can't use
+    // getDate/setHours-based math without shifting the bucket 5h30m.
+    const startOfDay = startOfDayIST(now)
+    const endOfDay = startOfNextDayIST(now)
 
     type SessionWhere = {
       doctorId: string

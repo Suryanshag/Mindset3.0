@@ -3,7 +3,13 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { Calendar, TrendingUp, ClipboardList, IndianRupee, Landmark, ChevronRight, ArrowRight } from 'lucide-react'
-import { formatSessionTime } from '@/lib/format-date'
+import {
+  formatSessionTime,
+  startOfDayIST,
+  startOfNextDayIST,
+  startOfWeekIST,
+  startOfMonthIST,
+} from '@/lib/format-date'
 import DoctorMobileTopBar from '@/components/dashboard/doctor/mobile-top-bar'
 import NextSessionHero from '@/components/dashboard/doctor/mobile/next-session-hero'
 import StatTile from '@/components/dashboard/doctor/mobile/stat-tile'
@@ -34,14 +40,14 @@ export default async function DoctorOverview() {
     )
   }
 
+  // All boundaries are IST calendar — Vercel server runs UTC, so raw
+  // setHours/getDate based math here would shift "today" 5h30m off.
   const now = new Date()
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000)
-  const startOfWeek = new Date(startOfDay)
-  startOfWeek.setDate(startOfDay.getDate() - ((now.getDay() + 6) % 7))
-  const endOfWeek = new Date(startOfWeek)
-  endOfWeek.setDate(startOfWeek.getDate() + 7)
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  const startOfDay = startOfDayIST(now)
+  const endOfDay = startOfNextDayIST(now)
+  const startOfWeek = startOfWeekIST(now)
+  const endOfWeek = new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000)
+  const startOfMonth = startOfMonthIST(now)
 
   const [todaySessions, weekSessionCount, pendingReviews, monthEarnings, recentSubmissions, upcomingCount, totalPatients, pendingEarnings, nextSession] =
     await Promise.all([

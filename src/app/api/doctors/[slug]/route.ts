@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { startOfDayIST, startOfNextDayIST } from '@/lib/format-date'
 
 export async function GET(
   _req: Request,
@@ -59,13 +60,12 @@ function isOnLeave(
   slotDate: Date,
   leaves: { startDate: Date; endDate: Date }[]
 ): boolean {
-  const dayStart = new Date(slotDate)
-  dayStart.setHours(0, 0, 0, 0)
+  // All boundaries IST-aligned — leaves come from @db.Date columns
+  // (stored as UTC midnight) and slotDate is a DateTime instant.
+  const dayStart = startOfDayIST(slotDate)
   return leaves.some((l) => {
-    const ls = new Date(l.startDate)
-    ls.setHours(0, 0, 0, 0)
-    const le = new Date(l.endDate)
-    le.setHours(23, 59, 59, 999)
-    return dayStart >= ls && dayStart <= le
+    const ls = startOfDayIST(l.startDate)
+    const le = startOfNextDayIST(l.endDate)
+    return dayStart >= ls && dayStart < le
   })
 }

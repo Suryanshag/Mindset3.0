@@ -4,6 +4,11 @@
 // — that's a separate feature with separate consent flows.
 
 import { prisma } from '@/lib/prisma'
+import {
+  startOfDayIST,
+  startOfNextDayIST,
+  dateOnlyIST,
+} from '@/lib/format-date'
 
 export type JournalListItem = {
   id: string
@@ -112,8 +117,9 @@ export async function getJournalStreak(userId: string): Promise<number> {
   `
   if (days.length === 0) return 0
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  // IST calendar day keys — SQL already buckets by IST, so the
+  // lookup keys must also be IST or the comparison drifts on UTC server.
+  const today = dateOnlyIST(new Date())
   const todayKey = today.toISOString().slice(0, 10)
   const yesterdayKey = new Date(today.getTime() - 86400000)
     .toISOString()
@@ -145,16 +151,18 @@ export async function getJournalStreak(userId: string): Promise<number> {
 export async function getLastWeekJournal(
   userId: string
 ): Promise<{ date: Date; mood: 1 | 2 | 3 | 4 | 5 | null }[]> {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const sevenDaysAgo = new Date(today)
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
+  // IST calendar bounds — entryDate is DateTime, so we bracket on the
+  // IST day window. dateOnlyIST gives a UTC-midnight key for grouping.
+  const istToday = dateOnlyIST(new Date())
+  const sevenDaysAgo = new Date(istToday.getTime() - 6 * 86400000)
+  const istStart = startOfDayIST(sevenDaysAgo)
+  const istEndExclusive = startOfNextDayIST(new Date())
 
   const rows = await prisma.journalEntry.findMany({
     where: {
       userId,
       isDraft: false,
-      entryDate: { gte: sevenDaysAgo, lte: new Date(today.getTime() + 86400000) },
+      entryDate: { gte: istStart, lt: istEndExclusive },
     },
     select: { mood: true, entryDate: true },
     orderBy: { entryDate: 'desc' },
@@ -162,7 +170,9 @@ export async function getLastWeekJournal(
 
   const byDate = new Map<string, number>()
   for (const r of rows) {
-    const key = new Date(r.entryDate).toISOString().slice(0, 10)
+    // IST calendar-day key (not UTC) — an entry at 00:30 IST belongs
+    // to the next IST day, not the prior UTC day.
+    const key = dateOnlyIST(r.entryDate).toISOString().slice(0, 10)
     if (!byDate.has(key) && r.mood != null) {
       byDate.set(key, r.mood)
     } else if (!byDate.has(key)) {
@@ -175,8 +185,7 @@ export async function getLastWeekJournal(
 
   const out: { date: Date; mood: 1 | 2 | 3 | 4 | 5 | null }[] = []
   for (let i = 0; i < 7; i++) {
-    const d = new Date(sevenDaysAgo)
-    d.setDate(d.getDate() + i)
+    const d = new Date(sevenDaysAgo.getTime() + i * 86400000)
     const key = d.toISOString().slice(0, 10)
     const m = byDate.get(key)
     out.push({

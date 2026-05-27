@@ -16,6 +16,7 @@ import {
   addMonths, subMonths,
   isBefore,
 } from 'date-fns'
+import { startOfDayIST, startOfNextDayIST } from '@/lib/format-date'
 
 interface Slot {
   id: string
@@ -34,14 +35,13 @@ interface Leave {
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 function isDateOnLeave(d: Date, leaves: Leave[]): boolean {
-  const dayStart = new Date(d)
-  dayStart.setHours(0, 0, 0, 0)
+  // IST-aligned comparison; leave dates come from @db.Date so they
+  // already round to UTC midnight, but slotDate is a DateTime instant.
+  const dayStart = startOfDayIST(d)
   return leaves.some((l) => {
-    const ls = new Date(l.startDate)
-    ls.setHours(0, 0, 0, 0)
-    const le = new Date(l.endDate)
-    le.setHours(23, 59, 59, 999)
-    return dayStart >= ls && dayStart <= le
+    const ls = startOfDayIST(l.startDate)
+    const le = startOfNextDayIST(l.endDate)
+    return dayStart >= ls && dayStart < le
   })
 }
 

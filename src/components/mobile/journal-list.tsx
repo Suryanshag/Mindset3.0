@@ -11,6 +11,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Card, Chip, MoodFace, MOOD_INFO } from './ui'
+import { startOfDayIST } from '@/lib/format-date'
 import {
   IconArrowRight,
   IconPen,
@@ -53,8 +54,9 @@ function singleLetterWeekday(d: Date): string {
 }
 
 function formatEntryDateRow(d: Date): { date: string; time: string } {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  // IST calendar day for Today/Yesterday labels — locks the label to
+  // IST regardless of the user's device timezone setting.
+  const today = startOfDayIST(new Date())
   const yesterday = new Date(today.getTime() - 86400000)
   const dKey = new Date(d).toISOString().slice(0, 10)
   const todayKey = today.toISOString().slice(0, 10)

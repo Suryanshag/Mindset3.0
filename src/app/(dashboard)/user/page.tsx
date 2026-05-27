@@ -17,6 +17,7 @@ import {
 } from '@/lib/queries/dashboard'
 import { getReflectionLandingData } from '@/lib/queries/reflection'
 import { getCurrentUserBasics } from '@/lib/queries/current-user'
+import { endOfDayIST } from '@/lib/format-date'
 import { userHasOnboardingActivity } from '@/lib/queries/onboarding'
 import { getRecentSessionFollowups } from '@/lib/queries/post-session'
 
@@ -45,8 +46,9 @@ export default async function UserHome({
     }
   }
 
-  const endOfToday = new Date()
-  endOfToday.setHours(23, 59, 59, 999)
+  // IST end-of-day for "due today" assignment filter — UTC server's
+  // setHours(23,…) is 5h30m short.
+  const endOfToday = endOfDayIST(new Date())
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
   // Fetch all data in parallel — mobile + desktop. weekMoods is new for

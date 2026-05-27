@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { Users, Stethoscope, Calendar, TrendingUp, IndianRupee, MessageSquare, Package, BarChart3, Wallet, Clock } from 'lucide-react'
+import { startOfMonthIST } from '@/lib/format-date'
 
 function formatCurrency(amount: number) {
   return `₹${amount.toLocaleString('en-IN')}`
@@ -13,7 +14,9 @@ export default async function AdminOverview() {
   if (!session?.user) redirect('/login')
 
   const now = new Date()
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  // IST month boundary — UTC server's getMonth would drift the cutoff
+  // up to 5h30m, shifting late-month sessions into the wrong bucket.
+  const startOfMonth = startOfMonthIST(now)
 
   const [
     totalUsers,

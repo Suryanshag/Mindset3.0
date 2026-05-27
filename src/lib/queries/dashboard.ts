@@ -1,7 +1,7 @@
 import { cache } from 'react'
 import { prisma } from '@/lib/prisma'
 import type { Workshop, Session as DashboardSession } from '@/types/dashboard'
-import { formatSessionTime } from '@/lib/format-date'
+import { formatSessionTime, startOfDayIST, dateOnlyIST } from '@/lib/format-date'
 
 /**
  * Next published workshop starting within the next 14 days.
@@ -76,8 +76,11 @@ export async function getUpcomingSession(userId: string): Promise<DashboardSessi
  * Streak: consecutive days with at least one engagement event.
  */
 export async function getUserStreak(userId: string): Promise<number> {
+  // Bucket engagement events by IST calendar day (not UTC) so a user
+  // journalling at 11:30 PM IST and again at 00:30 AM IST next day
+  // correctly extends the streak across the IST day boundary.
   const events = await prisma.$queryRaw<{ d: Date }[]>`
-    SELECT DISTINCT DATE(occurred_at AT TIME ZONE 'UTC') as d
+    SELECT DISTINCT DATE(occurred_at AT TIME ZONE 'Asia/Kolkata') as d
     FROM engagement_events
     WHERE user_id = ${userId}
     ORDER BY d DESC
@@ -86,15 +89,13 @@ export async function getUserStreak(userId: string): Promise<number> {
 
   if (events.length === 0) return 0
 
-  const toDateStr = (d: Date) => {
-    const dt = new Date(d)
-    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`
-  }
+  // IST-aware date key — dateOnlyIST returns UTC midnight of the IST
+  // calendar day, so .toISOString().slice(0,10) renders the IST
+  // YYYY-MM-DD regardless of server TZ.
+  const toDateStr = (d: Date) => dateOnlyIST(d).toISOString().slice(0, 10)
 
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const yesterday = new Date(today)
-  yesterday.setDate(yesterday.getDate() - 1)
+  const yesterday = new Date(today.getTime() - 86400000)
 
   const firstEventDate = toDateStr(events[0].d)
   const todayStr = toDateStr(today)
@@ -153,10 +154,12 @@ export async function getUserStats(userId: string) {
 export async function getLastWeekMoods(
   userId: string
 ): Promise<{ date: Date; mood: 1|2|3|4|5 | null }[]> {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const sevenDaysAgo = new Date(today)
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
+  // checkedInDate is @db.Date (stored as UTC midnight of the IST
+  // calendar day the user checked in on). Use dateOnlyIST so both
+  // the query bounds and the lookup keys are IST-aligned regardless
+  // of server TZ.
+  const today = dateOnlyIST(new Date())
+  const sevenDaysAgo = new Date(today.getTime() - 6 * 86400000)
 
   const rows = await prisma.moodCheckIn.findMany({
     where: { userId, checkedInDate: { gte: sevenDaysAgo, lte: today } },
@@ -171,8 +174,7 @@ export async function getLastWeekMoods(
 
   const out: { date: Date; mood: 1|2|3|4|5 | null }[] = []
   for (let i = 0; i < 7; i++) {
-    const d = new Date(sevenDaysAgo)
-    d.setDate(d.getDate() + i)
+    const d = new Date(sevenDaysAgo.getTime() + i * 86400000)
     const key = d.toISOString().slice(0, 10)
     const m = byDate.get(key)
     out.push({ date: d, mood: (m as 1|2|3|4|5 | undefined) ?? null })
@@ -181,8 +183,8 @@ export async function getLastWeekMoods(
 }
 
 export async function getTodaysMoodCheckIn(userId: string): Promise<{ mood: 1|2|3|4|5 } | null> {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  // IST calendar day → UTC midnight key for the @db.Date column.
+  const today = dateOnlyIST(new Date())
 
   const checkIn = await prisma.moodCheckIn.findUnique({
     where: {

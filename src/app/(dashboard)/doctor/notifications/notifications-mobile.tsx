@@ -8,6 +8,7 @@ import {
   markNotificationRead,
   markAllNotificationsRead,
 } from '@/lib/actions/notifications'
+import { startOfDayIST } from '@/lib/format-date'
 
 interface Notification {
   id: string
@@ -30,8 +31,10 @@ const GROUP_LABELS: Record<GroupKey, string> = {
 
 function groupOf(iso: string): GroupKey {
   const d = new Date(iso)
-  const now = new Date()
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  // IST boundaries — server-rendered timestamps would otherwise group
+  // late-evening notifications under "Yesterday" while the user reads
+  // them in the following IST day.
+  const startOfToday = startOfDayIST(new Date()).getTime()
   const startOfYesterday = startOfToday - 24 * 60 * 60 * 1000
   const sevenDaysAgo = startOfToday - 7 * 24 * 60 * 60 * 1000
   const t = d.getTime()
