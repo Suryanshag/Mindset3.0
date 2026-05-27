@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit",
+    "test:tz": "npx tsx --test tests/timezone-boundaries.test.ts",
     "smoke:sprint1a": "npx tsx scripts/smoke-test-sprint-1a.ts",
     "smoke:sprint1b": "npx tsx scripts/smoke-test-sprint-1b.ts",
     "smoke:sprint1c": "npx tsx scripts/smoke-test-sprint-1c.ts",
