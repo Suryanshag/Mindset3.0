@@ -146,14 +146,14 @@ export default function PatientDetailPage() {
 
         {/* Sessions tab */}
         {tab === 'sessions' && (
-          <section className="px-4 pt-3.5 grid gap-2">
+          <section className="px-4 pt-3.5 grid grid-cols-1 gap-2 w-full">
             {sessions.length === 0 ? (
               <EmptyTab title="No sessions yet." sub="Booked sessions will appear here." />
             ) : (
               sessions.map((s) => {
                 const isOpen = expandedNotes.has(s.id)
                 return (
-                  <div key={s.id} className="grid gap-2">
+                  <div key={s.id} className="grid grid-cols-1 gap-2 min-w-0 overflow-hidden">
                     <MobileSessionCard
                       s={{
                         id: s.id,

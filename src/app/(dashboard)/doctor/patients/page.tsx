@@ -99,12 +99,12 @@ export default function DoctorPatientsPage() {
               </p>
             </div>
           ) : (
-            <div className="grid gap-2">
+            <div className="grid grid-cols-1 gap-2 w-full">
               {patients.map((p) => (
                 <Link
                   key={p.id}
                   href={`/doctor/patients/${p.id}`}
-                  className="flex items-center gap-3 rounded-2xl p-3.5"
+                  className="flex items-center gap-3 rounded-2xl p-3.5 w-full min-w-0 overflow-hidden"
                   style={{ background: 'var(--bg-card)', boxShadow: 'var(--shadow-card)' }}
                 >
                   <div
