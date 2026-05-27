@@ -1,36 +1,37 @@
 #!/usr/bin/env node
-// Generate PWA icon set from the brand logo.
+// Generate PWA icon set from public/images/icons/Logo-1024.png.
 // Idempotent: re-running overwrites the outputs.
 //
-// Pipeline:
-//   1. Upscale public/images/icons/Logo.png (320x320 source) to a 1024x1024
-//      master using sharp's lanczos3 kernel. Master saved alongside source
-//      so future runs can skip the upscale (re-runs still regenerate it).
-//   2. Generate every PWA icon variant from the 1024 master so all outputs
-//      come from the same high-res anchor — avoids compounding upscale
-//      artefacts in the smaller sizes.
+// v2 (2026-05-28): switched to direct-resize mode. Source is now a
+// 1024x1024 PNG with its own dark background baked in — no compositing
+// layer, no cream padding, no inner-scale shrink. Every variant is a
+// straight lanczos3 downscale so the artwork lives edge-to-edge.
+//
+// To swap the source, replace public/images/icons/Logo-1024.png with a
+// new 1024x1024 PNG and re-run.
 //
 // Outputs:
-//   public/images/icons/Logo-1024.png     (1024x1024 master, lanczos3 upscale)
-//   public/icons/icon-192.png             (any-purpose, ~80% logo on cream)
-//   public/icons/icon-512.png             (any-purpose, ~80% logo on cream)
-//   public/icons/icon-maskable-192.png    (maskable, 20% padding each side)
-//   public/icons/icon-maskable-512.png    (maskable, 20% padding each side)
-//   public/apple-touch-icon.png           (180x180, opaque cream)
+//   public/icons/icon-192.png             (any-purpose 192x192)
+//   public/icons/icon-512.png             (any-purpose 512x512)
+//   public/icons/icon-maskable-192.png    (maskable; outer 40% may be
+//                                          cropped by Android's adaptive
+//                                          mask, which just trims more
+//                                          of the dark background)
+//   public/icons/icon-maskable-512.png    (maskable 512x512)
+//   public/apple-touch-icon.png           (180x180)
 //   public/favicon-32.png                 (32x32)
-//   public/favicon.ico                    (multi-res 16 + 32)
+//   src/app/favicon.ico                   (multi-res 16 + 32)
 //
 // Usage:  node scripts/generate-pwa-icons.mjs
 
 import sharp from 'sharp'
-import { mkdir, writeFile, readFile } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(__dirname, '..')
 
-const SOURCE = resolve(REPO_ROOT, 'public/images/icons/Logo.png')
 const MASTER = resolve(REPO_ROOT, 'public/images/icons/Logo-1024.png')
 const OUT_ICONS = resolve(REPO_ROOT, 'public/icons')
 const OUT_APPLE = resolve(REPO_ROOT, 'public/apple-touch-icon.png')
@@ -40,30 +41,26 @@ const OUT_FAVICON_32 = resolve(REPO_ROOT, 'public/favicon-32.png')
 // truth and avoids a shadowed-file maintenance trap.
 const OUT_FAVICON_ICO = resolve(REPO_ROOT, 'src/app/favicon.ico')
 
-// Brand cream — --color-bg-app, matches manifest theme_color + background_color.
-const BG = { r: 247, g: 242, b: 234, alpha: 1 } // #F7F2EA
+const MIN_BYTES = 5 * 1024
+const MAX_BYTES = 200 * 1024
 
-async function compositeOnBackground({ inputBuffer, size, innerScale }) {
-  const innerSize = Math.round(size * innerScale)
-  const inner = await sharp(inputBuffer)
-    .resize(innerSize, innerSize, {
-      fit: 'contain',
+// Quantized PNG (pngquant-style) keeps icon-512 under the 200KB ceiling.
+// AI-generated source has fine noise that won't deflate with plain compression-9.
+// quality:90 + colors:256 keeps the dark background and brain artwork visually
+// indistinguishable from RGB output while shrinking ~80%.
+async function downscale(size) {
+  return sharp(MASTER)
+    .resize(size, size, {
       kernel: sharp.kernel.lanczos3,
-      background: BG,
+      fit: 'cover',
     })
-    .png()
-    .toBuffer()
-
-  return sharp({
-    create: {
-      width: size,
-      height: size,
-      channels: 4,
-      background: BG,
-    },
-  })
-    .composite([{ input: inner, gravity: 'center' }])
-    .png({ compressionLevel: 9, palette: false })
+    .png({
+      compressionLevel: 9,
+      palette: true,
+      quality: 90,
+      colors: 256,
+      effort: 10,
+    })
     .toBuffer()
 }
 
@@ -84,7 +81,6 @@ function buildIco(entries) {
   for (let i = 0; i < n; i++) {
     const { size, png } = entries[i]
     const off = HEADER + DIR_ENTRY * i
-    // 0 means 256 in ICO; we never go that big here.
     head.writeUInt8(size, off + 0) // width
     head.writeUInt8(size, off + 1) // height
     head.writeUInt8(0, off + 2)    // palette size (0 = not indexed)
@@ -99,81 +95,53 @@ function buildIco(entries) {
   return Buffer.concat([head, ...entries.map((e) => e.png)])
 }
 
+// The <5KB floor only signals "generation failed" for the larger PWA
+// icons (>=180px). A 32x32 PNG is naturally ~1-2KB no matter how busy
+// the source — applying the floor there false-positives every time.
+function checkSize(path, size, bytes) {
+  if (size >= 180 && bytes < MIN_BYTES) {
+    throw new Error(`${path} is ${bytes} bytes (<5KB) — likely a generation failure`)
+  }
+  if (bytes > MAX_BYTES) {
+    throw new Error(`${path} is ${bytes} bytes (>200KB) — compression failed`)
+  }
+}
+
 async function main() {
   await mkdir(OUT_ICONS, { recursive: true })
 
-  // ── Step 1: upscale source → 1024 master ────────────────────────────
-  console.log('Upscaling Logo.png (320) → Logo-1024.png with lanczos3...')
-  const masterBuf = await sharp(SOURCE)
-    .resize(1024, 1024, {
-      kernel: sharp.kernel.lanczos3,
-      fit: 'contain',
-      background: BG,
-    })
-    .png({ compressionLevel: 9, palette: false })
-    .toBuffer()
-  await writeFile(MASTER, masterBuf)
-  console.log(`✓ ${MASTER} (${masterBuf.length.toLocaleString()} bytes)`)
+  const targets = [
+    { size: 192, path: resolve(OUT_ICONS, 'icon-192.png') },
+    { size: 512, path: resolve(OUT_ICONS, 'icon-512.png') },
+    { size: 192, path: resolve(OUT_ICONS, 'icon-maskable-192.png') },
+    { size: 512, path: resolve(OUT_ICONS, 'icon-maskable-512.png') },
+    { size: 180, path: OUT_APPLE },
+    { size: 32, path: OUT_FAVICON_32 },
+  ]
 
-  // ── Step 2: any-purpose icons (logo ~80% of canvas, cream bg) ───────
-  for (const size of [192, 512]) {
-    const buf = await compositeOnBackground({
-      inputBuffer: masterBuf,
-      size,
-      innerScale: 0.8,
-    })
-    const out = resolve(OUT_ICONS, `icon-${size}.png`)
-    await writeFile(out, buf)
-    console.log(`✓ ${out} (${buf.length.toLocaleString()} bytes)`)
+  for (const { size, path } of targets) {
+    const buf = await downscale(size)
+    await writeFile(path, buf)
+    checkSize(path, size, buf.length)
+    console.log(`✓ ${path} (${buf.length.toLocaleString()} bytes)`)
   }
 
-  // ── Step 3: maskable icons (logo at 60% — 20% safe-area each side) ──
-  // Android masks the outer area to a circle/squircle, so the brand must
-  // fit inside the central 60% with full bg bleed.
-  for (const size of [192, 512]) {
-    const buf = await compositeOnBackground({
-      inputBuffer: masterBuf,
-      size,
-      innerScale: 0.6,
-    })
-    const out = resolve(OUT_ICONS, `icon-maskable-${size}.png`)
-    await writeFile(out, buf)
-    console.log(`✓ ${out} (${buf.length.toLocaleString()} bytes)`)
-  }
-
-  // ── Step 4: apple-touch-icon (180, opaque cream bg) ─────────────────
-  const apple = await compositeOnBackground({
-    inputBuffer: masterBuf,
-    size: 180,
-    innerScale: 0.8,
-  })
-  await writeFile(OUT_APPLE, apple)
-  console.log(`✓ ${OUT_APPLE} (${apple.length.toLocaleString()} bytes)`)
-
-  // ── Step 5: favicon-32.png ───────────────────────────────────────────
-  // Smaller canvas → brand at 0.85 reads more clearly at browser-tab size.
-  const fav32 = await compositeOnBackground({
-    inputBuffer: masterBuf,
-    size: 32,
-    innerScale: 0.85,
-  })
-  await writeFile(OUT_FAVICON_32, fav32)
-  console.log(`✓ ${OUT_FAVICON_32} (${fav32.length.toLocaleString()} bytes)`)
-
-  // ── Step 6: favicon.ico (multi-res 16 + 32) ─────────────────────────
-  const fav16 = await compositeOnBackground({
-    inputBuffer: masterBuf,
-    size: 16,
-    innerScale: 0.85,
-  })
+  // Multi-res favicon.ico — 16 + 32 PNGs packed into an ICO container.
+  const fav16 = await downscale(16)
+  const fav32 = await downscale(32)
   const ico = buildIco([
     { size: 16, png: fav16 },
     { size: 32, png: fav32 },
   ])
   await writeFile(OUT_FAVICON_ICO, ico)
+  // favicon.ico is naturally small (a few KB) — the >5KB floor doesn't
+  // apply to a tiny 16+32 container. Just guard the upper bound.
+  if (ico.length > MAX_BYTES) {
+    throw new Error(`${OUT_FAVICON_ICO} is ${ico.length} bytes — compression failed`)
+  }
   console.log(`✓ ${OUT_FAVICON_ICO} (${ico.length.toLocaleString()} bytes, 16+32)`)
 
-  console.log('\nDone. PWA icon set regenerated from 1024 master.')
+  console.log('\nDone. PWA icon set regenerated from Logo-1024 master.')
 }
 
 main().catch((err) => {
