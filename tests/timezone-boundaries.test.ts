@@ -93,4 +93,13 @@ describe('IST boundary helpers', () => {
     // Specifically: IST of 10:00 UTC = 15:30 IST May 27 → IST day = May 27
     assert.equal(result.toISOString(), '2026-05-27T00:00:00.000Z')
   })
+
+  it('dateOnlyIST stores the IST calendar day, not the UTC date, for late-evening UTC instants', () => {
+    // 2026-05-27 19:00 UTC = 2026-05-28 00:30 IST
+    // The IST calendar day is 2026-05-28, NOT 2026-05-27.
+    // This was the mood.ts bug: late-evening IST check-ins were stored under yesterday.
+    const input = new Date('2026-05-27T19:00:00.000Z')
+    const result = dateOnlyIST(input)
+    assert.equal(result.toISOString(), '2026-05-28T00:00:00.000Z')
+  })
 })
