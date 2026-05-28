@@ -17,7 +17,7 @@ const presenterInlineSchema = z.object({
   linkedinUrl: z.string().url().optional().or(z.literal('').transform(() => undefined)),
 })
 
-export const createWorkshopSchema = z.object({
+const workshopObjectSchema = z.object({
   title: z.string().min(2).max(200),
   subtitle: z.string().max(300).optional(),
   description: z.string().min(10).max(50000),
@@ -49,10 +49,17 @@ export const createWorkshopSchema = z.object({
   meetLink: z.string().url().optional().or(z.literal('').transform(() => undefined)),
   minCapacity: z.number().int().min(1).max(10000).default(5),
   presenterSplitPct: z.number().int().min(0).max(100).default(70),
-}).refine(
+})
+
+export const createWorkshopSchema = workshopObjectSchema.refine(
   (d) => d.startsAt || d.date,
   { message: 'startsAt or date is required' }
 )
+
+// PATCH/update: every field optional. Built from the base object (not the
+// refined schema) because Zod throws if .partial() is called on a schema
+// that contains refinements.
+export const updateWorkshopSchema = workshopObjectSchema.partial()
 
 /** Resolve legacy field names to canonical names. */
 export function resolveWorkshopFields(d: z.infer<typeof createWorkshopSchema>) {

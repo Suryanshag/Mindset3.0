@@ -8,6 +8,7 @@ import HomeRail from '@/components/dashboard/desktop/home-rail'
 import MobileHome from '@/components/mobile/home'
 import {
   getNextWorkshop,
+  getUpcomingWorkshops,
   getUnreadNotificationCount,
   getUpcomingSession,
   getTodaysMoodCheckIn,
@@ -53,7 +54,7 @@ export default async function UserHome({
 
   // Fetch all data in parallel — mobile + desktop. weekMoods is new for
   // the Phase 2 mobile home; realStats still feeds the desktop variant.
-  const [dbUser, workshop, unreadCount, pendingAssignments, upcomingSession, todaysMood, realStats, reflectionData, engagementState, weekMoods] = await Promise.all([
+  const [dbUser, workshop, unreadCount, pendingAssignments, upcomingSession, todaysMood, realStats, reflectionData, engagementState, weekMoods, upcomingWorkshops] = await Promise.all([
     userId ? getCurrentUserBasics(userId).catch(() => null) : Promise.resolve(null),
     getNextWorkshop(userId ?? undefined).catch(() => null),
     userId ? getUnreadNotificationCount(userId).catch(() => 0) : Promise.resolve(0),
@@ -90,6 +91,7 @@ export default async function UserHome({
     userId
       ? getLastWeekMoods(userId).catch(() => [] as { date: Date; mood: 1|2|3|4|5 | null }[])
       : Promise.resolve([] as { date: Date; mood: 1|2|3|4|5 | null }[]),
+    getUpcomingWorkshops(3).catch(() => [] as { id: string; title: string; sub: string; host: string; when: string }[]),
   ])
 
   // Phase 3 — recent SessionFollowups feed the HomeEngaged "Your last N
@@ -138,6 +140,7 @@ export default async function UserHome({
             postMood: f.postMood as 1 | 2 | 3 | 4 | 5 | null,
             homeworkNote: f.homeworkNote,
           }))}
+          workshops={upcomingWorkshops}
         />
       </div>
 

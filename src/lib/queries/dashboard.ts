@@ -1,7 +1,7 @@
 import { cache } from 'react'
 import { prisma } from '@/lib/prisma'
 import type { Workshop, Session as DashboardSession } from '@/types/dashboard'
-import { formatSessionTime, startOfDayIST, dateOnlyIST } from '@/lib/format-date'
+import { formatSessionTime, formatSessionDateRelative, startOfDayIST, dateOnlyIST } from '@/lib/format-date'
 
 /**
  * Next published workshop starting within the next 14 days.
@@ -41,6 +41,30 @@ export async function getNextWorkshop(userId?: string): Promise<Workshop | null>
     isRegistered,
     whatsappUrl: ws.whatsappGroupUrl ?? null,
   }
+}
+
+/**
+ * Up to `limit` upcoming published workshops, shaped for the mobile home
+ * teaser. Returns an empty array when none are scheduled (caller hides the
+ * section). Mirrors the discover/workshops list filter (published + future).
+ */
+export async function getUpcomingWorkshops(limit = 3): Promise<
+  { id: string; title: string; sub: string; host: string; when: string }[]
+> {
+  const now = new Date()
+  const ws = await prisma.workshop.findMany({
+    where: { published: true, startsAt: { gte: now } },
+    orderBy: { startsAt: 'asc' },
+    take: limit,
+    include: { presenter: { select: { name: true } } },
+  })
+  return ws.map((w) => ({
+    id: w.id,
+    title: w.title,
+    sub: w.subtitle ?? (w.priceCents === 0 ? 'Free' : `₹${Math.round(w.priceCents / 100)}`),
+    host: w.presenter?.name ?? w.instructorName ?? 'Mindset',
+    when: formatSessionDateRelative(w.startsAt),
+  }))
 }
 
 /**

@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
-import { createWorkshopSchema } from '@/lib/validations/workshop'
+import { updateWorkshopSchema } from '@/lib/validations/workshop'
 
 export async function GET(
   _req: NextRequest,
@@ -48,8 +48,7 @@ export async function PATCH(
     const { id } = await params
     const body = await req.json()
 
-    const schema = createWorkshopSchema.partial()
-    const parsed = schema.safeParse(body)
+    const parsed = updateWorkshopSchema.safeParse(body)
     if (!parsed.success) {
       return errorResponse(parsed.error.issues[0].message, 400)
     }

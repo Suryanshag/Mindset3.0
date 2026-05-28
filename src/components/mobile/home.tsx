@@ -62,6 +62,16 @@ type RecentFollowup = {
 
 type EngagementState = 'empty' | 'partial' | 'engaged'
 
+// Upcoming workshop shaped for the home teaser. Computed server-side so the
+// client component stays serializable (no Date objects).
+export type WorkshopTeaserItem = {
+  id: string
+  title: string
+  sub: string
+  host: string
+  when: string
+}
+
 export type MobileHomeProps = {
   engagementState: EngagementState
   name: string
@@ -71,6 +81,7 @@ export type MobileHomeProps = {
   pendingAssignments: PendingAssignment[]
   weekMoods: WeekMood[]
   recentFollowups?: RecentFollowup[]
+  workshops: WorkshopTeaserItem[]
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -88,6 +99,7 @@ export default function MobileHome(props: MobileHomeProps) {
     onMoodOpen,
     upcomingSession: props.upcomingSession,
     weekMoods: props.weekMoods,
+    workshops: props.workshops,
   }
 
   return (
@@ -120,6 +132,7 @@ type SharedHomeProps = {
   onMoodOpen: (m?: 1 | 2 | 3 | 4 | 5) => void
   upcomingSession: UpcomingSession
   weekMoods: WeekMood[]
+  workshops: WorkshopTeaserItem[]
 }
 
 function HomeEmpty({ name }: SharedHomeProps) {
@@ -285,6 +298,7 @@ function HomePartial({
   onMoodOpen,
   upcomingSession,
   weekMoods,
+  workshops,
 }: SharedHomeProps) {
   return (
     <div
@@ -390,9 +404,7 @@ function HomePartial({
         </Card>
       </section>
 
-      <section style={{ padding: '24px 20px 0' }}>
-        <WorkshopTeaser />
-      </section>
+      <WorkshopTeaser workshops={workshops} />
     </div>
   )
 }
@@ -456,6 +468,7 @@ function HomeEngaged({
   onMoodOpen,
   upcomingSession,
   weekMoods,
+  workshops,
   pendingAssignments,
   recentFollowups,
 }: SharedHomeProps & {
@@ -585,9 +598,7 @@ function HomeEngaged({
         <ReflectionOfDay />
       </section>
 
-      <section style={{ padding: '24px 20px 0' }}>
-        <WorkshopTeaser />
-      </section>
+      <WorkshopTeaser workshops={workshops} />
     </div>
   )
 }
@@ -1184,15 +1195,17 @@ function ReflectionOfDay() {
   )
 }
 
-// WorkshopTeaser renders static example cards. Phase 2 closeout deferral
-// — a real getUpcomingWorkshops(3) helper is queued for the Phase 3
-// discover/workshop work. The home teaser is decorative; clicking
-// "Browse" takes the user to the real workshops list.
-function WorkshopTeaser() {
+// WorkshopTeaser renders real upcoming workshops passed from the server.
+// Returns null (renders nothing) when there are none, so the home doesn't
+// show an empty section. Cards link to the workshop detail.
+const TEASER_TINTS = ['var(--soft-blue)', 'var(--accent-tint)', 'var(--primary-tint)']
+
+function WorkshopTeaser({ workshops }: { workshops: WorkshopTeaserItem[] }) {
+  if (workshops.length === 0) return null
   return (
-    <>
+    <section style={{ padding: '24px 20px 0' }}>
       <SectionHead
-        title="This week’s workshops"
+        title="Upcoming workshops"
         action="Browse"
         onAction={() => (window.location.href = '/user/discover/workshops')}
       />
@@ -1206,39 +1219,31 @@ function WorkshopTeaser() {
         }}
         className="screen-scroll"
       >
-        <WorkshopTeaserCard
-          title="Calm in the Storm"
-          sub="Anxiety toolkit"
-          tint="var(--soft-blue)"
-          host="Dr Mehra"
-          when="Tue, 7 PM"
-        />
-        <WorkshopTeaserCard
-          title="Letting Go of Burnout"
-          sub="For working adults"
-          tint="var(--accent-tint)"
-          host="Dr Kapoor"
-          when="Thu, 8 PM"
-        />
-        <WorkshopTeaserCard
-          title="Sleep, Reset"
-          sub="Insomnia care"
-          tint="var(--primary-tint)"
-          host="Dr Sharma"
-          when="Sat, 9 AM"
-        />
+        {workshops.map((w, i) => (
+          <WorkshopTeaserCard
+            key={w.id}
+            id={w.id}
+            title={w.title}
+            sub={w.sub}
+            tint={TEASER_TINTS[i % TEASER_TINTS.length]}
+            host={w.host}
+            when={w.when}
+          />
+        ))}
       </div>
-    </>
+    </section>
   )
 }
 
 function WorkshopTeaserCard({
+  id,
   title,
   sub,
   tint,
   host,
   when,
 }: {
+  id: string
   title: string
   sub: string
   tint: string
@@ -1247,12 +1252,14 @@ function WorkshopTeaserCard({
 }) {
   return (
     <div
+      onClick={() => (window.location.href = `/user/discover/workshops/${id}`)}
       style={{
         minWidth: 232,
         background: 'var(--bg-card)',
         borderRadius: 22,
         boxShadow: 'var(--shadow-card)',
         overflow: 'hidden',
+        cursor: 'pointer',
       }}
     >
       <div
