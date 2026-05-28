@@ -4,7 +4,7 @@
 // specific.
 
 import Link from 'next/link'
-import { Card, Avatar, Blob, TypeChip } from './ui'
+import { Card, Blob, TypeChip } from './ui'
 import { IconArrowLeft, IconCalendar, IconClock, IconVideo } from './icons'
 import WorkshopRegisterButton from '@/app/(dashboard)/user/discover/workshops/[id]/register-button'
 
@@ -156,7 +156,6 @@ export default function MobileWorkshopDetail({
               gap: 12,
             }}
           >
-            <Avatar name={presenter} size={48} color="var(--primary)" />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{

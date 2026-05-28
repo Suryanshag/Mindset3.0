@@ -4,7 +4,7 @@
 // the sibling file).
 
 import Link from 'next/link'
-import { Card, Avatar, Blob, TypeChip } from './ui'
+import { Card, Blob, TypeChip } from './ui'
 import { IconArrowLeft } from './icons'
 
 export type WorkshopItem = {
@@ -386,11 +386,6 @@ function FeaturedWorkshopCard({ w }: { w: WorkshopItem }) {
               borderTop: '1px solid var(--border)',
             }}
           >
-            <Avatar
-              name={presenter}
-              size={32}
-              color="var(--primary)"
-            />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{
@@ -563,7 +558,6 @@ function WorkshopRow({ w }: { w: WorkshopItem }) {
               marginTop: 12,
             }}
           >
-            <Avatar name={presenter} size={32} color="var(--navy)" />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{

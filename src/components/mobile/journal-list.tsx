@@ -3,6 +3,7 @@
 // Phase 4 — Mobile Journal list. Ported from app/journal.jsx Journal.
 // Calendar strip + today's prompt + entry list.
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { Card, MoodFace, MOOD_INFO } from './ui'
 import { startOfDayIST } from '@/lib/format-date'
@@ -45,6 +46,16 @@ function singleLetterWeekday(d: Date): string {
   return d.toLocaleDateString('en-IN', { weekday: 'short' }).charAt(0)
 }
 
+// YYYY-MM-DD in the device's local timezone. The strip renders day numbers
+// in local time, so deriving keys the same way keeps the highlight, the
+// selected-day label, and the entry filter all in agreement.
+function localDayKey(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 function formatEntryDateRow(d: Date): { date: string; time: string } {
   // IST calendar day for Today/Yesterday labels — locks the label to
   // IST regardless of the user's device timezone setting.
@@ -75,8 +86,24 @@ export default function MobileJournalList({
   streak,
   prompt,
 }: MobileJournalListProps) {
+  // Tapping a day in the calendar strip filters the list to that day.
+  const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const totalEntries = entries.length
-  const todayKey = new Date().toISOString().slice(0, 10)
+  const todayKey = localDayKey(new Date())
+
+  const shownEntries = selectedDay
+    ? entries.filter((e) => localDayKey(new Date(e.entryDate)) === selectedDay)
+    : entries
+  const selectedLabel = selectedDay
+    ? (() => {
+        const [y, m, dd] = selectedDay.split('-').map(Number)
+        return new Date(y, m - 1, dd).toLocaleDateString('en-IN', {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+        })
+      })()
+    : null
 
   return (
     <div
@@ -149,19 +176,24 @@ export default function MobileJournalList({
         >
           {weekDays.map((d, i) => {
             const dt = new Date(d.date)
-            const isToday = dt.toISOString().slice(0, 10) === todayKey
+            const dayKey = localDayKey(dt)
+            const isToday = dayKey === todayKey
+            const isActive = selectedDay ? dayKey === selectedDay : isToday
             const dayN = dt.toLocaleDateString('en-IN', { day: 'numeric' })
             const moodInfo = d.mood ? MOOD_INFO[d.mood] : null
             return (
-              <div
+              <button
                 key={i}
+                onClick={() =>
+                  setSelectedDay((prev) => (prev === dayKey ? null : dayKey))
+                }
                 style={{
                   minWidth: 46,
                   padding: '8px 4px',
-                  background: isToday
+                  background: isActive
                     ? 'var(--primary)'
                     : 'var(--bg-card)',
-                  color: isToday ? 'var(--on-dark)' : 'var(--text)',
+                  color: isActive ? 'var(--on-dark)' : 'var(--text)',
                   borderRadius: 14,
                   textAlign: 'center',
                   boxShadow: 'var(--shadow-card)',
@@ -196,14 +228,14 @@ export default function MobileJournalList({
                         width: 6,
                         height: 6,
                         borderRadius: '50%',
-                        background: isToday
+                        background: isActive
                           ? 'var(--on-dark)'
                           : moodInfo?.color ?? 'var(--text-muted)',
                       }}
                     />
                   ) : null}
                 </div>
-              </div>
+              </button>
             )
           })}
         </div>
@@ -259,7 +291,27 @@ export default function MobileJournalList({
 
       {/* Entries */}
       <section style={{ padding: '20px 20px 0' }}>
-        {entries.length === 0 ? (
+        {selectedDay && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 12,
+            }}
+          >
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>
+              {selectedLabel}
+            </div>
+            <button
+              onClick={() => setSelectedDay(null)}
+              style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)' }}
+            >
+              Show all
+            </button>
+          </div>
+        )}
+        {shownEntries.length === 0 ? (
           <Card padding={28} style={{ textAlign: 'center' }}>
             <p
               className="ms-serif"
@@ -270,28 +322,32 @@ export default function MobileJournalList({
                 margin: 0,
               }}
             >
-              Your first entry is one tap away.
+              {selectedDay
+                ? 'No entries on this day.'
+                : 'Your first entry is one tap away.'}
             </p>
-            <Link
-              href="/user/practice/journal/new"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                marginTop: 18,
-                background: 'var(--primary)',
-                color: 'var(--on-dark)',
-                padding: '12px 22px',
-                borderRadius: 999,
-                fontSize: 14,
-                fontWeight: 800,
-              }}
-            >
-              Start writing <IconArrowRight size={14} sw={2.2} />
-            </Link>
+            {!selectedDay && (
+              <Link
+                href="/user/practice/journal/new"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  marginTop: 18,
+                  background: 'var(--primary)',
+                  color: 'var(--on-dark)',
+                  padding: '12px 22px',
+                  borderRadius: 999,
+                  fontSize: 14,
+                  fontWeight: 800,
+                }}
+              >
+                Start writing <IconArrowRight size={14} sw={2.2} />
+              </Link>
+            )}
           </Card>
         ) : (
-          entries.map((e) => <EntryRow key={e.id} entry={e} />)
+          shownEntries.map((e) => <EntryRow key={e.id} entry={e} />)
         )}
       </section>
     </div>
