@@ -1,16 +1,10 @@
 'use client'
 
 // Phase 4 — Mobile Journal list. Ported from app/journal.jsx Journal.
-// Calendar strip + today's prompt + filter chips + entry list.
-//
-// Filter chips render visually but DO NOT filter — JournalEntry has no
-// `tags` column. The active chip just highlights "All" by default;
-// tapping other chips updates local state but the entry list never
-// narrows. Flagged in PORT_LOG Phase 5 entry-checklist.
+// Calendar strip + today's prompt + entry list.
 
-import { useState } from 'react'
 import Link from 'next/link'
-import { Card, Chip, MoodFace, MOOD_INFO } from './ui'
+import { Card, MoodFace, MOOD_INFO } from './ui'
 import { startOfDayIST } from '@/lib/format-date'
 import {
   IconArrowRight,
@@ -47,8 +41,6 @@ type MobileJournalListProps = {
   prompt: PromptCard | null
 }
 
-const FILTER_CHIPS = ['All', 'Gratitude', 'Relationships', 'Health', 'Work', 'Sleep']
-
 function singleLetterWeekday(d: Date): string {
   return d.toLocaleDateString('en-IN', { weekday: 'short' }).charAt(0)
 }
@@ -83,7 +75,6 @@ export default function MobileJournalList({
   streak,
   prompt,
 }: MobileJournalListProps) {
-  const [filter, setFilter] = useState('All')
   const totalEntries = entries.length
   const todayKey = new Date().toISOString().slice(0, 10)
 
@@ -266,31 +257,8 @@ export default function MobileJournalList({
         </section>
       )}
 
-      {/* Filter chips — visual only (no tag column on JournalEntry).
-          See PORT_LOG Phase 5 entry-checklist for the schema-add. */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 8,
-          overflowX: 'auto',
-          margin: '20px -20px 4px',
-          padding: '0 20px 4px',
-        }}
-        className="screen-scroll"
-      >
-        {FILTER_CHIPS.map((f) => (
-          <Chip
-            key={f}
-            active={filter === f}
-            onClick={() => setFilter(f)}
-          >
-            {f}
-          </Chip>
-        ))}
-      </div>
-
       {/* Entries */}
-      <section style={{ padding: '12px 20px 0' }}>
+      <section style={{ padding: '20px 20px 0' }}>
         {entries.length === 0 ? (
           <Card padding={28} style={{ textAlign: 'center' }}>
             <p

@@ -6749,6 +6749,14 @@ body .wp-site-blocks .block-blog-hero__shape {
     padding-top: 0;
 }
 
+/* Guard against accidental horizontal page scroll in the PWA. Pages use
+   full-bleed scrollers (negative margins) for edge-to-edge strips; if one
+   isn't wrapped in a padded parent its overhang would make the whole screen
+   scroll sideways. Inner strips keep their own overflow-x: auto. */
+[data-mobile-fullbleed] {
+    overflow-x: hidden;
+}
+
 /* MobileShell header opt-out — pages that render their own top chrome
    wrap their content in <div data-no-mobile-header>. The shell's
    `.mobile-shell-header` wrapper is hidden when the marker is present
