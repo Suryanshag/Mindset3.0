@@ -1,17 +1,13 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { NextRequest } from 'next/server'
+import type { Session } from 'next-auth'
 import { PDFDocument, rgb, degrees, StandardFonts } from 'pdf-lib'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return new Response('Unauthorized', { status: 401 })
-  }
-
   const { id } = await params
   const download = request.nextUrl.searchParams.get('download') === '1'
 
@@ -24,9 +20,18 @@ export async function GET(
     return new Response('Not found', { status: 404 })
   }
 
+  // FREE materials are public (no login required); PAID requires an
+  // authenticated, paying user. The watermark block below keys off
+  // paymentId, so it only runs for PAID where session is guaranteed set.
   let paymentId: string | null = null
+  let session: Session | null = null
 
   if (material.type === 'PAID') {
+    session = await auth()
+    if (!session?.user?.id) {
+      return new Response('Unauthorized', { status: 401 })
+    }
+
     const payment = await prisma.payment.findFirst({
       where: {
         userId: session.user.id,
@@ -55,7 +60,7 @@ export async function GET(
     : `inline; filename="${material.title}.pdf"`
 
   // Watermark paid content only — regenerated on every request (serverless-safe, no cache)
-  if (material.type === 'PAID' && paymentId) {
+  if (material.type === 'PAID' && paymentId && session?.user) {
     const userEmail = session.user.email ?? session.user.id
     const stamp = `${userEmail} · ${paymentId} · ${new Date().toISOString().split('T')[0]}`
 

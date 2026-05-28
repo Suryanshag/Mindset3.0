@@ -11,7 +11,6 @@ export async function GET() {
         type: true,
         price: true,
         coverImage: true,
-        fileUrl: true,
       },
       orderBy: { createdAt: 'desc' },
     })
