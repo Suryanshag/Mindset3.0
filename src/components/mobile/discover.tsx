@@ -166,7 +166,7 @@ export default function MobileDiscover({
                 >
                   <div
                     style={{
-                      height: 100,
+                      aspectRatio: '1 / 1.414',
                       background: m.coverImage
                         ? 'transparent'
                         : 'var(--accent-tint)',

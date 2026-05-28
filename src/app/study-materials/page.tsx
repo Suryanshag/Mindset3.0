@@ -169,7 +169,7 @@ function buildMaterialCard(material: StudyMaterial): string {
   return `
     <article class="block-blog-listing__post" data-post-id="${material.id}" data-categories="${material.type}">
       <div class="block-blog-listing__post-link">
-        <div class="block-blog-listing__post-image">
+        <div class="block-blog-listing__post-image sm-card__cover">
           ${cover}
         </div>
         <div class="block-blog-listing__post-categories">

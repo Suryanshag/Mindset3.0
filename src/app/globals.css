@@ -5701,6 +5701,16 @@ body .wp-site-blocks .block-blog-listing__posts:has(.product-detail) {
 .sm-card__cover-fallback--free { background: #D1FAE5; color: #065F46; }
 .sm-card__cover-fallback--paid { background: #FEF3C7; color: #92400E; }
 
+/* Study material listing cards — portrait cover page, same poster handling as workshops */
+body .wp-site-blocks .block-blog-listing__post-image.sm-card__cover {
+    height: auto;
+    aspect-ratio: 1 / 1.414;
+}
+body .wp-site-blocks .block-blog-listing__post-image.sm-card__cover .sm-card__cover-fallback {
+    height: 100%;
+    aspect-ratio: auto;
+}
+
 /* Detail cover — fills the image-wrap like other detail pages */
 .sm-detail__cover-wrap img,
 .sm-detail__cover-wrap .sm-card__cover-fallback {
@@ -6137,6 +6147,15 @@ body .wp-site-blocks .tm-section-bg {
     #product-actions-mount,
     #ebook-actions-mount {
         max-width: 100%;
+    }
+}
+
+/* Study material detail — portrait cover fills width on phones (matches workshop posters) */
+@media (max-width: 767px) {
+    .sm-detail__cover-wrap.product-detail__image-wrap {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1 / 1.414;
     }
 }
 
