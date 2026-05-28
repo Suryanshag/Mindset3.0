@@ -233,7 +233,6 @@ export default async function WorkshopDetailPage({
           isFree={isFree}
           isRegistered={isRegistered}
           whatsappUrl={workshop.whatsappGroupUrl}
-          price={workshop.priceCents}
         />
       </div>
     </div>

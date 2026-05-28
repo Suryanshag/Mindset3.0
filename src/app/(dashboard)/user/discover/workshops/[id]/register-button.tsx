@@ -17,7 +17,6 @@ type Props = {
   isFree: boolean
   isRegistered: boolean
   whatsappUrl: string | null
-  price: number
 }
 
 type PaymentSession = {
@@ -56,7 +55,6 @@ export default function WorkshopRegisterButton({
   isFree,
   isRegistered,
   whatsappUrl,
-  price,
 }: Props) {
   const router = useRouter()
   const { data: authSession } = useSession()
@@ -300,7 +298,7 @@ export default function WorkshopRegisterButton({
     if (state === 'paying') return 'Opening Razorpay…'
     if (isPending) return 'Registering…'
     if (isFree) return 'Reserve spot'
-    return `Pay ₹${(price / 100).toFixed(0)} and register`
+    return 'Register'
   })()
 
   return (

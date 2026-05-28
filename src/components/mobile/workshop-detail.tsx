@@ -59,7 +59,8 @@ export default function MobileWorkshopDetail({
         paddingBottom: 130,
       }}
     >
-      {/* Hero — image OR primary-tint gradient fallback */}
+      {/* Hero — solid tinted header with decorative blobs. The poster is
+          shown full-size in its own card below the description. */}
       <div
         style={{
           background: 'var(--primary-tint)',
@@ -70,46 +71,27 @@ export default function MobileWorkshopDetail({
           padding: '14px 20px 28px',
         }}
       >
-        {w.coverImageUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={w.coverImageUrl}
-            alt={w.title}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              opacity: 0.55,
-            }}
-          />
-        )}
-        {!w.coverImageUrl && (
-          <>
-            <Blob
-              fill="rgba(255,255,255,0.45)"
-              style={{
-                position: 'absolute',
-                right: -40,
-                top: -50,
-                width: 200,
-                height: 200,
-              }}
-            />
-            <Blob
-              fill="rgba(45,90,79,0.10)"
-              d="M40 12 C76 8 110 36 100 76 C92 110 40 120 14 92 C-6 70 4 18 40 12 Z"
-              style={{
-                position: 'absolute',
-                left: -40,
-                bottom: -60,
-                width: 160,
-                height: 160,
-              }}
-            />
-          </>
-        )}
+        <Blob
+          fill="rgba(255,255,255,0.45)"
+          style={{
+            position: 'absolute',
+            right: -40,
+            top: -50,
+            width: 200,
+            height: 200,
+          }}
+        />
+        <Blob
+          fill="rgba(45,90,79,0.10)"
+          d="M40 12 C76 8 110 36 100 76 C92 110 40 120 14 92 C-6 70 4 18 40 12 Z"
+          style={{
+            position: 'absolute',
+            left: -40,
+            bottom: -60,
+            width: 160,
+            height: 160,
+          }}
+        />
         <header
           style={{
             position: 'relative',
@@ -277,18 +259,15 @@ export default function MobileWorkshopDetail({
         >
           What you'll get
         </div>
-        <p
+        <div
           className="ms-serif"
           style={{
             fontSize: 16,
             lineHeight: 1.6,
             color: 'var(--text)',
-            margin: 0,
-            whiteSpace: 'pre-wrap',
           }}
-        >
-          {w.description}
-        </p>
+          dangerouslySetInnerHTML={{ __html: w.description }}
+        />
       </section>
 
       {/* Poster — reuses coverImageUrl per Mobile-Polish-1 T4. The
@@ -421,7 +400,6 @@ export default function MobileWorkshopDetail({
                 isFree={isFree}
                 isRegistered={isRegistered}
                 whatsappUrl={w.whatsappGroupUrl}
-                price={Math.round(w.priceCents / 100)}
               />
             </div>
           </div>
