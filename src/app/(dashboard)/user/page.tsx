@@ -91,7 +91,7 @@ export default async function UserHome({
     userId
       ? getLastWeekMoods(userId).catch(() => [] as { date: Date; mood: 1|2|3|4|5 | null }[])
       : Promise.resolve([] as { date: Date; mood: 1|2|3|4|5 | null }[]),
-    getUpcomingWorkshops(3).catch(() => [] as { id: string; title: string; sub: string; host: string; when: string }[]),
+    getUpcomingWorkshops(3).catch(() => [] as { id: string; title: string; host: string; when: string; coverImageUrl: string | null; priceLabel: string }[]),
   ])
 
   // Phase 3 — recent SessionFollowups feed the HomeEngaged "Your last N

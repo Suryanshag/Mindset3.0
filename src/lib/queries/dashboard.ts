@@ -49,7 +49,14 @@ export async function getNextWorkshop(userId?: string): Promise<Workshop | null>
  * section). Mirrors the discover/workshops list filter (published + future).
  */
 export async function getUpcomingWorkshops(limit = 3): Promise<
-  { id: string; title: string; sub: string; host: string; when: string }[]
+  {
+    id: string
+    title: string
+    host: string
+    when: string
+    coverImageUrl: string | null
+    priceLabel: string
+  }[]
 > {
   const now = new Date()
   const ws = await prisma.workshop.findMany({
@@ -61,9 +68,10 @@ export async function getUpcomingWorkshops(limit = 3): Promise<
   return ws.map((w) => ({
     id: w.id,
     title: w.title,
-    sub: w.subtitle ?? (w.priceCents === 0 ? 'Free' : `₹${Math.round(w.priceCents / 100)}`),
     host: w.presenter?.name ?? w.instructorName ?? 'Mindset',
     when: formatSessionDateRelative(w.startsAt),
+    coverImageUrl: w.coverImageUrl,
+    priceLabel: w.priceCents === 0 ? 'Free' : `₹${Math.round(w.priceCents / 100)}`,
   }))
 }
 

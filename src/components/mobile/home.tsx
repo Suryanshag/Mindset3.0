@@ -67,9 +67,10 @@ type EngagementState = 'empty' | 'partial' | 'engaged'
 export type WorkshopTeaserItem = {
   id: string
   title: string
-  sub: string
   host: string
   when: string
+  coverImageUrl: string | null
+  priceLabel: string
 }
 
 export type MobileHomeProps = {
@@ -1198,8 +1199,6 @@ function ReflectionOfDay() {
 // WorkshopTeaser renders real upcoming workshops passed from the server.
 // Returns null (renders nothing) when there are none, so the home doesn't
 // show an empty section. Cards link to the workshop detail.
-const TEASER_TINTS = ['var(--soft-blue)', 'var(--accent-tint)', 'var(--primary-tint)']
-
 function WorkshopTeaser({ workshops }: { workshops: WorkshopTeaserItem[] }) {
   if (workshops.length === 0) return null
   return (
@@ -1209,112 +1208,105 @@ function WorkshopTeaser({ workshops }: { workshops: WorkshopTeaserItem[] }) {
         action="Browse"
         onAction={() => (window.location.href = '/user/discover/workshops')}
       />
-      <div
-        style={{
-          display: 'flex',
-          gap: 12,
-          overflowX: 'auto',
-          margin: '0 -20px',
-          padding: '0 20px 4px',
-        }}
-        className="screen-scroll"
-      >
-        {workshops.map((w, i) => (
-          <WorkshopTeaserCard
-            key={w.id}
-            id={w.id}
-            title={w.title}
-            sub={w.sub}
-            tint={TEASER_TINTS[i % TEASER_TINTS.length]}
-            host={w.host}
-            when={w.when}
-          />
+      <div style={{ display: 'grid', gap: 10 }}>
+        {workshops.map((w) => (
+          <WorkshopTeaserCard key={w.id} {...w} />
         ))}
       </div>
     </section>
   )
 }
 
+// Horizontal card: portrait poster thumbnail (left, uncropped shape) + text.
 function WorkshopTeaserCard({
   id,
   title,
-  sub,
-  tint,
   host,
   when,
-}: {
-  id: string
-  title: string
-  sub: string
-  tint: string
-  host: string
-  when: string
-}) {
+  coverImageUrl,
+  priceLabel,
+}: WorkshopTeaserItem) {
+  const isFree = priceLabel.toLowerCase() === 'free'
   return (
     <div
       onClick={() => (window.location.href = `/user/discover/workshops/${id}`)}
       style={{
-        minWidth: 232,
+        display: 'flex',
+        gap: 12,
         background: 'var(--bg-card)',
-        borderRadius: 22,
+        borderRadius: 18,
         boxShadow: 'var(--shadow-card)',
-        overflow: 'hidden',
+        padding: 10,
         cursor: 'pointer',
       }}
     >
       <div
         style={{
-          height: 110,
-          background: tint,
+          width: 70,
+          flexShrink: 0,
+          aspectRatio: '1 / 1.414',
+          borderRadius: 12,
+          overflow: 'hidden',
+          background: 'var(--primary-tint)',
           position: 'relative',
           display: 'flex',
-          alignItems: 'flex-end',
-          padding: 12,
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
-        <Blob
-          fill="rgba(255,255,255,0.4)"
-          style={{
-            position: 'absolute',
-            right: -20,
-            top: -30,
-            width: 110,
-            height: 110,
-          }}
-        />
-        <div
-          style={{
-            position: 'relative',
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: '0.10em',
-            textTransform: 'uppercase',
-            color: 'var(--text)',
-          }}
-        >
-          {sub}
-        </div>
+        {coverImageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={coverImageUrl}
+            alt={title}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : (
+          <IconCalendar size={22} sw={1.6} />
+        )}
       </div>
-      <div style={{ padding: 14 }}>
+
+      <div
+        style={{
+          flex: 1,
+          minWidth: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: 5,
+        }}
+      >
         <div
-          className="ms-display"
-          style={{ fontSize: 20, color: 'var(--text)', lineHeight: 1.1 }}
+          style={{
+            fontSize: 14,
+            fontWeight: 800,
+            lineHeight: 1.25,
+            color: 'var(--text)',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical' as const,
+            overflow: 'hidden',
+          }}
         >
           {title}
         </div>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            marginTop: 10,
-            fontSize: 12,
-            color: 'var(--text-muted)',
-          }}
-        >
-          <Avatar name={host} size={22} color="var(--primary-soft)" />
-          <span>
-            {host} · {when}
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.35 }}>
+          {host}
+          <br />
+          {when}
+        </div>
+        <div>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 800,
+              color: isFree ? '#2A7A4A' : 'var(--primary)',
+              background: isFree ? 'rgba(74,184,116,0.18)' : 'var(--primary-tint)',
+              padding: '3px 9px',
+              borderRadius: 999,
+            }}
+          >
+            {priceLabel}
           </span>
         </div>
       </div>
