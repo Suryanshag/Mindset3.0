@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Pencil, Loader2 } from 'lucide-react'
 import imageCompression from 'browser-image-compression'
 import { uploadAvatar } from '@/lib/actions/upload-avatar'
+import AvatarCropModal from './avatar-crop-modal'
 
 type Props = {
   currentUrl: string | null
@@ -17,28 +18,57 @@ export default function AvatarUpload({ currentUrl, initials, size = 96 }: Props)
   const [preview, setPreview] = useState(currentUrl)
   const [isPending, startTransition] = useTransition()
   const [preparing, setPreparing] = useState(false)
+  const [cropSrc, setCropSrc] = useState<string | null>(null)
 
+  // Pick a photo → normalize (fixes EXIF orientation, strips metadata) →
+  // open the crop modal. Nothing uploads until the user frames the crop.
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
+    // Reset so picking the same file again still fires onChange.
+    e.target.value = ''
     if (!file) return
 
-    // Optimistic preview from original
-    setPreview(URL.createObjectURL(file))
-
-    // Client-side compression to fit within server action 1MB limit.
-    // browser-image-compression handles EXIF orientation correctly.
     setPreparing(true)
-    let compressed: File
+    let normalized: File
     try {
-      compressed = await imageCompression(file, {
-        maxSizeMB: 0.8,
-        maxWidthOrHeight: 1024,
-        useWebWorker: true,
+      normalized = await imageCompression(file, {
+        maxWidthOrHeight: 1600,
+        // Main thread: the app's CSP blocks blob: workers (worker-src
+        // falls back to script-src), so a web worker would silently fail.
+        useWebWorker: false,
         fileType: 'image/jpeg',
       })
     } catch {
-      // Fall back to original if compression fails
-      compressed = file
+      normalized = file
+    }
+    setPreparing(false)
+    setCropSrc(URL.createObjectURL(normalized))
+  }
+
+  function closeCrop() {
+    if (cropSrc) URL.revokeObjectURL(cropSrc)
+    setCropSrc(null)
+  }
+
+  // User confirmed the crop → compress to the server's 1MB limit → upload.
+  async function handleCropConfirm(blob: Blob) {
+    setPreview(URL.createObjectURL(blob))
+    closeCrop()
+
+    setPreparing(true)
+    let compressed: File
+    const cropped = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
+    try {
+      compressed = await imageCompression(cropped, {
+        maxSizeMB: 0.8,
+        maxWidthOrHeight: 1024,
+        // Main thread: the app's CSP blocks blob: workers (worker-src
+        // falls back to script-src), so a web worker would silently fail.
+        useWebWorker: false,
+        fileType: 'image/jpeg',
+      })
+    } catch {
+      compressed = cropped
     }
     setPreparing(false)
 
@@ -61,7 +91,7 @@ export default function AvatarUpload({ currentUrl, initials, size = 96 }: Props)
     <div className="relative" style={{ width: size, height: size }}>
       <button
         onClick={() => inputRef.current?.click()}
-        className="w-full h-full rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary/30"
+        className="relative w-full h-full rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary/30"
         disabled={busy}
       >
         {preview ? (
@@ -105,6 +135,14 @@ export default function AvatarUpload({ currentUrl, initials, size = 96 }: Props)
         onChange={handleFileChange}
         className="hidden"
       />
+
+      {cropSrc && (
+        <AvatarCropModal
+          src={cropSrc}
+          onCancel={closeCrop}
+          onConfirm={handleCropConfirm}
+        />
+      )}
     </div>
   )
 }
