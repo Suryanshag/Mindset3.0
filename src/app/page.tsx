@@ -44,20 +44,20 @@ const sectionHTML = `
 
                 <nav class="block-subnav">
                     <div class="block-subnav__slider swiper" data-slider>
-                        <ul class="block-subnav__list swiper-wrapper">
-                            <li class="block-subnav__item swiper-slide">
+                        <div class="block-subnav__list swiper-wrapper">
+                            <div class="block-subnav__item swiper-slide">
                                 <a href="#services" class="block-subnav__link" data-anchor-item>
                                     Services </a>
-                            </li>
-                            <li class="block-subnav__item swiper-slide">
+                            </div>
+                            <div class="block-subnav__item swiper-slide">
                                 <a href="#welcome-home" class="block-subnav__link" data-anchor-item>
                                     Discover Mindset</a>
-                            </li>
-                            <li class="block-subnav__item swiper-slide">
+                            </div>
+                            <div class="block-subnav__item swiper-slide">
                                 <a href="#rooms-and-prices" class="block-subnav__link" data-anchor-item>
                                     Explore Care </a>
-                            </li>
-                        </ul>
+                            </div>
+                        </div>
 
                         <button class="block-subnav__toggler" data-toggler aria-label="Toggle subnav">
                             <span class="block-subnav__toggler-icon icon icon-icon-close"></span>
@@ -143,7 +143,7 @@ const sectionHTML = `
                                         class="attachment-full size-full" alt="what you need" />
                                 </figure>
 
-                                <button class="block-services__item-toggler" data-services-toggler aria-label="Toggle service">
+                                <button class="block-services__item-toggler" data-services-toggler>
                                     <span class="block-services__item-toggler-inner">
                                         What you need right now </span>
                                     <!-- toggler icon commented out: button no longer toggles (only one item, JS handler disabled)
@@ -1907,7 +1907,7 @@ const sectionHTML = `
                                                 <p><span class="form__label">How can we help?*</span></p>
                                                 <div class="form__input">
                                                     <select class="wpcf7-form-control wpcf7-select"
-                                                        aria-required="true" name="subject" id="contact-subject">
+                                                        aria-required="true" aria-label="How can we help" name="subject" id="contact-subject">
                                                         <option value="">Select a topic</option>
                                                         <option value="Book a session">Book a session</option>
                                                         <option value="General inquiry">General inquiry</option>
@@ -1923,7 +1923,7 @@ const sectionHTML = `
                                                 <p><span class="form__label">Age group</span></p>
                                                 <div class="form__input">
                                                     <select class="wpcf7-form-control wpcf7-select"
-                                                        name="age_group" id="contact-age">
+                                                        aria-label="Age group" name="age_group" id="contact-age">
                                                         <option value="">Prefer not to say</option>
                                                         <option value="Under 18">Under 18</option>
                                                         <option value="18–25">18–25</option>
@@ -1937,7 +1937,7 @@ const sectionHTML = `
                                                 <p><span class="form__label">Preferred mode of support</span></p>
                                                 <div class="form__input">
                                                     <select class="wpcf7-form-control wpcf7-select"
-                                                        name="support_mode" id="contact-mode" disabled>
+                                                        aria-label="Preferred mode of support" name="support_mode" id="contact-mode" disabled>
                                                         <option value="">No preference</option>
                                                         <option value="Online session">Online session</option>
                                                         <option value="In-person">In-person</option>
@@ -1951,7 +1951,7 @@ const sectionHTML = `
                                                 <p><span class="form__label">First time seeking help?</span></p>
                                                 <div class="form__input">
                                                     <select class="wpcf7-form-control wpcf7-select"
-                                                        name="first_time" id="contact-firsttime">
+                                                        aria-label="First time seeking help" name="first_time" id="contact-firsttime">
                                                         <option value="">Prefer not to say</option>
                                                         <option value="Yes, first time">Yes, first time</option>
                                                         <option value="No, I have been before">No, I have been before</option>
@@ -1962,7 +1962,7 @@ const sectionHTML = `
                                                 <p><span class="form__label">How did you hear about us?</span></p>
                                                 <div class="form__input">
                                                     <select class="wpcf7-form-control wpcf7-select"
-                                                        name="heard_from" id="contact-source">
+                                                        aria-label="How did you hear about us" name="heard_from" id="contact-source">
                                                         <option value="">Select</option>
                                                         <option value="Social media">Social media</option>
                                                         <option value="Friend or family">Friend or family</option>
@@ -2865,7 +2865,9 @@ export default function Home() {
     <>
       <Preloader />
       <Navbar />
-      <StaticShell ref={containerRef} html={sectionHTML} />
+      <main>
+        <StaticShell ref={containerRef} html={sectionHTML} />
+      </main>
     </>
   );
 }
