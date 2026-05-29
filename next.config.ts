@@ -72,6 +72,14 @@ const nextConfig: NextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
           },
+          // Cross-Origin-Opener-Policy: isolates the top-level window from
+          // cross-origin popups (Lighthouse Best-Practices "Ensure proper
+          // origin isolation with COOP"). `same-origin-allow-popups` is
+          // chosen over the stricter `same-origin` because the app needs to
+          // open OAuth/checkout-style popups normally; Razorpay runs in an
+          // iframe and NextAuth Google sign-in uses redirects, so neither
+          // is affected by the popup-isolation behaviour this enables.
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
           { key: "Content-Security-Policy", value: csp },
         ],
       },
