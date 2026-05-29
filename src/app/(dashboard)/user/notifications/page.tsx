@@ -1,6 +1,5 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import NotificationList from '@/components/dashboard/notification-list'
 import MobileNotifications from '@/components/mobile/notifications'
@@ -24,17 +23,18 @@ export default async function NotificationsPage() {
   // Mark all unread as read after the snapshot is captured. updateMany is a
   // no-op (0 rows affected) when nothing is unread, so this is cheap to run
   // on every visit. Sprint Pre-Launch H2.
+  //
+  // No revalidatePath() here: it would run during this Server Component's
+  // render, which Next 16 forbids ("revalidatePath during render is
+  // unsupported") — that threw and dropped users on the error page when they
+  // opened notifications with anything unread. The dashboard is dynamic
+  // (auth-gated) and getUnreadNotificationCount is a per-request cache(), so
+  // the bell badge recomputes to 0 on the next navigation without a flush.
   if (hasUnread) {
     await prisma.notification.updateMany({
       where: { userId: session.user.id, readAt: null },
       data: { readAt: new Date() },
     })
-    // Invalidate /user so the next render of the spine bell badge sees the
-    // updated readAt values and returns 0. The cached getUnreadNotificationCount
-    // is per-request React.cache, but Next.js's segment cache can hold the
-    // /user output longer — revalidatePath flushes it.
-    revalidatePath('/user')
-    revalidatePath('/user/notifications')
   }
 
   const serialized = notifications.map((n) => ({
