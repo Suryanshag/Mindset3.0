@@ -176,7 +176,7 @@ export default function CookieBanner() {
                 <a
                   href="/cookies"
                   className="underline"
-                  style={{ color: 'var(--teal, #0B9DA9)' }}
+                  style={{ color: '#08646E' }}
                 >
                   Read our cookie policy →
                 </a>
