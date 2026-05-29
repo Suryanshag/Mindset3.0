@@ -26,6 +26,18 @@ export type UpcomingItem =
       status: string
       href: string
     }
+  | {
+      kind: 'ngo'
+      id: string
+      title: string
+      startsAt: Date
+      durationMin: number
+      meetLink: string | null
+      counterpartyName: string | null
+      counterpartyImage: string | null
+      status: string
+      href: string
+    }
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const SESSION_DURATION_MIN = 60
@@ -41,7 +53,7 @@ export const getUpcomingItems = cache(async (userId: string, days = 30): Promise
   const now = new Date()
   const horizon = new Date(now.getTime() + days * DAY_MS)
 
-  const [sessions, registrations] = await Promise.all([
+  const [sessions, registrations, ngoRegs] = await Promise.all([
     prisma.session.findMany({
       where: {
         userId,
@@ -87,6 +99,19 @@ export const getUpcomingItems = cache(async (userId: string, days = 30): Promise
         },
       },
     }).catch(() => []),
+
+    prisma.ngoJoinRequest.findMany({
+      where: {
+        userId,
+        status: { not: 'CANCELLED' },
+        ngoVisit: { isPublished: true, visitDate: { gte: now, lt: horizon } },
+      },
+      select: {
+        ngoVisit: {
+          select: { id: true, ngoName: true, location: true, visitDate: true },
+        },
+      },
+    }).catch(() => []),
   ])
 
   const sessionItems: UpcomingItem[] = sessions.map((s) => ({
@@ -118,7 +143,26 @@ export const getUpcomingItems = cache(async (userId: string, days = 30): Promise
     }
   })
 
-  return [...sessionItems, ...workshopItems]
+  const ngoItems: UpcomingItem[] = ngoRegs.flatMap((r) =>
+    r.ngoVisit
+      ? [
+          {
+            kind: 'ngo' as const,
+            id: r.ngoVisit.id,
+            title: r.ngoVisit.ngoName,
+            startsAt: r.ngoVisit.visitDate,
+            durationMin: 0,
+            meetLink: null,
+            counterpartyName: r.ngoVisit.location,
+            counterpartyImage: null,
+            status: 'CONFIRMED',
+            href: `/user/discover/ngo-visits/${r.ngoVisit.id}`,
+          },
+        ]
+      : [],
+  )
+
+  return [...sessionItems, ...workshopItems, ...ngoItems]
     .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime())
     .slice(0, MAX_ITEMS)
 })

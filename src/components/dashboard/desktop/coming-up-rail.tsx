@@ -34,6 +34,10 @@ const CHIP: Record<UpcomingItem['kind'], { label: string; cls: string }> = {
     label: 'Circle',
     cls: 'bg-tan-tint text-amber-700',
   },
+  ngo: {
+    label: 'NGO',
+    cls: 'bg-accent-tint text-accent',
+  },
 }
 
 // Type-colored left accent stroke — picks from existing palette.
@@ -41,6 +45,7 @@ const TYPE_STROKE: Record<UpcomingItem['kind'], string> = {
   session: 'var(--color-primary)',
   workshop: 'var(--color-accent)',
   circle: '#C9A961',
+  ngo: 'var(--color-accent)',
 }
 
 // ─── Rail ──────────────────────────────────────────────────────────────────
@@ -92,6 +97,11 @@ function ItemCard({ item }: { item: UpcomingItem }) {
     const winState = joinWindowState(startsAt, item.durationMin, item.status)
     canJoin = winState === 'open' && !!item.meetLink
     awaitingLink = winState === 'open' && !item.meetLink
+  } else if (item.kind === 'ngo') {
+    // NGO drives are in-person — no meet link, no join window. The card is
+    // purely informational and taps through to the visit detail page.
+    canJoin = false
+    awaitingLink = false
   } else {
     if (item.status === 'CANCELLED') {
       canJoin = false
@@ -144,7 +154,7 @@ function ItemCard({ item }: { item: UpcomingItem }) {
 
       {item.counterpartyName && (
         <p className="text-[12px] text-text-faint mt-0.5">
-          {item.kind === 'session' ? 'with' : 'by'} {item.counterpartyName}
+          {item.kind === 'session' ? 'with' : item.kind === 'ngo' ? 'at' : 'by'} {item.counterpartyName}
         </p>
       )}
 

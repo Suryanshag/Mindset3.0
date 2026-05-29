@@ -13,6 +13,7 @@ import {
   UserCircle,
   PenLine,
   Bell,
+  Globe,
 } from 'lucide-react'
 import type { SpineSession } from '@/lib/queries/reflection'
 import type { EngagementState } from '@/lib/queries/dashboard'
@@ -192,8 +193,16 @@ export default function Spine({
         </nav>
       </div>
 
-      {/* User profile pill — bottom */}
+      {/* Back to public site + profile pill — bottom */}
       <div className="px-3 pb-4 pt-2 shrink-0">
+        <Link
+          href="/"
+          prefetch={false}
+          className="spine-item flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-150 text-text-muted hover:bg-white/60 mb-0.5"
+        >
+          <Globe size={18} className="text-text-muted shrink-0" />
+          <span className="text-[14px] font-medium">Back to Website</span>
+        </Link>
         <Link
           href="/user/profile"
           prefetch={false}
