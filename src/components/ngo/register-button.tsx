@@ -5,6 +5,14 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { registerForNgoVisit } from '@/lib/actions/ngo'
 
+// Friendly copy for the coded errors the server action returns. Anything
+// not in here (e.g. a plain sentence from the action) is shown verbatim.
+const ERROR_COPY: Record<string, string> = {
+  full: 'All spots are filled for this visit.',
+  dob_required: 'Please add your date of birth in profile settings to register.',
+  age_restricted: 'You must be 18 or older to volunteer for NGO drives.',
+}
+
 export default function NgoRegisterButton({ ngoVisitId }: { ngoVisitId: string }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -40,7 +48,18 @@ export default function NgoRegisterButton({ ngoVisitId }: { ngoVisitId: string }
         {isPending ? 'Registering…' : 'Register for this visit'}
       </button>
       {error && (
-        <p className="text-[13px] text-red-600 mt-2 text-center">{error}</p>
+        <div className="mt-2 text-center">
+          <p className="text-[13px] text-red-600">{ERROR_COPY[error] ?? error}</p>
+          {(error === 'dob_required' || error === 'age_restricted') && (
+            <Link
+              href="/user/profile/personal"
+              className="inline-block mt-1 text-[13px] font-medium underline"
+              style={{ color: 'var(--color-accent)' }}
+            >
+              {error === 'dob_required' ? 'Add your date of birth' : 'Update your profile'}
+            </Link>
+          )}
+        </div>
       )}
 
       {incompleteFields && (

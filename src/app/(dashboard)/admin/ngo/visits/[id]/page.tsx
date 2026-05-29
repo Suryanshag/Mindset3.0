@@ -19,6 +19,7 @@ export default function EditNgoVisitPage() {
     description: '',
     photos: [] as string[],
     visitDate: '',
+    capacity: '',
     isPublished: false,
   })
 
@@ -34,6 +35,7 @@ export default function EditNgoVisitPage() {
             description: v.description,
             photos: v.photos || [],
             visitDate: new Date(v.visitDate).toISOString().slice(0, 16),
+            capacity: v.capacity != null ? String(v.capacity) : '',
             isPublished: v.isPublished,
           })
         }
@@ -71,6 +73,7 @@ export default function EditNgoVisitPage() {
         body: JSON.stringify({
           ...form,
           visitDate: new Date(form.visitDate).toISOString(),
+          capacity: form.capacity.trim() === '' ? null : Number(form.capacity),
         }),
       })
       const data = await res.json()
@@ -108,6 +111,12 @@ export default function EditNgoVisitPage() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Visit Date</label>
             <input type="datetime-local" value={form.visitDate} onChange={(e) => setForm({ ...form, visitDate: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Capacity <span className="font-normal text-gray-400">(optional — blank = unlimited)</span>
+            </label>
+            <input type="number" min={1} value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} placeholder="Unlimited" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Photos</label>

@@ -21,7 +21,9 @@ export default async function NgoVisitDetailPage({
     prisma.ngoJoinRequest.findUnique({
       where: { userId_ngoVisitId: { userId: session.user.id, ngoVisitId: id } },
     }),
-    prisma.ngoJoinRequest.count({ where: { ngoVisitId: id } }),
+    prisma.ngoJoinRequest.count({
+      where: { ngoVisitId: id, status: { not: 'CANCELLED' } },
+    }),
     prisma.whatsappLink.findFirst({ select: { link: true, label: true } }),
   ])
 
@@ -29,6 +31,8 @@ export default async function NgoVisitDetailPage({
 
   const isPast = visit.visitDate < new Date()
   const isRegistered = !!myRegistration
+  const isFull = visit.capacity != null && totalCount >= visit.capacity
+  const spotsLeft = visit.capacity != null ? Math.max(0, visit.capacity - totalCount) : null
   const firstPhoto = visit.photos[0] ?? null
   const initial = visit.ngoName[0]?.toUpperCase() ?? '?'
 
@@ -106,6 +110,14 @@ export default async function NgoVisitDetailPage({
           </p>
         )}
 
+        {visit.capacity != null && !isPast && !isRegistered && (
+          <p className="text-[12px] text-text-muted">
+            {isFull
+              ? 'All spots are filled'
+              : `${spotsLeft} of ${visit.capacity} ${spotsLeft === 1 ? 'spot' : 'spots'} left`}
+          </p>
+        )}
+
         {isPast ? (
           <div
             className="bg-bg-card rounded-2xl p-5 text-center"
@@ -145,6 +157,15 @@ export default async function NgoVisitDetailPage({
                 We'll email you reminders before the visit. See you there.
               </p>
             )}
+          </div>
+        ) : isFull ? (
+          <div
+            className="bg-bg-card rounded-2xl p-5 text-center"
+            style={{ border: '1px solid var(--color-border)' }}
+          >
+            <p className="text-[14px] text-text-muted">
+              All spots are filled for this visit.
+            </p>
           </div>
         ) : (
           <NgoRegisterButton ngoVisitId={visit.id} />

@@ -4,6 +4,41 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { exportToCSV } from '@/lib/csv-export'
 
+type NgoJoinStatus =
+  | 'PENDING'
+  | 'CONTACTED'
+  | 'CONFIRMED'
+  | 'ATTENDED'
+  | 'NO_SHOW'
+  | 'CANCELLED'
+
+const STATUS_OPTIONS: NgoJoinStatus[] = [
+  'PENDING',
+  'CONTACTED',
+  'CONFIRMED',
+  'ATTENDED',
+  'NO_SHOW',
+  'CANCELLED',
+]
+
+const STATUS_LABEL: Record<NgoJoinStatus, string> = {
+  PENDING: 'Pending',
+  CONTACTED: 'Contacted',
+  CONFIRMED: 'Confirmed',
+  ATTENDED: 'Attended',
+  NO_SHOW: 'No-show',
+  CANCELLED: 'Cancelled',
+}
+
+const STATUS_PILL: Record<NgoJoinStatus, string> = {
+  PENDING: 'bg-yellow-100 text-yellow-800',
+  CONTACTED: 'bg-blue-100 text-blue-800',
+  CONFIRMED: 'bg-green-100 text-green-800',
+  ATTENDED: 'bg-emerald-100 text-emerald-800',
+  NO_SHOW: 'bg-gray-100 text-gray-600',
+  CANCELLED: 'bg-red-100 text-red-800',
+}
+
 interface NgoVisit {
   id: string
   ngoName: string
@@ -20,6 +55,7 @@ interface JoinRequest {
   phone: string
   age: number | null
   interest: string
+  status: NgoJoinStatus
   createdAt: string
   userId: string | null
   ngoVisitId: string | null
@@ -43,6 +79,8 @@ export default function AdminNgoPage() {
   const [whatsappForm, setWhatsappForm] = useState({ link: '', label: '' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'ALL' | NgoJoinStatus>('ALL')
+  const [requestsError, setRequestsError] = useState('')
 
   useEffect(() => {
     Promise.all([
@@ -102,17 +140,43 @@ export default function AdminNgoPage() {
     }
   }
 
+  const filteredRequests =
+    statusFilter === 'ALL'
+      ? requests
+      : requests.filter((r) => r.status === statusFilter)
+
+  async function changeStatus(id: string, status: NgoJoinStatus) {
+    const snapshot = requests
+    setRequestsError('')
+    // Optimistic — flip the row immediately, revert if the PATCH fails.
+    setRequests((rs) => rs.map((r) => (r.id === id ? { ...r, status } : r)))
+    try {
+      const res = await fetch(`/api/admin/ngo/requests/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      })
+      const data = await res.json()
+      if (!data.success) throw new Error(data.error || 'Failed')
+    } catch {
+      setRequests(snapshot)
+      setRequestsError('Could not update status. Please try again.')
+    }
+  }
+
   function exportRequests() {
     exportToCSV(
-      requests.map((r) => ({
+      filteredRequests.map((r) => ({
         Name: r.name,
         Email: r.email,
         Phone: r.phone,
         Age: r.age ?? '',
         Interest: r.interest,
-        Visit: r.ngoVisit
-          ? `${r.ngoVisit.ngoName} (${new Date(r.ngoVisit.visitDate).toLocaleDateString('en-IN')})`
-          : 'Public form (legacy)',
+        'Visit Name': r.ngoVisit?.ngoName ?? 'Public form (legacy)',
+        'Visit Date': r.ngoVisit
+          ? new Date(r.ngoVisit.visitDate).toLocaleDateString('en-IN')
+          : '',
+        Status: STATUS_LABEL[r.status],
         Source: r.userId ? 'Dashboard' : 'Guest',
         UserAccount: r.user?.email ?? '',
         Date: new Date(r.createdAt).toLocaleDateString('en-IN'),
@@ -201,13 +265,28 @@ export default function AdminNgoPage() {
 
       {tab === 'requests' && (
         <div>
-          <button
-            onClick={exportRequests}
-            disabled={requests.length === 0}
-            className="mb-4 px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 disabled:opacity-50"
-          >
-            Export to CSV
-          </button>
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as 'ALL' | NgoJoinStatus)}
+              className="px-3 py-2 rounded-lg text-sm border border-gray-300 text-gray-700 bg-white"
+            >
+              <option value="ALL">All statuses</option>
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>{STATUS_LABEL[s]}</option>
+              ))}
+            </select>
+            <button
+              onClick={exportRequests}
+              disabled={filteredRequests.length === 0}
+              className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 disabled:opacity-50"
+            >
+              Export to CSV
+            </button>
+            {requestsError && (
+              <span className="text-sm text-red-600">{requestsError}</span>
+            )}
+          </div>
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -217,12 +296,14 @@ export default function AdminNgoPage() {
                   <th className="text-left py-3 px-4 font-medium text-gray-500">Phone</th>
                   <th className="text-right py-3 px-4 font-medium text-gray-500">Age</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-500">Visit</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-500">Status</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-500">User</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-500">Date</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-500">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {requests.map((r) => (
+                {filteredRequests.map((r) => (
                   <tr key={r.id} className="border-b border-gray-50 align-top">
                     <td className="py-3 px-4 font-medium text-gray-900">{r.name}</td>
                     <td className="py-3 px-4 text-gray-600">{r.email}</td>
@@ -246,6 +327,13 @@ export default function AdminNgoPage() {
                           Public form (legacy)
                         </span>
                       )}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_PILL[r.status]}`}
+                      >
+                        {STATUS_LABEL[r.status]}
+                      </span>
                     </td>
                     <td className="py-3 px-4 text-gray-700 max-w-[200px]">
                       {r.user ? (
@@ -272,11 +360,26 @@ export default function AdminNgoPage() {
                     <td className="py-3 px-4 text-gray-600 whitespace-nowrap">
                       {new Date(r.createdAt).toLocaleDateString('en-IN')}
                     </td>
+                    <td className="py-3 px-4">
+                      <select
+                        value={r.status}
+                        onChange={(e) => changeStatus(r.id, e.target.value as NgoJoinStatus)}
+                        className="text-xs border border-gray-300 rounded-lg px-2 py-1 text-gray-700 bg-white"
+                      >
+                        {STATUS_OPTIONS.map((s) => (
+                          <option key={s} value={s}>{STATUS_LABEL[s]}</option>
+                        ))}
+                      </select>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {requests.length === 0 && <p className="p-6 text-center text-gray-500">No requests yet.</p>}
+            {filteredRequests.length === 0 && (
+              <p className="p-6 text-center text-gray-500">
+                {requests.length === 0 ? 'No requests yet.' : 'No requests match this filter.'}
+              </p>
+            )}
           </div>
         </div>
       )}

@@ -35,7 +35,7 @@ export async function registerForNgoVisit(ngoVisitId: string): Promise<RegisterR
 
       const user = await tx.user.findUnique({
         where: { id: userId },
-        select: { name: true, email: true, phone: true },
+        select: { name: true, email: true, phone: true, dateOfBirth: true },
       })
       if (!user) return { error: 'User not found' as const }
 
@@ -46,6 +46,29 @@ export async function registerForNgoVisit(ngoVisitId: string): Promise<RegisterR
       if (!user.phone) missing.push('phone')
       if (missing.length > 0) {
         return { error: 'INCOMPLETE_PROFILE' as const, missing }
+      }
+
+      // Age gate — Terms require volunteers to be 18+. The one-click flow
+      // can't ask for age, so we derive it from the profile DOB. Compare by
+      // calendar against the 18th birthday rather than dividing elapsed ms
+      // by 365.25 days — that drift puts someone *below* 18 on their actual
+      // birthday (an 18-year span holds only ~4 leap days), wrongly blocking
+      // a user who just turned 18.
+      if (!user.dateOfBirth) return { error: 'dob_required' as const }
+      const dob = user.dateOfBirth
+      const eighteenthBirthday = new Date(
+        dob.getFullYear() + 18,
+        dob.getMonth(),
+        dob.getDate(),
+      )
+      if (new Date() < eighteenthBirthday) return { error: 'age_restricted' as const }
+
+      // Capacity — count everyone not cancelled. null capacity = unlimited.
+      if (visit.capacity != null) {
+        const count = await tx.ngoJoinRequest.count({
+          where: { ngoVisitId, status: { not: 'CANCELLED' } },
+        })
+        if (count >= visit.capacity) return { error: 'full' as const }
       }
 
       await tx.ngoJoinRequest.create({

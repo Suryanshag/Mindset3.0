@@ -14,5 +14,10 @@ export const createNgoVisitSchema = z.object({
   description: z.string().min(10).max(5000),
   photos: z.array(z.string().url()).default([]),
   visitDate: z.string().datetime(),
+  capacity: z.number().int().positive().nullable().optional(),
   isPublished: z.boolean().default(false),
+})
+
+export const updateJoinStatusSchema = z.object({
+  status: z.enum(['PENDING', 'CONTACTED', 'CONFIRMED', 'ATTENDED', 'NO_SHOW', 'CANCELLED']),
 })

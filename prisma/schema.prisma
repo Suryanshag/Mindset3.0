@@ -311,6 +311,7 @@ model NgoVisit {
   description String   @db.Text
   photos      String[]
   visitDate   DateTime
+  capacity    Int?     // null = unlimited
   isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
 
@@ -318,13 +319,18 @@ model NgoVisit {
 }
 
 model NgoJoinRequest {
-  id         String   @id @default(cuid())
+  id         String        @id @default(cuid())
   name       String
   email      String
   phone      String
   age        Int?
-  interest   String   @db.Text
-  createdAt  DateTime @default(now())
+  interest   String        @db.Text
+  status     NgoJoinStatus @default(PENDING)
+  createdAt  DateTime      @default(now())
+  // @default(now()) backfills existing rows so `db push` can add this
+  // NOT NULL column without a non-empty-table prompt; @updatedAt keeps
+  // it fresh on every later mutation.
+  updatedAt  DateTime      @default(now()) @updatedAt
 
   userId     String?
   ngoVisitId String?
@@ -333,6 +339,15 @@ model NgoJoinRequest {
   ngoVisit NgoVisit? @relation(fields: [ngoVisitId], references: [id], onDelete: SetNull)
 
   @@unique([userId, ngoVisitId])
+}
+
+enum NgoJoinStatus {
+  PENDING
+  CONTACTED
+  CONFIRMED
+  ATTENDED
+  NO_SHOW
+  CANCELLED
 }
 
 model WhatsappLink {

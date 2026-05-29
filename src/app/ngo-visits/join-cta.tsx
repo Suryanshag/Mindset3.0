@@ -12,16 +12,25 @@ import { ArrowRight } from 'lucide-react'
  * states (Bug 1 — fixed 2026-05-19). useSession() reflects the live JWT,
  * so the href is correct as soon as hydration completes.
  */
-export function NgoJoinCta() {
+export function NgoJoinCta({
+  visitId,
+  label = 'Join Now',
+  className = 'btn-primary inline-flex items-center gap-2',
+}: {
+  visitId?: string
+  label?: string
+  className?: string
+}) {
   const { data: session, status } = useSession()
   const isAuthed = status === 'authenticated' && !!session?.user
-  const href = isAuthed
-    ? '/user/discover/ngo-visits'
-    : '/login?callbackUrl=%2Fuser%2Fdiscover%2Fngo-visits'
+  const target = visitId
+    ? `/user/discover/ngo-visits/${visitId}`
+    : '/user/discover/ngo-visits'
+  const href = isAuthed ? target : `/login?callbackUrl=${encodeURIComponent(target)}`
 
   return (
-    <Link href={href} className="btn-primary inline-flex items-center gap-2">
-      Join Now
+    <Link href={href} className={className}>
+      {label}
       <ArrowRight size={18} />
     </Link>
   )
