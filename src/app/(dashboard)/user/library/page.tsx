@@ -39,7 +39,7 @@ type DigitalProduct = {
 
 function MaterialCover({ item }: { item: StudyMaterial }) {
   return (
-    <div className="relative w-full h-32 rounded-xl bg-primary-tint flex items-center justify-center overflow-hidden">
+    <div className="relative w-full aspect-[3/4] rounded-xl bg-primary-tint flex items-center justify-center overflow-hidden">
       {item.coverImage ? (
         <Image fill
           src={item.coverImage}

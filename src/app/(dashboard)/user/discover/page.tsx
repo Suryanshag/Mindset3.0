@@ -263,7 +263,7 @@ export default async function DiscoverHubPage() {
                 className="bg-bg-card rounded-2xl p-2.5 lg:p-3 transition-all duration-150 lg:hover:shadow-sm lg:hover:-translate-y-0.5"
                 style={{ border: '1px solid var(--color-border)' }}
               >
-                <div className="relative w-full h-32 rounded-xl bg-primary-tint flex items-center justify-center overflow-hidden">
+                <div className="relative w-full aspect-[3/4] rounded-xl bg-primary-tint flex items-center justify-center overflow-hidden">
                   {item.coverImage ? (
                     <Image
                       fill
