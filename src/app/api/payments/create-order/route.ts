@@ -8,6 +8,7 @@ import { generateOrderNumber } from '@/lib/order-number'
 import { z } from 'zod'
 import { apiLimiter } from '@/lib/arcjet'
 import { handleArcjetDenial } from '@/lib/arcjet-protect'
+import { rejectIfBadOrigin } from '@/lib/origin-check'
 
 const paymentSchema = z.discriminatedUnion('type', [
   z.object({
@@ -46,6 +47,11 @@ const paymentSchema = z.discriminatedUnion('type', [
 
 export async function POST(req: NextRequest) {
   try {
+    // CSRF defense — reject mismatched Origin before any work. Returns
+    // null for same-origin and for non-browser callers (no Origin header).
+    const originBlock = rejectIfBadOrigin(req)
+    if (originBlock) return originBlock
+
     const session = await auth()
     if (!session?.user?.id) {
       return errorResponse('Unauthorized', 401)

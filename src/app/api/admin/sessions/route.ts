@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
+import { sessionStatusSchema, parseEnumParam } from '@/lib/validations/enums'
 import { Prisma } from '@prisma/client'
 
 export async function GET(req: NextRequest) {
@@ -12,16 +13,17 @@ export async function GET(req: NextRequest) {
     }
 
     const url = req.nextUrl.searchParams
-    const status = url.get('status')
+    // parseEnumParam silently drops invalid/unknown values (incl. the
+    // 'all' sentinel previously special-cased here), matching how
+    // admin/payments and admin/orders treat their filter params.
+    const status = parseEnumParam(url.get('status'), sessionStatusSchema)
     const doctorId = url.get('doctorId')
     const userId = url.get('userId')
     const page = Math.max(1, Number(url.get('page') ?? 1))
     const limit = Math.min(50, Math.max(1, Number(url.get('limit') ?? 20)))
 
     const where: Prisma.SessionWhereInput = {}
-    if (status && status !== 'all') {
-      where.status = status as Prisma.EnumSessionStatusFilter
-    }
+    if (status) where.status = status
     if (doctorId) where.doctorId = doctorId
     if (userId) where.userId = userId
 

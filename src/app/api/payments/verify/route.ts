@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
+import { rejectIfBadOrigin } from '@/lib/origin-check'
 import {
   sendWorkshopRegistrationConfirmation,
   sendSessionBookingConfirmation,
@@ -30,6 +31,10 @@ import { format as formatDate } from 'date-fns'
  */
 export async function POST(req: NextRequest) {
   try {
+    // CSRF defense — reject mismatched Origin before any work.
+    const originBlock = rejectIfBadOrigin(req)
+    if (originBlock) return originBlock
+
     const session = await auth()
     if (!session?.user?.id) return errorResponse('Unauthorized', 401)
 

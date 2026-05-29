@@ -1,22 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-// In-memory rate limit (best effort; resets on server restart, not shared across instances).
-// For production-grade rate limiting use Redis / Upstash.
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000 // 10 min
-const RATE_LIMIT_MAX = 5
-const ipHits = new Map<string, number[]>()
-
-function tooManyRequests(ip: string) {
-  const now = Date.now()
-  const arr = (ipHits.get(ip) ?? []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS)
-  if (arr.length >= RATE_LIMIT_MAX) {
-    ipHits.set(ip, arr)
-    return true
-  }
-  arr.push(now)
-  ipHits.set(ip, arr)
-  return false
-}
+import { formLimiter } from '@/lib/arcjet'
+import { handleArcjetDenial } from '@/lib/arcjet-protect'
 
 const MAX = {
   name: 100,
@@ -35,17 +19,17 @@ function clip(v: unknown, max: number): string {
 
 export async function POST(req: NextRequest) {
   try {
+    // Arcjet sliding window (5 req / 10 min) + bot detection, shared
+    // across all serverless instances. Replaces the previous in-memory
+    // rate limit which reset on cold start.
+    const decision = await formLimiter.protect(req)
+    const denied = handleArcjetDenial(decision)
+    if (denied) return denied
+
     const ip =
       req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
       req.headers.get('x-real-ip') ||
       'unknown'
-
-    if (tooManyRequests(ip)) {
-      return NextResponse.json(
-        { error: 'Too many submissions. Please wait a few minutes and try again.' },
-        { status: 429 },
-      )
-    }
 
     const body = await req.json().catch(() => null)
     if (!body || typeof body !== 'object') {
