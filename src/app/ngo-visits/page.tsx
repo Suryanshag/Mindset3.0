@@ -1,10 +1,10 @@
 import { prisma } from '@/lib/prisma'
-import Image from 'next/image'
 import { format } from 'date-fns'
 import { MapPin } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MarketingFooter from '@/components/marketing-footer'
 import { NgoJoinCta } from './join-cta'
+import { NgoCover, NgoReadMore, NgoPastCard } from './ngo-interactive'
 
 // Marketing chrome match: this page now wears the same Navbar + WP-style
 // block-blog-hero header + block-footer that /workshops, /products,
@@ -145,15 +145,12 @@ export default async function NgoVisitsPage() {
                 <div className="card-premium overflow-hidden mb-12">
                   <div className="grid md:grid-cols-2">
                     {upcoming.photos.length > 0 ? (
-                      <div className="relative h-56 md:h-auto md:min-h-[280px] bg-gray-100">
-                        <Image
-                          src={upcoming.photos[0]}
-                          alt={upcoming.ngoName}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, 50vw"
-                        />
-                      </div>
+                      <NgoCover
+                        photos={upcoming.photos}
+                        ngoName={upcoming.ngoName}
+                        containerClassName="h-56 md:h-auto md:min-h-[280px] bg-gray-100"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
                     ) : (
                       <div className="hidden md:block" style={{ background: 'var(--cream)' }} />
                     )}
@@ -175,9 +172,7 @@ export default async function NgoVisitsPage() {
                         <MapPin size={14} />
                         {upcoming.location}
                       </p>
-                      <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
-                        {upcoming.description}
-                      </p>
+                      <NgoReadMore text={upcoming.description} />
                       {capacityHint && (
                         <p className="text-sm font-medium mt-4" style={{ color: 'var(--teal)' }}>
                           {capacityHint}
@@ -215,74 +210,17 @@ export default async function NgoVisitsPage() {
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {past.map((visit) => (
-                      <div key={visit.id} className="card-premium overflow-hidden">
-                        {visit.photos.length > 0 && (
-                          <div className="relative w-full h-64 bg-gray-100">
-                            <Image
-                              src={visit.photos[0]}
-                              alt={visit.ngoName}
-                              fill
-                              className="object-cover"
-                              sizes="(max-width: 768px) 100vw, 50vw"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                            <div className="absolute bottom-4 left-5 right-5">
-                              <h3 className="font-heading text-xl font-bold text-white">
-                                {visit.ngoName}
-                              </h3>
-                              <p className="text-sm text-white/80 flex items-center gap-1 mt-1">
-                                <MapPin size={14} />
-                                {visit.location}
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="p-5">
-                          {visit.photos.length === 0 && (
-                            <>
-                              <h3
-                                className="font-heading text-xl font-bold"
-                                style={{ color: 'var(--navy)' }}
-                              >
-                                {visit.ngoName}
-                              </h3>
-                              <p className="text-sm text-gray-500 flex items-center gap-1 mt-1 mb-3">
-                                <MapPin size={14} />
-                                {visit.location}
-                              </p>
-                            </>
-                          )}
-                          <p
-                            className="text-xs font-semibold rounded-full inline-block px-3 py-1 mb-3"
-                            style={{ background: 'var(--cream)', color: 'var(--navy)' }}
-                          >
-                            {format(new Date(visit.visitDate), 'dd MMM yyyy')}
-                          </p>
-                          <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
-                            {visit.description}
-                          </p>
-
-                          {visit.photos.length > 1 && (
-                            <div className="flex gap-2 mt-4">
-                              {visit.photos.slice(1, 4).map((photo, i) => (
-                                <div
-                                  key={i}
-                                  className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100"
-                                >
-                                  <Image
-                                    src={photo}
-                                    alt={`${visit.ngoName} photo ${i + 2}`}
-                                    fill
-                                    className="object-cover"
-                                    sizes="64px"
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                      <NgoPastCard
+                        key={visit.id}
+                        visit={{
+                          id: visit.id,
+                          ngoName: visit.ngoName,
+                          location: visit.location,
+                          description: visit.description,
+                          photos: visit.photos,
+                          visitDate: visit.visitDate.toISOString(),
+                        }}
+                      />
                     ))}
                   </div>
                 </>
