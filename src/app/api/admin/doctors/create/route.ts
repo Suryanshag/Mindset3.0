@@ -28,6 +28,11 @@ const createDoctorSchema = z.object({
     .min(2)
     .max(100)
     .regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, and hyphens only'),
+  licenseNumber: z.string().max(50).optional().or(z.literal('')),
+  licenseType: z
+    .enum(['RCI', 'MCI', 'State Medical Council', 'Other'])
+    .optional()
+    .or(z.literal('')),
 })
 
 export async function POST(req: NextRequest) {
@@ -48,6 +53,7 @@ export async function POST(req: NextRequest) {
       name, email, phone, password, designation,
       type, specialization, qualification,
       experience, bio, sessionPrice, slug,
+      licenseNumber, licenseType,
     } = parsed.data
 
     const existingUser = await prisma.user.findUnique({
@@ -91,6 +97,8 @@ export async function POST(req: NextRequest) {
           experience,
           bio,
           sessionPrice,
+          licenseNumber: licenseNumber?.trim() || null,
+          licenseType: licenseType || null,
         },
         select: {
           id: true,

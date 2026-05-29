@@ -26,6 +26,15 @@ model User {
   // grace window — a successful login any time before scheduledFor
   // clears this field and writes an AccountDeletion cancellation row.
   deletionRequestedAt DateTime? @map("deletion_requested_at")
+  // DPDP consent capture — set at signup. consentVersion is the
+  // effective date of the policy the user accepted; bump it when the
+  // policy materially changes and re-prompt for consent.
+  consentedAt        DateTime? @map("consented_at")
+  consentVersion     String?   @map("consent_version")
+  consentIpAddress   String?   @map("consent_ip_address")
+  consentUserAgent   String?   @map("consent_user_agent")
+  marketingConsent   Boolean   @default(false) @map("marketing_consent")
+  marketingConsentAt DateTime? @map("marketing_consent_at")
   createdAt          DateTime   @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -109,6 +118,15 @@ model Doctor {
   panNumber      String?    @map("pan_number")
   upiId          String?    @map("upi_id")
   payoutFullName String?    @map("payout_full_name")
+  // License & credentialing — all nullable so existing rows survive
+  // `prisma db push`. `licenseVerifiedBy` stores a raw User.id (no FK
+  // relation) so the audit trail survives if the verifying admin is
+  // later deleted; the admin UI falls back to "Admin (deleted)" when
+  // the join misses.
+  licenseNumber     String?   @map("license_number")
+  licenseType       String?   @map("license_type")
+  licenseVerifiedAt DateTime? @map("license_verified_at")
+  licenseVerifiedBy String?   @map("license_verified_by")
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 
@@ -760,6 +778,7 @@ enum AuthEventKind {
   EMAIL_VERIFICATION_SENT
   EMAIL_VERIFIED
   ACCOUNT_LOCKED
+  CONSENT_GRANTED
 }
 
 model EmailVerificationToken {

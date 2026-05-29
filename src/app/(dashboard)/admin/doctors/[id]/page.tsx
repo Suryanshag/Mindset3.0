@@ -3,8 +3,11 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter, useParams } from 'next/navigation'
-import { Wallet, AlertCircle } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { Wallet, AlertCircle, ShieldCheck, ShieldAlert } from 'lucide-react'
 import { uploadToCloudinary } from '@/lib/cloudinary-upload'
+
+type LicenseType = '' | 'RCI' | 'MCI' | 'State Medical Council' | 'Other'
 
 interface Doctor {
   id: string
@@ -21,16 +24,23 @@ interface Doctor {
   panNumber: string | null
   upiId: string | null
   payoutFullName: string | null
+  licenseNumber: string | null
+  licenseType: string | null
+  licenseVerifiedAt: string | null
+  licenseVerifiedBy: string | null
+  licenseVerifierName: string | null
   user: { id: string; name: string; email: string; phone: string | null }
 }
 
 export default function EditDoctorPage() {
   const router = useRouter()
   const { id } = useParams<{ id: string }>()
+  const { data: authSession } = useSession()
   const [doctor, setDoctor] = useState<Doctor | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [verifying, setVerifying] = useState(false)
   const [error, setError] = useState('')
 
   const [form, setForm] = useState({
@@ -46,6 +56,8 @@ export default function EditDoctorPage() {
     panNumber: '',
     upiId: '',
     payoutFullName: '',
+    licenseNumber: '',
+    licenseType: '' as LicenseType,
   })
 
   useEffect(() => {
@@ -69,6 +81,8 @@ export default function EditDoctorPage() {
               panNumber: found.panNumber ?? '',
               upiId: found.upiId ?? '',
               payoutFullName: found.payoutFullName ?? '',
+              licenseNumber: found.licenseNumber ?? '',
+              licenseType: (found.licenseType ?? '') as LicenseType,
             })
           }
         }
@@ -87,6 +101,42 @@ export default function EditDoctorPage() {
       setError('Photo upload failed')
     } finally {
       setUploading(false)
+    }
+  }
+
+  // Verify/unverify is a single-purpose PATCH (just the action flag) so it
+  // doesn't carry along any unsaved form edits. The PATCH route resolves
+  // licenseVerifiedBy from the authenticated session; we mirror that
+  // locally for optimistic UI without an extra refetch.
+  async function handleVerifyToggle(verify: boolean) {
+    if (!verify && !window.confirm('Are you sure? This will reset the verification.')) return
+    setVerifying(true)
+    setError('')
+    try {
+      const res = await fetch(`/api/admin/doctors/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ licenseVerified: verify }),
+      })
+      const data = await res.json()
+      if (!data.success) {
+        setError(data.error || 'Failed to update verification')
+        return
+      }
+      setDoctor((d) =>
+        d
+          ? {
+              ...d,
+              licenseVerifiedAt: verify ? new Date().toISOString() : null,
+              licenseVerifiedBy: verify ? authSession?.user?.id ?? null : null,
+              licenseVerifierName: verify ? authSession?.user?.name ?? null : null,
+            }
+          : d,
+      )
+    } catch {
+      setError('Failed to update verification')
+    } finally {
+      setVerifying(false)
     }
   }
 
@@ -279,6 +329,102 @@ export default function EditDoctorPage() {
                 </p>
               </div>
             )}
+          </div>
+
+          {/* License & Credentialing — edit fields + verification panel */}
+          <div className="mt-6 pt-6 border-t border-gray-100">
+            <div className="flex items-center gap-2 mb-3">
+              <ShieldCheck className="w-5 h-5" style={{ color: 'var(--coral)' }} />
+              <h2 className="text-base font-semibold text-gray-900">License & Credentialing</h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">License Number</label>
+                <input
+                  type="text"
+                  value={form.licenseNumber}
+                  onChange={(e) => setForm({ ...form, licenseNumber: e.target.value })}
+                  maxLength={50}
+                  placeholder="A12345"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">License Type</label>
+                <select
+                  value={form.licenseType}
+                  onChange={(e) => setForm({ ...form, licenseType: e.target.value as LicenseType })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900"
+                >
+                  <option value="">Select…</option>
+                  <option value="RCI">RCI</option>
+                  <option value="MCI">MCI</option>
+                  <option value="State Medical Council">State Medical Council</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            {(() => {
+              const isVerified = !!doctor?.licenseVerifiedAt
+              const hasLicense = !!doctor?.licenseNumber
+              if (!isVerified && !hasLicense) {
+                return (
+                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-500">
+                    Save a License Number above (and select a type) before this doctor can be marked verified.
+                  </div>
+                )
+              }
+              if (!isVerified) {
+                return (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between gap-3">
+                    <div className="flex items-start gap-2 min-w-0">
+                      <ShieldAlert className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-amber-800">
+                        License recorded but not yet verified by an admin.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleVerifyToggle(true)}
+                      disabled={verifying}
+                      className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-white disabled:opacity-50"
+                      style={{ background: 'var(--coral)' }}
+                    >
+                      {verifying ? 'Marking…' : 'Mark as Verified'}
+                    </button>
+                  </div>
+                )
+              }
+              const verifiedAt = doctor?.licenseVerifiedAt
+                ? new Date(doctor.licenseVerifiedAt).toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })
+                : ''
+              const verifierName = doctor?.licenseVerifierName ?? 'Admin (deleted)'
+              return (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between gap-3">
+                  <div className="flex items-start gap-2 min-w-0">
+                    <ShieldCheck className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-green-800">
+                      Verified on <span className="font-medium">{verifiedAt}</span> by{' '}
+                      <span className="font-medium">{verifierName}</span>
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleVerifyToggle(false)}
+                    disabled={verifying}
+                    className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-700 border border-gray-300 bg-white disabled:opacity-50"
+                  >
+                    {verifying ? 'Updating…' : 'Unverify'}
+                  </button>
+                </div>
+              )
+            })()}
           </div>
         </div>
 

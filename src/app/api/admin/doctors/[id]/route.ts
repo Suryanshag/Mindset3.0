@@ -33,6 +33,21 @@ export async function PATCH(
     if (data.payoutFullName === '') data.payoutFullName = null
     if (typeof data.panNumber === 'string') data.panNumber = data.panNumber.toUpperCase()
 
+    // License fields: empty strings → null so the DB column ends up NULL,
+    // not "". Verification is action-flag-driven so the verifier id comes
+    // from the authenticated session, never from the client body.
+    if (data.licenseNumber === '') data.licenseNumber = null
+    if (data.licenseType === '') data.licenseType = null
+    if (typeof data.licenseNumber === 'string') data.licenseNumber = data.licenseNumber.trim()
+    if (parsed.data.licenseVerified === true) {
+      data.licenseVerifiedAt = new Date()
+      data.licenseVerifiedBy = session.user.id
+    } else if (parsed.data.licenseVerified === false) {
+      data.licenseVerifiedAt = null
+      data.licenseVerifiedBy = null
+    }
+    delete data.licenseVerified
+
     const updated = await prisma.doctor.update({
       where: { id },
       data,

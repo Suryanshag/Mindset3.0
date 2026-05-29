@@ -12,6 +12,8 @@ interface Doctor {
   specialization: string
   sessionPrice: string
   isActive: boolean
+  licenseNumber: string | null
+  licenseVerifiedAt: string | null
   user: { id: string; name: string; email: string; phone: string | null }
   _count: { sessions: number }
 }
@@ -86,7 +88,18 @@ export default function AdminDoctorsPage() {
           <tbody>
             {filtered.map((d) => (
               <tr key={d.id} className="border-b border-gray-50">
-                <td className="py-3 px-4 font-medium text-gray-900">{d.user.name}</td>
+                <td className="py-3 px-4 font-medium text-gray-900">
+                  <span className="inline-flex items-center gap-2">
+                    <span
+                      title={d.licenseVerifiedAt ? 'License verified' : 'License not verified'}
+                      aria-label={d.licenseVerifiedAt ? 'License verified' : 'License not verified'}
+                      className={`inline-block w-2 h-2 rounded-full shrink-0 ${
+                        d.licenseVerifiedAt ? 'bg-green-500' : 'bg-amber-500'
+                      }`}
+                    />
+                    {d.user.name}
+                  </span>
+                </td>
                 <td className="py-3 px-4 text-gray-600">{d.user.email}</td>
                 <td className="py-3 px-4 text-gray-600">{d.type}</td>
                 <td className="py-3 px-4 text-gray-600">{d.specialization}</td>

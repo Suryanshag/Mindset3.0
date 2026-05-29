@@ -25,6 +25,8 @@ export default function CreateDoctorPage() {
     sessionPrice: 0,
     slug: '',
     photo: '',
+    licenseNumber: '',
+    licenseType: '' as '' | 'RCI' | 'MCI' | 'State Medical Council' | 'Other',
   })
 
   function generateSlug(name: string) {
@@ -76,6 +78,8 @@ export default function CreateDoctorPage() {
           bio: form.bio,
           sessionPrice: form.sessionPrice,
           slug: form.slug,
+          licenseNumber: form.licenseNumber,
+          licenseType: form.licenseType,
         }),
       })
       const data = await res.json()
@@ -254,6 +258,39 @@ export default function CreateDoctorPage() {
               <input type="file" accept="image/*" onChange={handlePhotoUpload} disabled={uploading} className="text-sm text-gray-600" />
             )}
             {uploading && <p className="text-xs text-gray-500 mt-1">Uploading...</p>}
+          </div>
+
+          {/* License & Credentialing — both optional; verification happens later on the edit page. */}
+          <div className="mt-6 pt-6 border-t border-gray-100">
+            <h2 className="text-base font-semibold text-gray-900 mb-1">License & Credentialing</h2>
+            <p className="text-xs text-gray-500 mb-4">Optional at creation. Verification is a separate admin action on the edit page.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">License Number</label>
+                <input
+                  type="text"
+                  value={form.licenseNumber}
+                  onChange={(e) => setForm({ ...form, licenseNumber: e.target.value })}
+                  maxLength={50}
+                  placeholder="A12345"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">License Type</label>
+                <select
+                  value={form.licenseType}
+                  onChange={(e) => setForm({ ...form, licenseType: e.target.value as typeof form.licenseType })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900"
+                >
+                  <option value="">Select…</option>
+                  <option value="RCI">RCI</option>
+                  <option value="MCI">MCI</option>
+                  <option value="State Medical Council">State Medical Council</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 

@@ -52,4 +52,14 @@ export const adminUpdateDoctorSchema = z.object({
   panNumber: panSchema,
   upiId: upiSchema,
   payoutFullName: payoutFullNameSchema,
+  // License & credentialing. `licenseNumber`/`licenseType` are admin-editable
+  // free-form fields. `licenseVerified` is an action flag — true = mark
+  // verified, false = clear verification. The PATCH handler resolves the
+  // verifier id from the session (never trusts a client-supplied id).
+  licenseNumber: z.string().max(50).optional().or(z.literal('')),
+  licenseType: z
+    .enum(['RCI', 'MCI', 'State Medical Council', 'Other'])
+    .optional()
+    .or(z.literal('')),
+  licenseVerified: z.boolean().optional(),
 })
