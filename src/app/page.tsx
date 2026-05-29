@@ -1895,7 +1895,7 @@ const sectionHTML = `
                                         </div>
                                         <div class="form__row -two-cols">
                                             <div class="form__field">
-                                                <p><span class="form__label">Phone <span style="opacity:0.6;font-weight:400">(optional)</span></span></p>
+                                                <p><span class="form__label">Phone <span style="opacity:0.85;font-weight:400">(optional)</span></span></p>
                                                 <div class="form__input">
                                                     <input maxlength="20"
                                                         class="wpcf7-form-control wpcf7-tel"
@@ -1999,7 +1999,7 @@ const sectionHTML = `
                                             <input class="wpcf7-form-control wpcf7-submit has-spinner"
                                                 type="submit" value="Send Message" id="contact-submit" />
                                         </div>
-                                        <p style="font-size:0.75rem;opacity:0.55;margin-top:0.75rem;">
+                                        <p style="font-size:0.75rem;opacity:0.85;margin-top:0.75rem;">
                                             This site is protected by reCAPTCHA and the Google
                                             <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" style="text-decoration:underline;">Privacy Policy</a>
                                             and

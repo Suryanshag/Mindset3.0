@@ -6807,3 +6807,14 @@ body .wp-site-blocks .block-blog-hero__shape {
 .grecaptcha-badge {
     visibility: hidden !important;
 }
+
+/* a11y: darken the muted footer text/links so they meet WCAG AA contrast on
+   the cream footer background. The previous `--wp--preset--color--brown-200`
+   value (#A48995) measured 2.99:1 on #FAF8EF — failing AA. #76586A keeps the
+   same warm-mauve hue but lands at ~5.9:1. Token is left alone because it's
+   also used as a background/border colour elsewhere. */
+body .wp-site-blocks .block-footer__contact-note,
+body .wp-site-blocks .block-footer__copyright,
+body .wp-site-blocks .block-footer__legal-nav a {
+    color: #76586A;
+}
