@@ -168,7 +168,7 @@ export default function CookieBanner() {
               </p>
               <p
                 className="text-[13px] leading-relaxed"
-                style={{ color: 'var(--navy, #1E445C)', opacity: 0.75 }}
+                style={{ color: 'rgba(30, 68, 92, 0.75)' }}
               >
                 Mindset uses cookies to keep you signed in, remember your preferences, and
                 understand how our platform is used. Some cookies are required for the
