@@ -1,0 +1,13 @@
+{
+  "doctor": {
+    "id": "cmpl7n03d00014927ayq7iqy0",
+    "email": "smoketest-doctor@mindset.test",
+    "originalName": "Dr. Smoke Test"
+  },
+  "patient": {
+    "id": "cmpl7mypa00004927zxvlt22r",
+    "email": "smoketest-user@mindset.test",
+    "originalName": "Smoke Test User"
+  },
+  "capturedAt": "2026-05-27T20:23:37.160Z"
+}

@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
+import { paymentTypeSchema, paymentStatusSchema, parseEnumParam } from '@/lib/validations/enums'
 import { Prisma } from '@prisma/client'
 
 export async function GET(req: NextRequest) {
@@ -12,14 +13,14 @@ export async function GET(req: NextRequest) {
     }
 
     const url = req.nextUrl.searchParams
-    const type = url.get('type')
-    const status = url.get('status')
+    const type = parseEnumParam(url.get('type'), paymentTypeSchema)
+    const status = parseEnumParam(url.get('status'), paymentStatusSchema)
     const page = Math.max(1, Number(url.get('page') ?? 1))
     const limit = Math.min(50, Math.max(1, Number(url.get('limit') ?? 20)))
 
     const where: Prisma.PaymentWhereInput = {}
-    if (type) where.type = type as Prisma.EnumPaymentTypeFilter
-    if (status) where.status = status as Prisma.EnumPaymentStatusFilter
+    if (type) where.type = type
+    if (status) where.status = status
 
     const [payments, total, totalRevenue, pendingAmount, failedCount] = await Promise.all([
       prisma.payment.findMany({

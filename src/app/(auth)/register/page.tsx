@@ -66,6 +66,8 @@ async function submitRegister(data: RegisterFormData, ctx: SubmitContext): Promi
         email: data.email,
         phone: data.phone || undefined,
         password: data.password,
+        privacyAccepted: data.privacyAccepted,
+        marketingConsent: data.marketingConsent ?? false,
         website_url: ctx.honeypotValue,
       }),
     })
@@ -172,15 +174,16 @@ type RegisterState = ReturnType<typeof useRegisterState>
 function MobileRegisterForm({ state }: { state: RegisterState }) {
   const [step, setStep] = useState<0 | 1>(0)
   const [showPassword, setShowPassword] = useState(false)
-  const [agreedToTerms, setAgreedToTerms] = useState(false)
   const honeypotRef = useRef<HTMLInputElement>(null)
 
   const form: UseFormReturn<RegisterFormData> = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     mode: 'onTouched',
+    defaultValues: { privacyAccepted: false, marketingConsent: false },
   })
 
   const passwordValue = form.watch('password', '')
+  const privacyAccepted = form.watch('privacyAccepted')
 
   const onSubmit = (data: RegisterFormData) =>
     submitRegister(data, {
@@ -200,13 +203,13 @@ function MobileRegisterForm({ state }: { state: RegisterState }) {
     else setStep(0)
   }
 
-  // Submit is disabled on step 1 until: name passed step 0 validation, T&C
-  // checked, and the password score reflects a server-policy pass. The
-  // form's resolver still runs full validation on submit; this gate is
-  // UX-belt-and-suspenders so the user doesn't tap "Create account" only
-  // to see the same field rejected.
+  // Submit is disabled on step 1 until: name passed step 0 validation,
+  // privacy consent checked, and the password score reflects a
+  // server-policy pass. The form's resolver still runs full validation
+  // on submit; this gate is UX-belt-and-suspenders so the user doesn't
+  // tap "Create account" only to see the same field rejected.
   const passwordScore = scorePassword(passwordValue)
-  const canSubmit = agreedToTerms && passwordScore.meetsPolicy
+  const canSubmit = privacyAccepted === true && passwordScore.meetsPolicy
 
   return (
     <div className="px-6 pt-3 pb-6 flex flex-col" style={{ minHeight: '100%' }}>
@@ -393,30 +396,55 @@ function MobileRegisterForm({ state }: { state: RegisterState }) {
             >
               <input
                 type="checkbox"
-                checked={agreedToTerms}
-                onChange={(e) => setAgreedToTerms(e.target.checked)}
-                className="mt-0.5 flex-shrink-0"
-                style={{ accentColor: 'var(--primary)', width: 18, height: 18 }}
-                aria-describedby="tc-description"
+                {...form.register('privacyAccepted')}
+                className="mt-0.5 flex-shrink-0 cursor-pointer"
+                style={{ accentColor: 'var(--coral)', width: 18, height: 18 }}
+                aria-describedby="privacy-description"
               />
-              <span id="tc-description">
-                I agree to Mindset&apos;s{' '}
-                <Link
-                  href="/terms-of-use"
-                  className="font-bold underline underline-offset-2 hover:opacity-80"
-                  style={{ color: 'var(--primary)' }}
-                >
-                  Terms of Use
-                </Link>{' '}
-                and{' '}
+              <span id="privacy-description">
+                I have read and accept the{' '}
                 <Link
                   href="/privacy-policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="font-bold underline underline-offset-2 hover:opacity-80"
                   style={{ color: 'var(--primary)' }}
                 >
                   Privacy Policy
+                </Link>{' '}
+                and{' '}
+                <Link
+                  href="/terms-of-use"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold underline underline-offset-2 hover:opacity-80"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  Terms of Use
                 </Link>
-                .
+                , and I consent to Mindset processing my personal and
+                mental-health-related data as described.
+              </span>
+            </label>
+            {form.formState.errors.privacyAccepted && (
+              <p className="mt-1 text-xs font-medium" style={{ color: '#F96553' }}>
+                {form.formState.errors.privacyAccepted.message}
+              </p>
+            )}
+
+            <label
+              className="flex items-start gap-2.5 mt-3 text-xs cursor-pointer"
+              style={{ color: 'var(--text-muted)', minHeight: 44, padding: '6px 0' }}
+            >
+              <input
+                type="checkbox"
+                {...form.register('marketingConsent')}
+                className="mt-0.5 flex-shrink-0 cursor-pointer"
+                style={{ accentColor: 'var(--coral)', width: 18, height: 18 }}
+              />
+              <span>
+                Send me occasional emails about workshops, wellness resources, and Mindset
+                updates. (Optional &mdash; you can unsubscribe anytime.)
               </span>
             </label>
           </div>
@@ -516,7 +544,10 @@ function DesktopRegisterForm({ state }: { state: RegisterState }) {
     handleSubmit,
     formState: { errors },
     watch,
-  } = useForm<RegisterFormData>({ resolver: zodResolver(registerSchema) })
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { privacyAccepted: false, marketingConsent: false },
+  })
 
   const passwordValue = watch('password', '')
 
@@ -709,6 +740,64 @@ function DesktopRegisterForm({ state }: { state: RegisterState }) {
             </p>
           )}
         </div>
+
+        <div>
+          <label
+            className="flex items-start gap-3 text-sm cursor-pointer select-none"
+            style={{ color: 'var(--navy)', opacity: 0.85 }}
+          >
+            <input
+              type="checkbox"
+              {...register('privacyAccepted')}
+              className="mt-1 cursor-pointer"
+              style={{ accentColor: 'var(--coral)' }}
+              aria-describedby="desktop-privacy-description"
+            />
+            <span id="desktop-privacy-description">
+              I have read and accept the{' '}
+              <Link
+                href="/privacy-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'var(--teal)', textDecoration: 'underline' }}
+              >
+                Privacy Policy
+              </Link>{' '}
+              and{' '}
+              <Link
+                href="/terms-of-use"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'var(--teal)', textDecoration: 'underline' }}
+              >
+                Terms of Use
+              </Link>
+              , and I consent to Mindset processing my personal and
+              mental-health-related data as described.
+            </span>
+          </label>
+          {errors.privacyAccepted && (
+            <p className="mt-1.5 text-xs font-medium" style={{ color: '#F96553' }}>
+              {errors.privacyAccepted.message}
+            </p>
+          )}
+        </div>
+
+        <label
+          className="flex items-start gap-3 text-sm cursor-pointer select-none"
+          style={{ color: 'var(--navy)', opacity: 0.85 }}
+        >
+          <input
+            type="checkbox"
+            {...register('marketingConsent')}
+            className="mt-1 cursor-pointer"
+            style={{ accentColor: 'var(--coral)' }}
+          />
+          <span>
+            Send me occasional emails about workshops, wellness resources, and Mindset
+            updates. (Optional &mdash; you can unsubscribe anytime.)
+          </span>
+        </label>
 
         <button
           type="submit"

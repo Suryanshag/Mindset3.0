@@ -51,6 +51,15 @@ export async function POST(req: NextRequest) {
       return errorResponse('Unauthorized', 401)
     }
 
+    // Require email verification before allowing payments
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { emailVerified: true },
+    })
+    if (!user?.emailVerified) {
+      return errorResponse('Please verify your email to make payments', 403)
+    }
+
     const decision = await apiLimiter.protect(req)
     const denied = handleArcjetDenial(decision)
     if (denied) return denied

@@ -16,6 +16,16 @@ export const registerApiSchema = z.object({
   email: z.string().email('Invalid email address'),
   phone: phoneOptional,
   password: passwordSchema,
+  // DPDP consent — required. Bool literal `true`; anything else (false /
+  // missing / non-bool) fails validation with the user-facing message.
+  privacyAccepted: z.boolean().refine((v) => v === true, {
+    message: 'You must accept the Privacy Policy and Terms of Use to continue.',
+  }),
+  // Optional only — the route coerces missing to false. Avoid
+  // `.default(false)` here: it makes Zod's input vs output types
+  // diverge (boolean | undefined → boolean), which breaks react-hook-
+  // form's UseFormReturn<RegisterFormData> typing.
+  marketingConsent: z.boolean().optional(),
 })
 
 // Honeypot is checked at the route boundary, not in the schema, so password

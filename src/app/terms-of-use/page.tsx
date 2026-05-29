@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function TermsOfUsePage() {
   return (
-    <LegalLayout title="Terms of Use" effectiveDate="May 1, 2026">
+    <LegalLayout title="Terms of Use" effectiveDate="May 30, 2026">
       <p>
         These Terms of Use (&ldquo;Terms&rdquo;) govern your use of the Mindset platform, including the
         website, account features, therapy sessions, workshops, study materials, and physical

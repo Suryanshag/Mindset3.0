@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
+import { shippingStatusSchema, paymentStatusOrderSchema, parseEnumParam } from '@/lib/validations/enums'
 import { Prisma } from '@prisma/client'
 
 export async function GET(req: NextRequest) {
@@ -12,14 +13,14 @@ export async function GET(req: NextRequest) {
     }
 
     const url = req.nextUrl.searchParams
-    const status = url.get('status')
-    const paymentStatus = url.get('paymentStatus')
+    const status = parseEnumParam(url.get('status'), shippingStatusSchema)
+    const paymentStatus = parseEnumParam(url.get('paymentStatus'), paymentStatusOrderSchema)
     const page = Math.max(1, Number(url.get('page') ?? 1))
     const limit = Math.min(50, Math.max(1, Number(url.get('limit') ?? 20)))
 
     const where: Prisma.OrderWhereInput = {}
-    if (status) where.shippingStatus = status as Prisma.EnumShippingStatusFilter
-    if (paymentStatus) where.paymentStatus = paymentStatus as Prisma.EnumPaymentStatusFilter
+    if (status) where.shippingStatus = status
+    if (paymentStatus) where.paymentStatus = paymentStatus
 
     const [orders, total] = await Promise.all([
       prisma.order.findMany({

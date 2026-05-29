@@ -46,6 +46,9 @@ export async function POST(req: NextRequest) {
     }
 
     const { name, email, phone, password } = parsed.data
+    // Coerce missing → false; the Zod schema keeps marketingConsent as
+    // optional to preserve symmetrical input/output types for the form.
+    const marketingConsent = parsed.data.marketingConsent ?? false
 
     const existing = await prisma.user.findUnique({
       where: { email: email.toLowerCase().trim() },
@@ -63,6 +66,17 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 12)
 
+    // DPDP consent capture — version is the policy's effective date.
+    // Bump this constant whenever the policy materially changes so we
+    // can detect users on a stale version and re-prompt.
+    const CONSENT_VERSION = '2026-05-30'
+    const now = new Date()
+    const consentIpAddress =
+      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+      req.headers.get('x-real-ip') ??
+      null
+    const consentUserAgent = req.headers.get('user-agent')?.slice(0, 500) ?? null
+
     const user = await prisma.user.create({
       data: {
         name: name.trim(),
@@ -70,6 +84,12 @@ export async function POST(req: NextRequest) {
         phone: normalisePhone(phone),
         password: hashedPassword,
         role: 'USER',
+        consentedAt: now,
+        consentVersion: CONSENT_VERSION,
+        consentIpAddress,
+        consentUserAgent,
+        marketingConsent,
+        marketingConsentAt: marketingConsent ? now : null,
       },
       select: {
         id: true,
@@ -79,6 +99,13 @@ export async function POST(req: NextRequest) {
         role: true,
         createdAt: true,
       },
+    })
+
+    await logAuthEvent({
+      userId: user.id,
+      kind: 'CONSENT_GRANTED',
+      request: req,
+      metadata: { version: CONSENT_VERSION, marketingConsent },
     })
 
     // Send welcome email (non-blocking)

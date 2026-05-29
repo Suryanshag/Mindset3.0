@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Wallet, AlertCircle } from 'lucide-react'
 import { uploadToCloudinary } from '@/lib/cloudinary-upload'
+import { validateFileUpload } from '@/lib/file-upload-validation'
 
 interface DoctorProfile {
   id: string
@@ -88,6 +89,14 @@ export default function DoctorProfilePage() {
   async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+
+    // Validate file before uploading
+    const validation = validateFileUpload(file, 'images')
+    if (!validation.valid) {
+      setMessage(validation.error || 'File validation failed')
+      return
+    }
+
     setUploading(true)
     try {
       const url = await uploadToCloudinary(file)
@@ -97,9 +106,15 @@ export default function DoctorProfilePage() {
         body: JSON.stringify({ photo: url }),
       })
       const data = await res.json()
-      if (data.success) setProfile(data.data)
-    } catch {
-      setMessage('Photo upload failed')
+      if (data.success) {
+        setProfile(data.data)
+        setMessage('Photo updated successfully')
+      } else {
+        setMessage(data.error || 'Failed to update photo')
+      }
+    } catch (err) {
+      console.error('[PHOTO_UPLOAD_ERROR]', err)
+      setMessage('Photo upload failed. Please try again.')
     } finally {
       setUploading(false)
     }

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <LegalLayout title="Privacy Policy" effectiveDate="May 1, 2026">
+    <LegalLayout title="Privacy Policy" effectiveDate="May 30, 2026">
       <p>
         At Mindset, your privacy isn&apos;t a checkbox &mdash; it&apos;s the foundation of trust we
         ask you to place in us. This policy explains what we collect, why we collect it, and
@@ -75,7 +75,25 @@ export default function PrivacyPolicyPage() {
         before the withdrawal.
       </p>
 
-      <h2>5. How we keep mental-health information confidential</h2>
+      <h2>5. How we record your consent</h2>
+      <p>
+        When you create an account, you give us explicit consent to process your personal data
+        for the purposes listed in Section 3. We record this consent with a timestamp and the
+        version of this policy you accepted, so that both of us have a clear record of what
+        you agreed to.
+      </p>
+      <p>
+        Separately, you may choose to receive marketing emails from us. This is optional, can be
+        withdrawn at any time using the unsubscribe link in any marketing email or by writing to
+        our Grievance Officer, and is never required to use the platform.
+      </p>
+      <p>
+        If we materially change how we use your data, we will ask you to consent again. You can
+        withdraw any consent at any time; withdrawing consent will not affect processing we have
+        already lawfully carried out, but may mean we can no longer provide some features.
+      </p>
+
+      <h2>6. How we keep mental-health information confidential</h2>
       <div className="callout">
         <p style={{ marginBottom: 0 }}>
           What you tell a Mindset therapist in a session is confidential. It is not visible to
@@ -90,7 +108,7 @@ export default function PrivacyPolicyPage() {
         confidentiality codes in addition to this policy.
       </p>
 
-      <h2>6. Who we share your information with</h2>
+      <h2>7. Who we share your information with</h2>
       <p>
         We do not sell your personal data. We share specific data with specific partners only
         where it&apos;s necessary to deliver the service:
@@ -101,7 +119,6 @@ export default function PrivacyPolicyPage() {
         <li><strong>Resend</strong> &mdash; transactional email delivery.</li>
         <li><strong>Cloudinary</strong> &mdash; image and media hosting.</li>
         <li><strong>Google Calendar</strong> &mdash; session scheduling for therapists who opt in.</li>
-        <li><strong>OpenRouter</strong> &mdash; certain AI-assisted features. Where we use AI, we do not send identifiable session content.</li>
         <li><strong>Hosting and database providers</strong> who store the data on our behalf.</li>
         <li><strong>Lawful authorities</strong> when we receive a valid legal request.</li>
       </ul>
@@ -111,15 +128,16 @@ export default function PrivacyPolicyPage() {
         is permitted under the DPDP Act and is governed by appropriate contractual safeguards.
       </p>
 
-      <h2>7. How long we keep it</h2>
+      <h2>8. How long we keep it</h2>
       <ul>
         <li>Account data: while your account is active, plus a short retention window after deletion to handle disputes and comply with tax / regulatory requirements.</li>
         <li>Session and clinical notes: retained as required by RCI / professional record-keeping norms (typically 3 years from last interaction) unless you ask for earlier deletion and there is no legal bar to it.</li>
         <li>Payment and tax records: retained for the period required under Indian tax law.</li>
         <li>Marketing consent records: until you opt out.</li>
+        <li><strong>When you delete your account:</strong> personal account data (name, email, phone) is removed within 30 days. Clinical session notes and journal entries are retained for the legally required period (typically 3 years from last interaction) in encrypted form, then permanently deleted. Payment and tax invoices are retained as required by Indian tax law (currently 8 years), regardless of account deletion.</li>
       </ul>
 
-      <h2>8. Your rights</h2>
+      <h2>9. Your rights</h2>
       <p>Under the DPDP Act, you have the right to:</p>
       <ul>
         <li>Access a summary of the personal data we process about you.</li>
@@ -133,7 +151,7 @@ export default function PrivacyPolicyPage() {
         will respond within the timelines required by law.
       </p>
 
-      <h2>9. Children</h2>
+      <h2>10. Children</h2>
       <p>
         Our services are intended for users aged 18 and above. If you are between 13 and 18, you
         may use the platform only with the verifiable consent of a parent or legal guardian. We
@@ -141,7 +159,7 @@ export default function PrivacyPolicyPage() {
         you believe we have collected such data, please contact us and we will delete it.
       </p>
 
-      <h2>10. Security</h2>
+      <h2>11. Security</h2>
       <p>
         We use TLS encryption in transit, encryption at rest for sensitive fields, role-based
         access controls, and routine security reviews. No system is perfectly secure, but we
@@ -149,7 +167,7 @@ export default function PrivacyPolicyPage() {
         Board where the law requires.
       </p>
 
-      <h2>11. Cookies</h2>
+      <h2>12. Cookies</h2>
       <p>
         We use a small number of essential cookies for sign-in and preferences, and we may use
         first-party analytics to understand how the site is used in aggregate. You can read more
@@ -160,26 +178,26 @@ export default function PrivacyPolicyPage() {
         <OpenCookiePreferencesButton />
       </p>
 
-      <h2>12. Changes to this policy</h2>
+      <h2>13. Changes to this policy</h2>
       <p>
         We may update this policy as the platform evolves or as the law changes. The
         &ldquo;Effective&rdquo; date at the top reflects the latest version. For material changes we will
         also notify registered users by email.
       </p>
 
-      <h2>13. Grievance Officer</h2>
+      <h2>14. Grievance Officer</h2>
       <p>
         In accordance with the IT Act, the IT Rules, and the DPDP Act, our Grievance Officer
         receives and resolves complaints about how your data is handled.
       </p>
       <ul>
-        <li><strong>Name:</strong> [To be appointed before launch]</li>
+        <li><strong>Name:</strong> Muskan Ahuja</li>
         <li><strong>Email:</strong> mindset.org.connect@gmail.com</li>
-        <li><strong>Address:</strong> [Your registered office address]</li>
+        <li><strong>Address:</strong> [Registered office address &mdash; to be confirmed]</li>
       </ul>
       <p>We aim to acknowledge complaints within 48 hours and resolve them within 30 days.</p>
 
-      <h2>14. Contact</h2>
+      <h2>15. Contact</h2>
       <p>
         For anything else &mdash; questions, requests, feedback &mdash; reach us at{' '}
         <a href="mailto:mindset.org.connect@gmail.com">mindset.org.connect@gmail.com</a>.
