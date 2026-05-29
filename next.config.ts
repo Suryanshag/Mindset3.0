@@ -44,7 +44,10 @@ const nextConfig: NextConfig = {
       "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://via.placeholder.com https://*.razorpay.com",
       "media-src 'self' https://res.cloudinary.com",
       "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://*.razorpay.com https://api.cloudinary.com https://script.google.com https://script.googleusercontent.com https://www.google.com/recaptcha/",
-      "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.razorpay.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/",
+      // blob: lets the in-app ebook reader iframe the fetched PDF blob
+      // (the serve route sets X-Frame-Options: DENY, so we proxy the bytes
+      // into a same-origin blob: URL instead of framing the route directly).
+      "frame-src 'self' blob: https://api.razorpay.com https://checkout.razorpay.com https://*.razorpay.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",

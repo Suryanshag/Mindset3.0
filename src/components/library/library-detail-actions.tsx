@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { type RazorpayResponse } from '@/components/payments/razorpay-checkout'
+import PdfModal from '@/components/ui/pdf-modal'
+import PdfViewer from '@/components/ui/pdf-viewer'
 
 interface Props {
   materialId: string
@@ -18,6 +20,7 @@ export default function LibraryDetailActions({ materialId, title, price, isOwned
   const { data: session } = useSession()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showReader, setShowReader] = useState(false)
 
   useEffect(() => {
     if (isOwned || isFree) return
@@ -98,25 +101,27 @@ export default function LibraryDetailActions({ materialId, title, price, isOwned
     }
   }
 
+  // Proxy route (hides the Cloudinary URL + watermarks PAID). Opened inside
+  // an in-app modal reader (PdfViewer fetches the bytes into a same-origin
+  // blob: URL), so it never leaves the PWA and has a visible close button +
+  // hardware-back support.
   const readUrl = `/api/user/ebooks/${materialId}/serve`
 
   if (isOwned || isFree) {
     return (
       <>
         {/* Desktop inline Read button. Mobile-Polish-1 T5: hidden on
-            mobile to dedupe against the sticky-bottom CTA below. The
-            Download button (which used to live here) is gone entirely
-            per product decision — library is in-app reading only. */}
+            mobile to dedupe against the sticky-bottom CTA below. Library is
+            in-app reading only. */}
         <div className="hidden lg:block">
-          <a
-            href={readUrl}
-            target="_blank"
-            rel="noreferrer"
+          <button
+            type="button"
+            onClick={() => setShowReader(true)}
             className="flex items-center justify-center w-full py-3 px-6 rounded-2xl text-[15px] font-semibold text-white"
             style={{ background: 'var(--color-primary)' }}
           >
             Read →
-          </a>
+          </button>
         </div>
 
         {/* Mobile sticky CTA — sits above the bottom nav (~56px + safe area) */}
@@ -124,16 +129,19 @@ export default function LibraryDetailActions({ materialId, title, price, isOwned
           className="fixed bottom-[72px] left-0 right-0 px-4 pb-3 lg:hidden z-20"
           style={{ background: 'linear-gradient(to top, var(--bg-app) 75%, transparent)' }}
         >
-          <a
-            href={readUrl}
-            target="_blank"
-            rel="noreferrer"
+          <button
+            type="button"
+            onClick={() => setShowReader(true)}
             className="flex items-center justify-center w-full py-3.5 px-6 rounded-2xl text-[15px] font-semibold text-white"
             style={{ background: 'var(--color-primary)' }}
           >
             Read →
-          </a>
+          </button>
         </div>
+
+        <PdfModal isOpen={showReader} onClose={() => setShowReader(false)} title={title}>
+          <PdfViewer url={readUrl} title={title} />
+        </PdfModal>
       </>
     )
   }

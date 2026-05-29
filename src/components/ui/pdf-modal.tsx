@@ -31,6 +31,21 @@ export default function PdfModal({ isOpen, onClose, title, children }: PdfModalP
     }
   }, [isOpen, onClose])
 
+  // Make the hardware / phone back button close the reader (and return to
+  // the page underneath) instead of navigating away. Push a throwaway
+  // history entry on open; a back press fires popstate -> onClose. Closing
+  // via the X button pops that entry so history stays clean.
+  useEffect(() => {
+    if (!isOpen) return
+    window.history.pushState({ pdfModal: true }, '')
+    const onPop = () => onClose()
+    window.addEventListener('popstate', onPop)
+    return () => {
+      window.removeEventListener('popstate', onPop)
+      if (window.history.state?.pdfModal) window.history.back()
+    }
+  }, [isOpen, onClose])
+
   if (!isOpen) return null
 
   return (
