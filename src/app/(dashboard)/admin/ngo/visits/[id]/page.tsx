@@ -142,8 +142,8 @@ export default function EditNgoVisitPage() {
         {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
 
         <div className="flex gap-3 mt-6">
-          <button type="submit" disabled={saving} className="px-6 py-2 rounded-lg text-white font-medium disabled:opacity-50" style={{ background: 'var(--coral)' }}>
-            {saving ? 'Saving...' : 'Save Changes'}
+          <button type="submit" disabled={saving || uploading} className="px-6 py-2 rounded-lg text-white font-medium disabled:opacity-50" style={{ background: 'var(--coral)' }}>
+            {saving ? 'Saving...' : uploading ? 'Uploading photos…' : 'Save Changes'}
           </button>
           <button type="button" onClick={() => router.back()} className="px-6 py-2 rounded-lg bg-gray-200 text-gray-700 font-medium">Cancel</button>
         </div>

@@ -127,8 +127,8 @@ export default function CreateNgoVisitPage() {
         {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
 
         <div className="flex gap-3 mt-6">
-          <button type="submit" disabled={submitting} className="px-6 py-2 rounded-lg text-white font-medium disabled:opacity-50" style={{ background: 'var(--coral)' }}>
-            {submitting ? 'Creating...' : 'Create Visit'}
+          <button type="submit" disabled={submitting || uploading} className="px-6 py-2 rounded-lg text-white font-medium disabled:opacity-50" style={{ background: 'var(--coral)' }}>
+            {submitting ? 'Creating...' : uploading ? 'Uploading photos…' : 'Create Visit'}
           </button>
           <button type="button" onClick={() => router.back()} className="px-6 py-2 rounded-lg bg-gray-200 text-gray-700 font-medium">Cancel</button>
         </div>
