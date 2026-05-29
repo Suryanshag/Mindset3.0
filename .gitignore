@@ -52,3 +52,4 @@ tmp-*.png
 
 # Local pair-smoke harness — not part of automated CI
 scripts/pair-smoke-*.ts
+lighthouse-reports/
