@@ -11,6 +11,7 @@ import RailPortal from '@/components/dashboard/desktop/rail-portal'
 import SessionRail from '@/components/dashboard/desktop/session-rail'
 import { formatSessionDateRelative } from '@/lib/format-date'
 import MobileSessionDetail from '@/components/mobile/session-detail'
+import { CrisisBanner } from '@/components/shared/crisis-banner'
 
 const SESSION_DURATION_MIN = 60
 
@@ -215,6 +216,11 @@ export default async function SessionDetailPage({
             Book again
           </Link>
         )}
+
+        {/* Crisis numbers — quiet footer reminder on every session view. */}
+        <div className="pt-4 mt-2" style={{ borderTop: '1px solid var(--color-border)' }}>
+          <CrisisBanner variant="compact" />
+        </div>
       </div>
       </div>
     </>

@@ -21,6 +21,7 @@ import { getCurrentUserBasics } from '@/lib/queries/current-user'
 import { endOfDayIST } from '@/lib/format-date'
 import { userHasOnboardingActivity } from '@/lib/queries/onboarding'
 import { getRecentSessionFollowups } from '@/lib/queries/post-session'
+import { CrisisBanner } from '@/components/shared/crisis-banner'
 
 export default async function UserHome({
   searchParams,
@@ -146,6 +147,7 @@ export default async function UserHome({
 
       {/* Desktop: Reflection landing (unchanged from Phase 1). */}
       <div className="hidden lg:block">
+        <CrisisBanner variant="callout" className="mb-5" />
         {reflectionData ? (
           <>
             <ReflectionLanding data={reflectionData} engagementState={engagementState} />

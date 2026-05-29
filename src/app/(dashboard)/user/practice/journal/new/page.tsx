@@ -4,6 +4,7 @@ import { getActiveDraft, getPendingJournalPrompt } from '@/lib/queries/journal'
 import JournalCompose from '@/components/dashboard/journal/journal-compose'
 import PageHeader from '@/components/dashboard/page-header'
 import MobileJournalCompose from '@/components/mobile/journal-compose'
+import { CrisisBanner } from '@/components/shared/crisis-banner'
 
 export default async function NewJournalEntryPage() {
   const session = await auth()
@@ -44,6 +45,9 @@ export default async function NewJournalEntryPage() {
                 : null
             }
           />
+          <div className="mt-6">
+            <CrisisBanner variant="inline" dismissible />
+          </div>
         </div>
       </div>
     </>
