@@ -305,7 +305,14 @@ export default function MobileJournalList({
             </div>
             <button
               onClick={() => setSelectedDay(null)}
-              style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)' }}
+              style={{
+                fontSize: 12,
+                fontWeight: 800,
+                color: 'var(--primary)',
+                background: 'var(--primary-tint)',
+                padding: '7px 14px',
+                borderRadius: 999,
+              }}
             >
               Show all
             </button>
