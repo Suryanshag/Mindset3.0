@@ -180,6 +180,11 @@ model Session {
   paymentStatus   PaymentStatus @default(PENDING)
   notes           String?       @db.Text
   userNotes       String?       @db.Text @map("user_notes")
+  // PHI encryption companions — see src/lib/encryption.ts. Originals stay
+  // populated through the rollout window; switch reads to *Encrypted only
+  // after the backfill is verified.
+  notesEncrypted     String? @db.Text @map("notes_encrypted")
+  userNotesEncrypted String? @db.Text @map("user_notes_encrypted")
   reminderSent    Boolean       @default(false)
   followupSent    Boolean       @default(false)
   // Cancellation audit (set when status flips to CANCELLED). updatedAt
@@ -187,6 +192,7 @@ model Session {
   // original cancellation event for refund + audit queries.
   cancelledAt        DateTime? @map("cancelled_at")
   cancellationReason String?   @map("cancellation_reason")
+  cancellationReasonEncrypted String? @db.Text @map("cancellation_reason_encrypted")
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -224,6 +230,10 @@ model Assignment {
   submissionUrl String?
   status        AssignmentStatus @default(PENDING)
   reviewNote    String?          @db.Text
+  // PHI encryption companions — see src/lib/encryption.ts.
+  descriptionEncrypted  String? @db.Text @map("description_encrypted")
+  instructionsEncrypted String? @db.Text @map("instructions_encrypted")
+  reviewNoteEncrypted   String? @db.Text @map("review_note_encrypted")
   dueDate       DateTime?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
@@ -659,6 +669,9 @@ model JournalEntry {
   userId         String    @map("user_id")
   title          String?
   body           String    @db.Text
+  // PHI encryption companions — see src/lib/encryption.ts.
+  titleEncrypted String? @db.Text @map("title_encrypted")
+  bodyEncrypted  String? @db.Text @map("body_encrypted")
   mood           Int?
   isDraft        Boolean   @default(false) @map("is_draft")
   draftUpdatedAt DateTime? @map("draft_updated_at")
@@ -699,6 +712,8 @@ model MoodCheckIn {
   userId        String   @map("user_id")
   mood          Int      // 1..5
   note          String?  @db.Text
+  // PHI encryption companion — see src/lib/encryption.ts.
+  noteEncrypted String? @db.Text @map("note_encrypted")
   checkedInDate DateTime @map("checked_in_date") @db.Date
   checkedInAt   DateTime @default(now()) @map("checked_in_at")
 
@@ -722,6 +737,8 @@ model SessionFollowup {
   userId       String    @map("user_id")
   postMood     Int?      @map("post_mood")       // 1..5, optional
   homeworkNote String?   @db.Text @map("homework_note") // user reflection, optional
+  // PHI encryption companion — see src/lib/encryption.ts.
+  homeworkNoteEncrypted String? @db.Text @map("homework_note_encrypted")
   rebookIntent Boolean?  @map("rebook_intent")   // tapped "book next"?
   completedAt  DateTime  @default(now()) @map("completed_at")
 
@@ -738,6 +755,8 @@ model AssignmentResponse {
   assignmentId String   @map("assignment_id")
   userId       String   @map("user_id")
   responseText String?  @db.Text @map("response_text")
+  // PHI encryption companion — see src/lib/encryption.ts.
+  responseTextEncrypted String? @db.Text @map("response_text_encrypted")
   metadata     Json?
   completedAt  DateTime @default(now()) @map("completed_at")
   createdAt    DateTime @default(now()) @map("created_at")
