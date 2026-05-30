@@ -8,6 +8,7 @@ import MoodFace from '@/components/dashboard/mood-face'
 import { MOODS } from '@/lib/constants/mood'
 import { formatSessionDateRelative } from '@/lib/format-date'
 import MobilePractice from '@/components/mobile/practice'
+import { decryptField } from '@/lib/encryption'
 
 export default async function PracticeHubPage() {
   const session = await auth()
@@ -31,9 +32,18 @@ export default async function PracticeHubPage() {
         where: { userId },
         orderBy: { entryDate: 'desc' },
         take: 3,
-        select: { id: true, title: true, body: true, mood: true, entryDate: true },
+        select: { id: true, titleEncrypted: true, bodyEncrypted: true, mood: true, entryDate: true },
       })
-      .catch(() => []),
+      .then((rows) =>
+        rows.map((r) => ({
+          id: r.id,
+          title: decryptField(r.titleEncrypted),
+          body: decryptField(r.bodyEncrypted) ?? '',
+          mood: r.mood,
+          entryDate: r.entryDate,
+        }))
+      )
+      .catch(() => [] as { id: string; title: string | null; body: string; mood: number | null; entryDate: Date }[]),
     prisma.assignment
       .findMany({
         where: { userId, status: 'PENDING' },

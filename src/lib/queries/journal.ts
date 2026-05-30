@@ -9,6 +9,7 @@ import {
   startOfNextDayIST,
   dateOnlyIST,
 } from '@/lib/format-date'
+import { decryptField } from '@/lib/encryption'
 
 export type JournalListItem = {
   id: string
@@ -29,12 +30,9 @@ export async function getJournalEntries(
 ) {
   const where: any = { userId, isDraft: false }
 
-  if (opts?.search) {
-    where.OR = [
-      { title: { contains: opts.search, mode: 'insensitive' } },
-      { body: { contains: opts.search, mode: 'insensitive' } },
-    ]
-  }
+  // DP1: opts.search is intentionally ignored — title/body are encrypted at
+  // rest now, so a Postgres `contains` against ciphertext can't match. A
+  // blind-index / tokenized-search layer is a separate sprint.
   if (opts?.mood) {
     where.mood = opts.mood
   }
@@ -44,23 +42,58 @@ export async function getJournalEntries(
     if (opts?.to) where.entryDate.lte = opts.to
   }
 
-  return prisma.journalEntry.findMany({
+  const rows = await prisma.journalEntry.findMany({
     where,
     select: {
       id: true,
-      title: true,
-      body: true,
+      titleEncrypted: true,
+      bodyEncrypted: true,
       mood: true,
       entryDate: true,
     },
     orderBy: { entryDate: 'desc' },
   })
+
+  return rows.map((r) => ({
+    id: r.id,
+    title: decryptField(r.titleEncrypted),
+    body: decryptField(r.bodyEncrypted) ?? '',
+    mood: r.mood,
+    entryDate: r.entryDate,
+  }))
 }
 
 export async function getJournalEntry(userId: string, id: string) {
-  return prisma.journalEntry.findFirst({
+  const row = await prisma.journalEntry.findFirst({
     where: { id, userId },
+    select: {
+      id: true,
+      userId: true,
+      titleEncrypted: true,
+      bodyEncrypted: true,
+      mood: true,
+      isDraft: true,
+      draftUpdatedAt: true,
+      assignmentId: true,
+      entryDate: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   })
+  if (!row) return null
+  return {
+    id: row.id,
+    userId: row.userId,
+    title: decryptField(row.titleEncrypted),
+    body: decryptField(row.bodyEncrypted) ?? '',
+    mood: row.mood,
+    isDraft: row.isDraft,
+    draftUpdatedAt: row.draftUpdatedAt,
+    assignmentId: row.assignmentId,
+    entryDate: row.entryDate,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  }
 }
 
 export async function getLatestJournalEntry(userId: string) {
@@ -72,9 +105,36 @@ export async function getLatestJournalEntry(userId: string) {
 }
 
 export async function getActiveDraft(userId: string) {
-  return prisma.journalEntry.findFirst({
+  const row = await prisma.journalEntry.findFirst({
     where: { userId, isDraft: true },
+    select: {
+      id: true,
+      userId: true,
+      titleEncrypted: true,
+      bodyEncrypted: true,
+      mood: true,
+      isDraft: true,
+      draftUpdatedAt: true,
+      assignmentId: true,
+      entryDate: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   })
+  if (!row) return null
+  return {
+    id: row.id,
+    userId: row.userId,
+    title: decryptField(row.titleEncrypted),
+    body: decryptField(row.bodyEncrypted) ?? '',
+    mood: row.mood,
+    isDraft: row.isDraft,
+    draftUpdatedAt: row.draftUpdatedAt,
+    assignmentId: row.assignmentId,
+    entryDate: row.entryDate,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  }
 }
 
 export async function getPendingJournalPrompt(userId: string) {

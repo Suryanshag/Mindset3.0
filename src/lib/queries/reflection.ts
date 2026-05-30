@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserBasics } from '@/lib/queries/current-user'
+import { decryptField } from '@/lib/encryption'
 
 /** Sessions grouped by month for the spine sidebar.
  *  Cached per-request: DesktopShell calls this on every /user/* render
@@ -215,21 +216,31 @@ export async function getChapterData(userId: string, sessionId: string) {
   // Fetch all orbiting content within the window
   const [journalEntries, completedAssignments, attendedWorkshops] =
     await Promise.all([
-      prisma.journalEntry.findMany({
-        where: {
-          userId,
-          isDraft: false,
-          entryDate: { gte: session.date, lt: windowEnd },
-        },
-        select: {
-          id: true,
-          title: true,
-          body: true,
-          mood: true,
-          entryDate: true,
-        },
-        orderBy: { entryDate: 'asc' },
-      }),
+      prisma.journalEntry
+        .findMany({
+          where: {
+            userId,
+            isDraft: false,
+            entryDate: { gte: session.date, lt: windowEnd },
+          },
+          select: {
+            id: true,
+            titleEncrypted: true,
+            bodyEncrypted: true,
+            mood: true,
+            entryDate: true,
+          },
+          orderBy: { entryDate: 'asc' },
+        })
+        .then((rows) =>
+          rows.map((r) => ({
+            id: r.id,
+            title: decryptField(r.titleEncrypted),
+            body: decryptField(r.bodyEncrypted) ?? '',
+            mood: r.mood,
+            entryDate: r.entryDate,
+          }))
+        ),
 
       prisma.assignment.findMany({
         where: {

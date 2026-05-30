@@ -4,6 +4,7 @@ import { auth, signOut } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
 import { z } from 'zod'
+import { decryptField } from '@/lib/encryption'
 
 const DELETION_REASONS = [
   'Not for me right now',
@@ -196,10 +197,37 @@ export async function requestDataExport(): Promise<
         lastLoginAt: true,
       },
     }),
-    prisma.journalEntry.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-    }),
+    prisma.journalEntry
+      .findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          titleEncrypted: true,
+          bodyEncrypted: true,
+          mood: true,
+          isDraft: true,
+          assignmentId: true,
+          entryDate: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      })
+      .then((rows) =>
+        // DP3: decrypt before adding to the DPDP export so the user
+        // downloads readable text, not ciphertext.
+        rows.map((r) => ({
+          id: r.id,
+          title: decryptField(r.titleEncrypted),
+          body: decryptField(r.bodyEncrypted) ?? '',
+          mood: r.mood,
+          isDraft: r.isDraft,
+          assignmentId: r.assignmentId,
+          entryDate: r.entryDate,
+          createdAt: r.createdAt,
+          updatedAt: r.updatedAt,
+        }))
+      ),
     prisma.moodCheckIn.findMany({
       where: { userId },
       orderBy: { checkedInAt: 'desc' },

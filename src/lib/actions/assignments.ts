@@ -3,6 +3,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { encryptField } from '@/lib/encryption'
 
 export async function completeAssignment(
   assignmentId: string,
@@ -44,6 +45,8 @@ export async function completeAssignment(
         userId: session.user.id,
         title: assignment.title,
         body: responseText,
+        titleEncrypted: encryptField(assignment.title),
+        bodyEncrypted: encryptField(responseText),
         entryDate: new Date(),
       },
     })

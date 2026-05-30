@@ -6,6 +6,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { encryptField, decryptField } from '@/lib/encryption'
 
 export async function createJournalEntry(formData: FormData) {
   const session = await auth()
@@ -26,6 +27,8 @@ export async function createJournalEntry(formData: FormData) {
       userId: session.user.id,
       title,
       body,
+      titleEncrypted: encryptField(title),
+      bodyEncrypted: encryptField(body),
       mood: mood && mood >= 1 && mood <= 5 ? mood : null,
       entryDate,
     },
@@ -68,6 +71,8 @@ export async function updateJournalEntry(id: string, formData: FormData) {
     data: {
       title,
       body,
+      titleEncrypted: encryptField(title),
+      bodyEncrypted: encryptField(body),
       mood: mood && mood >= 1 && mood <= 5 ? mood : null,
       ...(dateStr ? { entryDate: new Date(dateStr) } : {}),
     },
@@ -93,12 +98,15 @@ export async function saveDraft(data: {
     where: { userId: session.user.id, isDraft: true },
   })
 
+  const draftTitle = data.title?.trim() || null
   if (existing) {
     await prisma.journalEntry.update({
       where: { id: existing.id },
       data: {
-        title: data.title?.trim() || null,
+        title: draftTitle,
         body: data.body,
+        titleEncrypted: encryptField(draftTitle),
+        bodyEncrypted: encryptField(data.body),
         assignmentId: data.assignmentId ?? null,
         draftUpdatedAt: new Date(),
       },
@@ -109,8 +117,10 @@ export async function saveDraft(data: {
   const entry = await prisma.journalEntry.create({
     data: {
       userId: session.user.id,
-      title: data.title?.trim() || null,
+      title: draftTitle,
       body: data.body,
+      titleEncrypted: encryptField(draftTitle),
+      bodyEncrypted: encryptField(data.body),
       isDraft: true,
       assignmentId: data.assignmentId ?? null,
       draftUpdatedAt: new Date(),
@@ -131,7 +141,11 @@ export async function publishDraft(
     where: { id: draftId, userId: session.user.id, isDraft: true },
   })
   if (!draft) return { error: 'Draft not found' }
-  if (!draft.body.trim()) return { error: 'Cannot publish empty entry' }
+
+  // Prefer the encrypted column; saveDraft dual-writes both. Falls back to
+  // the plaintext column only for drafts written before the encryption rollout.
+  const draftBody = decryptField(draft.bodyEncrypted) ?? draft.body
+  if (!draftBody.trim()) return { error: 'Cannot publish empty entry' }
 
   await prisma.journalEntry.update({
     where: { id: draftId },
@@ -160,7 +174,8 @@ export async function publishDraft(
         data: {
           assignmentId: assignment.id,
           userId: session.user.id,
-          responseText: draft.body,
+          responseText: draftBody,
+          responseTextEncrypted: encryptField(draftBody),
         },
       })
 
