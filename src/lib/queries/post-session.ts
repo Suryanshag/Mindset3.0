@@ -2,6 +2,7 @@
 
 import { cache } from 'react'
 import { prisma } from '@/lib/prisma'
+import { decryptField } from '@/lib/encryption'
 
 const SESSION_DURATION_MIN = 60
 
@@ -48,11 +49,18 @@ export const getPendingPostSession = cache(async (userId: string) => {
  * mood/note for snippet rendering.
  */
 export async function getRecentSessionFollowups(userId: string, limit = 3) {
-  return await prisma.sessionFollowup.findMany({
+  const rows = await prisma.sessionFollowup.findMany({
     where: { userId },
     orderBy: { completedAt: 'desc' },
     take: limit,
-    include: {
+    select: {
+      id: true,
+      sessionId: true,
+      userId: true,
+      postMood: true,
+      homeworkNoteEncrypted: true,
+      rebookIntent: true,
+      completedAt: true,
       session: {
         select: {
           date: true,
@@ -66,4 +74,9 @@ export async function getRecentSessionFollowups(userId: string, limit = 3) {
       },
     },
   })
+
+  return rows.map(({ homeworkNoteEncrypted, ...rest }) => ({
+    ...rest,
+    homeworkNote: decryptField(homeworkNoteEncrypted),
+  }))
 }

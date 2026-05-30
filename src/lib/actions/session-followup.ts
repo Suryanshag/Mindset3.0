@@ -7,6 +7,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { encryptField } from '@/lib/encryption'
 
 const SESSION_DURATION_MIN = 60
 
@@ -55,6 +56,7 @@ export async function saveSessionFollowup(input: {
     update: {
       postMood: input.postMood ?? null,
       homeworkNote: note,
+      homeworkNoteEncrypted: encryptField(note),
       rebookIntent: input.rebookIntent ?? null,
     },
     create: {
@@ -62,6 +64,7 @@ export async function saveSessionFollowup(input: {
       userId,
       postMood: input.postMood ?? null,
       homeworkNote: note,
+      homeworkNoteEncrypted: encryptField(note),
       rebookIntent: input.rebookIntent ?? null,
     },
   })

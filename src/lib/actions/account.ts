@@ -179,6 +179,7 @@ export async function requestDataExport(): Promise<
     ngoRegistrations,
     studyMaterialAccesses,
     cartItems,
+    sessionFollowups,
   ] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
@@ -355,6 +356,28 @@ export async function requestDataExport(): Promise<
       where: { userId },
       include: { product: { select: { name: true, price: true } } },
     }),
+    prisma.sessionFollowup
+      .findMany({
+        where: { userId },
+        orderBy: { completedAt: 'desc' },
+        select: {
+          id: true,
+          sessionId: true,
+          userId: true,
+          postMood: true,
+          homeworkNoteEncrypted: true,
+          rebookIntent: true,
+          completedAt: true,
+        },
+      })
+      .then((rows) =>
+        // DP3: decrypt homeworkNote before adding to the DPDP export so
+        // the user reads their own reflections, not ciphertext.
+        rows.map(({ homeworkNoteEncrypted, ...rest }) => ({
+          ...rest,
+          homeworkNote: decryptField(homeworkNoteEncrypted),
+        }))
+      ),
   ])
 
   if (!user) return { success: false, error: 'Unauthorized' }
@@ -366,6 +389,7 @@ export async function requestDataExport(): Promise<
     journalEntries,
     moodCheckIns,
     sessions,
+    sessionFollowups,
     payments,
     assignments,
     workshopRegistrations,
