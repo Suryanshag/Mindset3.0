@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { dateOnlyIST } from '@/lib/format-date'
+import { encryptField } from '@/lib/encryption'
 
 // NOTE on pre-existing data: rows written before this fix may have
 // drifted by one IST calendar day (server-local UTC midnight stored
@@ -41,11 +42,13 @@ export async function logMoodCheckIn(mood: number, note?: string) {
       userId: session.user.id,
       mood,
       note: trimmedNote,
+      noteEncrypted: encryptField(trimmedNote),
       checkedInDate: today,
     },
     update: {
       mood,
       note: trimmedNote,
+      noteEncrypted: encryptField(trimmedNote),
       checkedInAt: new Date(),
     },
   })

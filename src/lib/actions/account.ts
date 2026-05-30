@@ -228,10 +228,27 @@ export async function requestDataExport(): Promise<
           updatedAt: r.updatedAt,
         }))
       ),
-    prisma.moodCheckIn.findMany({
-      where: { userId },
-      orderBy: { checkedInAt: 'desc' },
-    }),
+    prisma.moodCheckIn
+      .findMany({
+        where: { userId },
+        orderBy: { checkedInAt: 'desc' },
+        select: {
+          id: true,
+          userId: true,
+          mood: true,
+          noteEncrypted: true,
+          checkedInDate: true,
+          checkedInAt: true,
+        },
+      })
+      .then((rows) =>
+        // DP3: decrypt the note before adding to the DPDP export so the
+        // user sees readable mood history.
+        rows.map(({ noteEncrypted, ...rest }) => ({
+          ...rest,
+          note: decryptField(noteEncrypted),
+        }))
+      ),
     prisma.session
       .findMany({
         where: { userId },
