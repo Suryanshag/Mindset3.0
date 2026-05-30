@@ -32,6 +32,19 @@ export default async function UserDashboardLayout({
     getCurrentUserBasics(session.user.id),
     getUnreadNotificationCount(session.user.id).catch(() => 0),
   ])
+
+  // DPDP consent gate. Email signups capture consent atomically in the
+  // register route, so they always land here with `consentedAt` set.
+  // Google OAuth users — whose adapter-created User row starts with
+  // `consentedAt = null` — get bounced to /consent-gate, where they pick
+  // up the same consent checkboxes the register page shows. Once they
+  // submit, the API sets consentedAt and they re-enter the dashboard
+  // normally. `user` can be null briefly after deletion races; treat that
+  // as "no consent" and gate too.
+  if (!user?.consentedAt) {
+    redirect('/consent-gate')
+  }
+
   const showVerifyBanner = !user?.emailVerified
   const displayName = user?.name ?? session.user.name ?? 'there'
 

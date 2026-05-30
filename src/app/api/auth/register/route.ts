@@ -8,6 +8,7 @@ import { authLimiter } from '@/lib/arcjet'
 import { handleArcjetDenial } from '@/lib/arcjet-protect'
 import { logAuthEvent } from '@/lib/auth-events'
 import { getAppBaseUrl } from '@/lib/app-url'
+import { CONSENT_VERSION } from '@/lib/consent'
 import crypto from 'crypto'
 
 function normalisePhone(raw: string | undefined): string | undefined {
@@ -66,10 +67,8 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    // DPDP consent capture — version is the policy's effective date.
-    // Bump this constant whenever the policy materially changes so we
-    // can detect users on a stale version and re-prompt.
-    const CONSENT_VERSION = '2026-05-30'
+    // DPDP consent capture — version comes from the single-source-of-truth
+    // module so the Google OAuth consent-gate route stays in lock-step.
     const now = new Date()
     const consentIpAddress =
       req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
