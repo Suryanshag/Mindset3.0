@@ -287,14 +287,14 @@ export async function requestDataExport(): Promise<
           dueDate: true,
           createdAt: true,
           updatedAt: true,
-          // responses keep their plaintext column selection for now —
-          // Group D swaps responseText → responseTextEncrypted + decrypt.
+          // Responses are now fully encryption-aware (Group D): we read
+          // the encrypted column and decrypt in the .then() below.
           responses: {
             select: {
               id: true,
               assignmentId: true,
               userId: true,
-              responseText: true,
+              responseTextEncrypted: true,
               metadata: true,
               completedAt: true,
               createdAt: true,
@@ -303,13 +303,17 @@ export async function requestDataExport(): Promise<
         },
       })
       .then((rows) =>
-        // DP3: decrypt all three assignment PHI fields before adding to
-        // the DPDP export so the user sees readable text.
-        rows.map(({ descriptionEncrypted, instructionsEncrypted, reviewNoteEncrypted, ...rest }) => ({
+        // DP3: decrypt every PHI column (assignment + nested responses)
+        // before the row hits the DPDP export so users see readable text.
+        rows.map(({ descriptionEncrypted, instructionsEncrypted, reviewNoteEncrypted, responses, ...rest }) => ({
           ...rest,
           description: decryptField(descriptionEncrypted),
           instructions: decryptField(instructionsEncrypted) ?? '',
           reviewNote: decryptField(reviewNoteEncrypted),
+          responses: responses.map(({ responseTextEncrypted, ...r }) => ({
+            ...r,
+            responseText: decryptField(responseTextEncrypted),
+          })),
         }))
       ),
     prisma.workshopRegistration.findMany({

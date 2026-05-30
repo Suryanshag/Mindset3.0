@@ -28,6 +28,7 @@ export async function completeAssignment(
       assignmentId,
       userId: session.user.id,
       responseText,
+      responseTextEncrypted: encryptField(responseText),
       metadata,
     },
   })
