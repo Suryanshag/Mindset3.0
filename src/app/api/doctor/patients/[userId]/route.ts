@@ -55,11 +55,11 @@ export async function GET(
         select: {
           id: true,
           title: true,
-          description: true,
+          descriptionEncrypted: true,
           fileUrl: true,
           submissionUrl: true,
           status: true,
-          reviewNote: true,
+          reviewNoteEncrypted: true,
           dueDate: true,
           createdAt: true,
         },
@@ -73,7 +73,15 @@ export async function GET(
       notes: decryptField(notesEncrypted),
     }))
 
-    return successResponse({ patient, sessions, assignments })
+    const decryptedAssignments = assignments.map(
+      ({ descriptionEncrypted, reviewNoteEncrypted, ...rest }) => ({
+        ...rest,
+        description: decryptField(descriptionEncrypted),
+        reviewNote: decryptField(reviewNoteEncrypted),
+      })
+    )
+
+    return successResponse({ patient, sessions, assignments: decryptedAssignments })
   } catch {
     return serverErrorResponse()
   }

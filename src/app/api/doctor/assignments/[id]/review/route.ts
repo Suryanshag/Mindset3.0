@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
+import { encryptField, decryptField } from '@/lib/encryption'
 
 export async function PATCH(
   req: Request,
@@ -36,13 +37,36 @@ export async function PATCH(
       data: {
         status: 'REVIEWED',
         reviewNote,
+        ...(reviewNote !== undefined
+          ? { reviewNoteEncrypted: encryptField(reviewNote) }
+          : {}),
       },
-      include: {
+      select: {
+        id: true,
+        doctorId: true,
+        userId: true,
+        type: true,
+        title: true,
+        descriptionEncrypted: true,
+        instructionsEncrypted: true,
+        reviewNoteEncrypted: true,
+        fileUrl: true,
+        submissionUrl: true,
+        status: true,
+        dueDate: true,
+        createdAt: true,
+        updatedAt: true,
         user: { select: { id: true, name: true, email: true } },
       },
     })
 
-    return successResponse(updated)
+    const { descriptionEncrypted, instructionsEncrypted, reviewNoteEncrypted, ...rest } = updated
+    return successResponse({
+      ...rest,
+      description: decryptField(descriptionEncrypted),
+      instructions: decryptField(instructionsEncrypted) ?? '',
+      reviewNote: decryptField(reviewNoteEncrypted),
+    })
   } catch {
     return serverErrorResponse()
   }

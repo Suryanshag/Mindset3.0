@@ -138,7 +138,7 @@ export async function getActiveDraft(userId: string) {
 }
 
 export async function getPendingJournalPrompt(userId: string) {
-  return prisma.assignment.findFirst({
+  const row = await prisma.assignment.findFirst({
     where: {
       userId,
       type: 'JOURNAL_PROMPT',
@@ -147,7 +147,7 @@ export async function getPendingJournalPrompt(userId: string) {
     select: {
       id: true,
       title: true,
-      instructions: true,
+      instructionsEncrypted: true,
       dueDate: true,
       doctor: {
         select: { user: { select: { name: true } } },
@@ -155,6 +155,12 @@ export async function getPendingJournalPrompt(userId: string) {
     },
     orderBy: { dueDate: 'asc' },
   })
+  if (!row) return null
+  const { instructionsEncrypted, ...rest } = row
+  return {
+    ...rest,
+    instructions: decryptField(instructionsEncrypted) ?? '',
+  }
 }
 
 /**

@@ -268,11 +268,50 @@ export async function requestDataExport(): Promise<
         createdAt: true,
       },
     }),
-    prisma.assignment.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-      include: { responses: true },
-    }),
+    prisma.assignment
+      .findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          doctorId: true,
+          userId: true,
+          type: true,
+          title: true,
+          descriptionEncrypted: true,
+          instructionsEncrypted: true,
+          reviewNoteEncrypted: true,
+          fileUrl: true,
+          submissionUrl: true,
+          status: true,
+          dueDate: true,
+          createdAt: true,
+          updatedAt: true,
+          // responses keep their plaintext column selection for now —
+          // Group D swaps responseText → responseTextEncrypted + decrypt.
+          responses: {
+            select: {
+              id: true,
+              assignmentId: true,
+              userId: true,
+              responseText: true,
+              metadata: true,
+              completedAt: true,
+              createdAt: true,
+            },
+          },
+        },
+      })
+      .then((rows) =>
+        // DP3: decrypt all three assignment PHI fields before adding to
+        // the DPDP export so the user sees readable text.
+        rows.map(({ descriptionEncrypted, instructionsEncrypted, reviewNoteEncrypted, ...rest }) => ({
+          ...rest,
+          description: decryptField(descriptionEncrypted),
+          instructions: decryptField(instructionsEncrypted) ?? '',
+          reviewNote: decryptField(reviewNoteEncrypted),
+        }))
+      ),
     prisma.workshopRegistration.findMany({
       where: { userId },
       include: { workshop: { select: { title: true, startsAt: true } } },

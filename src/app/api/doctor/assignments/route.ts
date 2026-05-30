@@ -4,6 +4,7 @@ import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-r
 import { createAssignmentSchema } from '@/lib/validations/assignment'
 import { sendAssignmentCreated } from '@/lib/email-service'
 import { NextRequest } from 'next/server'
+import { encryptField, decryptField } from '@/lib/encryption'
 
 export async function GET(req: NextRequest) {
   try {
@@ -22,18 +23,41 @@ export async function GET(req: NextRequest) {
 
     const status = req.nextUrl.searchParams.get('status')
 
-    const assignments = await prisma.assignment.findMany({
+    const rows = await prisma.assignment.findMany({
       where: {
         doctorId: doctor.id,
         ...(status ? { status: status as 'PENDING' | 'SUBMITTED' | 'REVIEWED' } : {}),
       },
       orderBy: { createdAt: 'desc' },
-      include: {
+      select: {
+        id: true,
+        doctorId: true,
+        userId: true,
+        type: true,
+        title: true,
+        descriptionEncrypted: true,
+        instructionsEncrypted: true,
+        reviewNoteEncrypted: true,
+        fileUrl: true,
+        submissionUrl: true,
+        status: true,
+        dueDate: true,
+        createdAt: true,
+        updatedAt: true,
         user: {
           select: { id: true, name: true, email: true },
         },
       },
     })
+
+    const assignments = rows.map(
+      ({ descriptionEncrypted, instructionsEncrypted, reviewNoteEncrypted, ...rest }) => ({
+        ...rest,
+        description: decryptField(descriptionEncrypted),
+        instructions: decryptField(instructionsEncrypted) ?? '',
+        reviewNote: decryptField(reviewNoteEncrypted),
+      })
+    )
 
     return successResponse(assignments)
   } catch {
@@ -70,7 +94,7 @@ export async function POST(req: Request) {
       return errorResponse('This user is not your patient', 403)
     }
 
-    const assignment = await prisma.assignment.create({
+    const created = await prisma.assignment.create({
       data: {
         doctorId: doctor.id,
         userId: parsed.data.userId,
@@ -78,13 +102,42 @@ export async function POST(req: Request) {
         title: parsed.data.title,
         description: parsed.data.description ?? '',
         instructions: parsed.data.instructions ?? '',
+        descriptionEncrypted: encryptField(parsed.data.description),
+        instructionsEncrypted: encryptField(parsed.data.instructions),
         fileUrl: parsed.data.fileUrl,
         dueDate: parsed.data.dueDate ? new Date(parsed.data.dueDate) : undefined,
       },
-      include: {
+      select: {
+        id: true,
+        doctorId: true,
+        userId: true,
+        type: true,
+        title: true,
+        descriptionEncrypted: true,
+        instructionsEncrypted: true,
+        reviewNoteEncrypted: true,
+        fileUrl: true,
+        submissionUrl: true,
+        status: true,
+        dueDate: true,
+        createdAt: true,
+        updatedAt: true,
         user: { select: { id: true, name: true, email: true } },
       },
     })
+
+    const {
+      descriptionEncrypted,
+      instructionsEncrypted,
+      reviewNoteEncrypted,
+      ...rest
+    } = created
+    const assignment = {
+      ...rest,
+      description: decryptField(descriptionEncrypted),
+      instructions: decryptField(instructionsEncrypted) ?? '',
+      reviewNote: decryptField(reviewNoteEncrypted),
+    }
 
     // In-app notification to user
     await prisma.notification.create({
