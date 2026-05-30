@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { sessionStatusSchema, parseEnumParam } from '@/lib/validations/enums'
 import { Prisma } from '@prisma/client'
+import { decryptField } from '@/lib/encryption'
 
 export async function GET(req: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest) {
     if (doctorId) where.doctorId = doctorId
     if (userId) where.userId = userId
 
-    const [sessions, total] = await Promise.all([
+    const [rows, total] = await Promise.all([
       prisma.session.findMany({
         where,
         orderBy: { date: 'desc' },
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
           status: true,
           paymentStatus: true,
           meetLink: true,
-          notes: true,
+          notesEncrypted: true,
           createdAt: true,
           user: { select: { id: true, name: true, email: true } },
           doctor: {
@@ -53,6 +54,11 @@ export async function GET(req: NextRequest) {
       }),
       prisma.session.count({ where }),
     ])
+
+    const sessions = rows.map(({ notesEncrypted, ...rest }) => ({
+      ...rest,
+      notes: decryptField(notesEncrypted),
+    }))
 
     return successResponse({ sessions, total, page, limit })
   } catch (error) {

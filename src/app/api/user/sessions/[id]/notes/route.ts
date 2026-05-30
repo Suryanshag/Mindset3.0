@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { apiLimiter } from '@/lib/arcjet'
 import { handleArcjetDenial } from '@/lib/arcjet-protect'
+import { encryptField } from '@/lib/encryption'
 
 const schema = z.object({
   userNotes: z.string().max(2000),
@@ -32,7 +33,10 @@ export async function PATCH(
 
     const result = await prisma.session.updateMany({
       where: { id, userId: session.user.id },
-      data: { userNotes: parsed.data.userNotes },
+      data: {
+        userNotes: parsed.data.userNotes,
+        userNotesEncrypted: encryptField(parsed.data.userNotes),
+      },
     })
 
     if (result.count === 0) return errorResponse('Session not found', 404)

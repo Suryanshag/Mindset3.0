@@ -6,6 +6,7 @@ import { razorpay } from '@/lib/razorpay'
 import { sendSessionCancelled } from '@/lib/email-service'
 import { revalidatePath } from 'next/cache'
 import { formatSessionDate } from '@/lib/format-date'
+import { encryptField } from '@/lib/encryption'
 
 // Refund policy (canonical, mirrors docs/refund-policy-audit.md):
 //   > 24h before session start  → 100% refund
@@ -69,6 +70,7 @@ export async function cancelSession(sessionId: string) {
           status: 'CANCELLED',
           cancelledAt: now,
           cancellationReason: decision.reason,
+          cancellationReasonEncrypted: encryptField(decision.reason),
         },
       })
 

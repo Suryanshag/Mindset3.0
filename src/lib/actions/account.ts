@@ -232,21 +232,31 @@ export async function requestDataExport(): Promise<
       where: { userId },
       orderBy: { checkedInAt: 'desc' },
     }),
-    prisma.session.findMany({
-      where: { userId },
-      orderBy: { date: 'desc' },
-      select: {
-        id: true,
-        date: true,
-        status: true,
-        paymentStatus: true,
-        userNotes: true,
-        cancelledAt: true,
-        cancellationReason: true,
-        createdAt: true,
-        doctor: { select: { user: { select: { name: true } }, designation: true } },
-      },
-    }),
+    prisma.session
+      .findMany({
+        where: { userId },
+        orderBy: { date: 'desc' },
+        select: {
+          id: true,
+          date: true,
+          status: true,
+          paymentStatus: true,
+          userNotesEncrypted: true,
+          cancelledAt: true,
+          cancellationReasonEncrypted: true,
+          createdAt: true,
+          doctor: { select: { user: { select: { name: true } }, designation: true } },
+        },
+      })
+      .then((rows) =>
+        // DP3: decrypt userNotes + cancellationReason before the row hits
+        // the DPDP export so users download plaintext.
+        rows.map(({ userNotesEncrypted, cancellationReasonEncrypted, ...rest }) => ({
+          ...rest,
+          userNotes: decryptField(userNotesEncrypted),
+          cancellationReason: decryptField(cancellationReasonEncrypted),
+        }))
+      ),
     prisma.payment.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },

@@ -10,6 +10,7 @@ import PageHeader from '@/components/dashboard/page-header'
 import { formatSessionDateRelative, formatSessionDate } from '@/lib/format-date'
 import { joinWindowState } from '@/lib/session-window'
 import MobileSessions from '@/components/mobile/sessions'
+import { decryptField } from '@/lib/encryption'
 
 const SESSION_DURATION_MIN = 60
 
@@ -360,7 +361,7 @@ function BookAnotherCta({
 
 async function PastTab({ userId }: { userId: string }) {
   const now = new Date()
-  const sessions = await prisma.session.findMany({
+  const rows = await prisma.session.findMany({
     where: {
       userId,
       OR: [
@@ -372,12 +373,17 @@ async function PastTab({ userId }: { userId: string }) {
       id: true,
       date: true,
       status: true,
-      notes: true,
+      notesEncrypted: true,
       doctor: { select: doctorSelect },
     },
     orderBy: { date: 'desc' },
     take: 20,
   })
+
+  const sessions = rows.map(({ notesEncrypted, ...rest }) => ({
+    ...rest,
+    notes: decryptField(notesEncrypted),
+  }))
 
   if (sessions.length === 0) {
     return (

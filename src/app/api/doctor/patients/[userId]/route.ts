@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
+import { decryptField } from '@/lib/encryption'
 
 export async function GET(
   _req: Request,
@@ -44,7 +45,7 @@ export async function GET(
           meetLink: true,
           status: true,
           paymentStatus: true,
-          notes: true,
+          notesEncrypted: true,
           createdAt: true,
         },
       }),
@@ -67,7 +68,12 @@ export async function GET(
 
     if (!patient) return errorResponse('Patient not found', 404)
 
-    return successResponse({ patient, sessions: patientSessions, assignments })
+    const sessions = patientSessions.map(({ notesEncrypted, ...rest }) => ({
+      ...rest,
+      notes: decryptField(notesEncrypted),
+    }))
+
+    return successResponse({ patient, sessions, assignments })
   } catch {
     return serverErrorResponse()
   }

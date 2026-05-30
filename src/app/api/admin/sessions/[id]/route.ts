@@ -5,6 +5,7 @@ import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-r
 import { updateSessionSchema } from '@/lib/validations/session'
 import { cancelCalendarEvent } from '@/lib/google-calendar'
 import { sendSessionCancelled } from '@/lib/email-service'
+import { encryptField, decryptField } from '@/lib/encryption'
 
 export async function PATCH(
   req: NextRequest,
@@ -31,14 +32,22 @@ export async function PATCH(
 
     const updated = await prisma.session.update({
       where: { id },
-      data: parsed.data,
+      data: {
+        ...parsed.data,
+        // Dual-write notes when the PATCH carries one — encryptField handles
+        // empty / null too. Other parsed.data fields (status, meetLink) pass
+        // through unchanged via the spread.
+        ...(parsed.data.notes !== undefined
+          ? { notesEncrypted: encryptField(parsed.data.notes) }
+          : {}),
+      },
       select: {
         id: true,
         date: true,
         status: true,
         paymentStatus: true,
         meetLink: true,
-        notes: true,
+        notesEncrypted: true,
         user: { select: { name: true } },
         doctor: { select: { user: { select: { name: true } } } },
       },
@@ -77,7 +86,8 @@ export async function PATCH(
       }
     }
 
-    return successResponse(updated)
+    const { notesEncrypted, ...rest } = updated
+    return successResponse({ ...rest, notes: decryptField(notesEncrypted) })
   } catch (error) {
     console.error('[ADMIN_SESSION_PATCH]', error)
     return serverErrorResponse()

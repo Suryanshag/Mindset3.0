@@ -4,6 +4,7 @@ import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-r
 import { updateSessionSchema } from '@/lib/validations/session'
 import { cancelCalendarEvent } from '@/lib/google-calendar'
 import { sendSessionCancelled } from '@/lib/email-service'
+import { encryptField, decryptField } from '@/lib/encryption'
 
 export async function PATCH(
   req: Request,
@@ -77,7 +78,7 @@ export async function PATCH(
             meetLink: true,
             status: true,
             paymentStatus: true,
-            notes: true,
+            notesEncrypted: true,
             createdAt: true,
             user: {
               select: { id: true, name: true, email: true, phone: true },
@@ -106,7 +107,8 @@ export async function PATCH(
         return updatedSession
       }, { maxWait: 8000, timeout: 15000 })
 
-      return successResponse({ ...updated, earningCreated: !!payment })
+      const { notesEncrypted, ...rest } = updated
+      return successResponse({ ...rest, notes: decryptField(notesEncrypted), earningCreated: !!payment })
     }
 
     // Handle COMPLETED status with 45-min rule + earnings
@@ -148,7 +150,7 @@ export async function PATCH(
             meetLink: true,
             status: true,
             paymentStatus: true,
-            notes: true,
+            notesEncrypted: true,
             createdAt: true,
             user: {
               select: { id: true, name: true, email: true, phone: true },
@@ -177,20 +179,26 @@ export async function PATCH(
         return updatedSession
       }, { maxWait: 8000, timeout: 15000 })
 
-      return successResponse({ ...updated, earningCreated: !!payment })
+      const { notesEncrypted, ...rest } = updated
+      return successResponse({ ...rest, notes: decryptField(notesEncrypted), earningCreated: !!payment })
     }
 
     // Standard update for notes/meetLink/cancel
     const updated = await prisma.session.update({
       where: { id },
-      data: parsed.data,
+      data: {
+        ...parsed.data,
+        ...(parsed.data.notes !== undefined
+          ? { notesEncrypted: encryptField(parsed.data.notes) }
+          : {}),
+      },
       select: {
         id: true,
         date: true,
         meetLink: true,
         status: true,
         paymentStatus: true,
-        notes: true,
+        notesEncrypted: true,
         createdAt: true,
         user: {
           select: { id: true, name: true, email: true, phone: true },
@@ -226,7 +234,8 @@ export async function PATCH(
       }
     }
 
-    return successResponse(updated)
+    const { notesEncrypted, ...rest } = updated
+    return successResponse({ ...rest, notes: decryptField(notesEncrypted) })
   } catch {
     return serverErrorResponse()
   }

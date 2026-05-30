@@ -183,12 +183,23 @@ export type ReflectionLandingData = Awaited<ReturnType<typeof getReflectionLandi
 
 /** Data for ChapterView — a session and everything that orbited it. */
 export async function getChapterData(userId: string, sessionId: string) {
-  // Get the target session
+  // Get the target session. Explicit select so the encrypted notes column
+  // is the only PHI loaded — everything else is metadata used downstream.
   const session = await prisma.session.findFirst({
     where: { id: sessionId, userId },
-    include: {
+    select: {
+      id: true,
+      date: true,
+      status: true,
+      meetLink: true,
+      doctorId: true,
+      notesEncrypted: true,
       doctor: {
-        include: { user: { select: { name: true } } },
+        select: {
+          designation: true,
+          photo: true,
+          user: { select: { name: true } },
+        },
       },
     },
   })
@@ -324,7 +335,7 @@ export async function getChapterData(userId: string, sessionId: string) {
       id: session.id,
       date: session.date,
       status: session.status as string,
-      notes: session.notes,
+      notes: decryptField(session.notesEncrypted),
       meetLink: session.meetLink,
       doctorId: session.doctorId,
       doctorName: session.doctor.user.name,

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api-response'
 import { startOfDayIST, startOfNextDayIST } from '@/lib/format-date'
 import { NextRequest } from 'next/server'
+import { decryptField } from '@/lib/encryption'
 
 export async function GET(req: NextRequest) {
   try {
@@ -55,7 +56,7 @@ export async function GET(req: NextRequest) {
         break
     }
 
-    const sessions = await prisma.session.findMany({
+    const rows = await prisma.session.findMany({
       where,
       orderBy,
       select: {
@@ -64,13 +65,18 @@ export async function GET(req: NextRequest) {
         meetLink: true,
         status: true,
         paymentStatus: true,
-        notes: true,
+        notesEncrypted: true,
         createdAt: true,
         user: {
           select: { id: true, name: true, email: true, phone: true },
         },
       },
     })
+
+    const sessions = rows.map(({ notesEncrypted, ...rest }) => ({
+      ...rest,
+      notes: decryptField(notesEncrypted),
+    }))
 
     return successResponse(sessions)
   } catch {

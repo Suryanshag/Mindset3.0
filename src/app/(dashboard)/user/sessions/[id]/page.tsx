@@ -12,6 +12,7 @@ import SessionRail from '@/components/dashboard/desktop/session-rail'
 import { formatSessionDateRelative } from '@/lib/format-date'
 import MobileSessionDetail from '@/components/mobile/session-detail'
 import { CrisisBanner } from '@/components/shared/crisis-banner'
+import { decryptField } from '@/lib/encryption'
 
 const SESSION_DURATION_MIN = 60
 
@@ -34,15 +35,34 @@ export default async function SessionDetailPage({
   const authSession = await auth()
   if (!authSession?.user?.id) redirect('/login')
 
-  const session = await prisma.session.findFirst({
+  const row = await prisma.session.findFirst({
     where: { id, userId: authSession.user.id },
-    include: {
+    select: {
+      id: true,
+      date: true,
+      status: true,
+      meetLink: true,
+      doctorId: true,
+      notesEncrypted: true,
+      userNotesEncrypted: true,
       doctor: {
-        include: { user: { select: { name: true } } },
+        select: {
+          designation: true,
+          photo: true,
+          type: true,
+          user: { select: { name: true } },
+        },
       },
     },
   })
-  if (!session) notFound()
+  if (!row) notFound()
+
+  const { notesEncrypted, userNotesEncrypted, ...rest } = row
+  const session = {
+    ...rest,
+    notes: decryptField(notesEncrypted),
+    userNotes: decryptField(userNotesEncrypted),
+  }
 
   const isPast = session.status === 'COMPLETED' || session.status === 'NO_SHOW' || session.date < new Date()
   const relatedAssignments = isPast
