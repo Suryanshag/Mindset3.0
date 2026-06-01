@@ -36,6 +36,55 @@ export const getSpineSessions = cache(async (userId: string) => {
 
 export type SpineSession = Awaited<ReturnType<typeof getSpineSessions>>[number]
 
+/** "Your therapist" mini-card data for the desktop spine. Derived from
+ *  the user's most-recent session (same convention as /user/profile).
+ *  Returns null if the user has never had a session. Counts non-cancelled
+ *  sessions with this doctor as the "N sessions" line; the "since" line
+ *  uses the earliest session date with that doctor. Cached per request. */
+export const getSpineTherapist = cache(async (userId: string) => {
+  const latest = await prisma.session.findFirst({
+    where: { userId },
+    orderBy: { date: 'desc' },
+    select: {
+      doctorId: true,
+      doctor: {
+        select: {
+          designation: true,
+          photo: true,
+          user: { select: { name: true } },
+        },
+      },
+    },
+  })
+  if (!latest) return null
+
+  const [sessionCount, earliest] = await Promise.all([
+    prisma.session.count({
+      where: {
+        userId,
+        doctorId: latest.doctorId,
+        status: { in: ['COMPLETED', 'CONFIRMED', 'PENDING'] },
+      },
+    }),
+    prisma.session.findFirst({
+      where: { userId, doctorId: latest.doctorId },
+      orderBy: { date: 'asc' },
+      select: { date: true },
+    }),
+  ])
+
+  return {
+    doctorId: latest.doctorId,
+    name: latest.doctor.user.name,
+    designation: latest.doctor.designation,
+    photo: latest.doctor.photo,
+    sessionCount,
+    sinceDate: earliest?.date ?? null,
+  }
+})
+
+export type SpineTherapist = NonNullable<Awaited<ReturnType<typeof getSpineTherapist>>>
+
 /** Data for the ReflectionLanding component (desktop /user). */
 export async function getReflectionLandingData(userId: string) {
   const now = new Date()

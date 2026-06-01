@@ -216,6 +216,33 @@ export async function getLastWeekMoods(
   return out
 }
 
+/**
+ * Days in the last 7 (IST-aligned) on which the user wrote at least one
+ * published journal entry. Returns a Set of ISO date strings (YYYY-MM-DD)
+ * so the BToday week-strip can mark an "Entry" indicator per day without
+ * a per-day query loop. Drafts are excluded — they don't count as the
+ * user having actually written something.
+ */
+export async function getLastWeekEntryDates(userId: string): Promise<Set<string>> {
+  const today = dateOnlyIST(new Date())
+  const sevenDaysAgo = new Date(today.getTime() - 6 * 86400000)
+
+  const rows = await prisma.journalEntry.findMany({
+    where: {
+      userId,
+      isDraft: false,
+      entryDate: { gte: sevenDaysAgo, lte: new Date(today.getTime() + 86400000) },
+    },
+    select: { entryDate: true },
+  })
+
+  const set = new Set<string>()
+  for (const r of rows) {
+    set.add(new Date(r.entryDate).toISOString().slice(0, 10))
+  }
+  return set
+}
+
 export async function getTodaysMoodCheckIn(userId: string): Promise<{ mood: 1|2|3|4|5 } | null> {
   // IST calendar day → UTC midnight key for the @db.Date column.
   const today = dateOnlyIST(new Date())

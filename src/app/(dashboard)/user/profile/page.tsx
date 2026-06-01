@@ -1,54 +1,38 @@
 import { auth } from '@/lib/auth'
-import Image from 'next/image'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import Link from 'next/link'
-import {
-  UserCircle,
-  MapPin,
-  CreditCard,
-  HelpCircle,
-  Info,
-  ChevronRight,
-} from 'lucide-react'
-import AvatarUpload from '@/components/dashboard/avatar-upload'
-import SignOutButton from '@/components/dashboard/sign-out-button'
-import PageHeader from '@/components/dashboard/page-header'
 import MobileProfileHub from '@/components/mobile/profile-hub'
-
-const settingsItems = [
-  { label: 'Personal info', href: '/user/profile/personal', Icon: UserCircle },
-  { label: 'Addresses', href: '/user/profile/addresses', Icon: MapPin },
-  { label: 'Payments', href: '/user/profile/payments', Icon: CreditCard },
-  { label: 'Help & support', href: '/user/profile/help', Icon: HelpCircle },
-  { label: 'About', href: '/user/profile/about', Icon: Info },
-]
+import BProfile from '@/components/dashboard/desktop/b-profile'
 
 export default async function ProfilePage() {
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
+  const userId = session.user.id
 
-  // Fetch user + most recent session's doctor as "your therapist"
-  const [user, latestSession] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { name: true, email: true, image: true },
-    }),
-    prisma.session.findFirst({
-      where: { userId: session.user.id },
-      orderBy: { date: 'desc' },
-      select: {
-        doctorId: true,
-        doctor: {
-          select: {
-            designation: true,
-            photo: true,
-            user: { select: { name: true } },
+  const [user, latestSession, sessionCount, entryCount, workshopCount] =
+    await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, email: true, image: true },
+      }),
+      prisma.session.findFirst({
+        where: { userId },
+        orderBy: { date: 'desc' },
+        select: {
+          doctorId: true,
+          doctor: {
+            select: {
+              designation: true,
+              photo: true,
+              user: { select: { name: true } },
+            },
           },
         },
-      },
-    }),
-  ])
+      }),
+      prisma.session.count({ where: { userId } }),
+      prisma.journalEntry.count({ where: { userId } }),
+      prisma.workshopRegistration.count({ where: { userId } }),
+    ])
 
   if (!user) redirect('/login')
 
@@ -76,14 +60,9 @@ export default async function ProfilePage() {
 
   return (
     <>
-      {/* Mobile — Phase 6 ported settings hub */}
       <div className="lg:hidden">
         <MobileProfileHub
-          user={{
-            name: user.name,
-            email: user.email,
-            image: user.image,
-          }}
+          user={{ name: user.name, email: user.email, image: user.image }}
           therapist={
             therapist
               ? {
@@ -97,89 +76,21 @@ export default async function ProfilePage() {
         />
       </div>
 
-      {/* Desktop — preserved from Phase 1 */}
       <div className="hidden lg:block">
-      <PageHeader title="Profile" subtitle="Account and settings" />
-
-      <div className="space-y-5 pt-3.5">
-      {/* Avatar + name */}
-      <div className="flex flex-col items-center pt-2">
-        <AvatarUpload
-          currentUrl={user.image}
-          initials={initials}
-          size={96}
+        <BProfile
+          user={{
+            name: user.name,
+            email: user.email,
+            image: user.image,
+            initials,
+          }}
+          therapist={therapist}
+          stats={{
+            sessions: sessionCount,
+            entries: entryCount,
+            workshops: workshopCount,
+          }}
         />
-        <p className="text-[16px] font-medium text-text mt-3">{user.name}</p>
-        <p className="text-[13px] text-text-muted">{user.email}</p>
-      </div>
-
-      {/* Your therapist */}
-      {therapist && (
-        <div
-          className="bg-bg-card rounded-2xl p-3.5"
-          style={{ border: '1px solid var(--color-border)' }}
-        >
-          <p className="text-[11px] font-medium text-text-faint uppercase tracking-wider mb-2.5">
-            Your therapist
-          </p>
-          <div className="flex items-center gap-3">
-            {therapist.photo ? (
-              <Image width={40} height={40}
-                src={therapist.photo}
-                alt={therapist.name}
-                className="rounded-full object-cover shrink-0"
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center shrink-0">
-                <span className="text-xs font-medium text-white">
-                  {therapist.initials}
-                </span>
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-[14px] font-medium text-text">
-                {therapist.name}
-              </p>
-              <p className="text-[12px] text-text-muted">
-                {therapist.specialty}
-              </p>
-            </div>
-            <Link
-              href={`/user/sessions/book${therapist.doctorId ? `?doctorId=${therapist.doctorId}` : ''}`}
-              className="px-5 py-2.5 rounded-full bg-primary text-white text-[14px] font-medium shrink-0 transition-colors hover:bg-primary-soft"
-            >
-              Book session
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* Settings list */}
-      <div
-        className="bg-bg-card rounded-2xl overflow-hidden"
-        style={{ border: '1px solid var(--color-border)' }}
-      >
-        {settingsItems.map((item, i) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="flex items-center gap-3 px-4 py-3.5 lg:py-4 transition-colors duration-150 lg:hover:bg-white/60"
-            style={
-              i < settingsItems.length - 1
-                ? { borderBottom: '1px solid var(--color-border)' }
-                : undefined
-            }
-          >
-            <item.Icon size={18} className="text-text-muted shrink-0" />
-            <span className="flex-1 text-[14px] text-text">{item.label}</span>
-            <ChevronRight size={16} className="text-text-faint" />
-          </Link>
-        ))}
-      </div>
-
-      {/* Sign out */}
-      <SignOutButton />
-      </div>
       </div>
     </>
   )

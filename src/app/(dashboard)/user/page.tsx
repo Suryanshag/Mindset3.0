@@ -2,9 +2,7 @@ import { auth } from '@/lib/auth'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import ReflectionLanding from '@/components/dashboard/desktop/reflection-landing'
-import RailPortal from '@/components/dashboard/desktop/rail-portal'
-import HomeRail from '@/components/dashboard/desktop/home-rail'
+import BToday from '@/components/dashboard/desktop/b-today'
 import MobileHome from '@/components/mobile/home'
 import {
   getNextWorkshop,
@@ -15,13 +13,13 @@ import {
   getUserStats,
   getUserEngagementState,
   getLastWeekMoods,
+  getLastWeekEntryDates,
 } from '@/lib/queries/dashboard'
-import { getReflectionLandingData } from '@/lib/queries/reflection'
+import { getReflectionLandingData, getSpineTherapist } from '@/lib/queries/reflection'
 import { getCurrentUserBasics } from '@/lib/queries/current-user'
 import { endOfDayIST } from '@/lib/format-date'
 import { userHasOnboardingActivity } from '@/lib/queries/onboarding'
 import { getRecentSessionFollowups } from '@/lib/queries/post-session'
-import { CrisisBanner } from '@/components/shared/crisis-banner'
 
 export default async function UserHome({
   searchParams,
@@ -53,9 +51,26 @@ export default async function UserHome({
   const endOfToday = endOfDayIST(new Date())
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
-  // Fetch all data in parallel — mobile + desktop. weekMoods is new for
-  // the Phase 2 mobile home; realStats still feeds the desktop variant.
-  const [dbUser, workshop, unreadCount, pendingAssignments, upcomingSession, todaysMood, realStats, reflectionData, engagementState, weekMoods, upcomingWorkshops] = await Promise.all([
+  // Fetch all data in parallel — mobile + desktop. weekMoods + weekEntries
+  // feed the BToday week-strip; therapist + reflectionData feed BToday's
+  // hero card and "Quiet room" pointer. The previous-phase realStats and
+  // workshop computations are kept so the mobile MobileHome and any
+  // other ports still receive what they expect.
+  const [
+    dbUser,
+    workshop,
+    unreadCount,
+    pendingAssignments,
+    upcomingSession,
+    todaysMood,
+    realStats,
+    reflectionData,
+    engagementState,
+    weekMoods,
+    weekEntryDates,
+    upcomingWorkshops,
+    therapist,
+  ] = await Promise.all([
     userId ? getCurrentUserBasics(userId).catch(() => null) : Promise.resolve(null),
     getNextWorkshop(userId ?? undefined).catch(() => null),
     userId ? getUnreadNotificationCount(userId).catch(() => 0) : Promise.resolve(0),
@@ -92,7 +107,11 @@ export default async function UserHome({
     userId
       ? getLastWeekMoods(userId).catch(() => [] as { date: Date; mood: 1|2|3|4|5 | null }[])
       : Promise.resolve([] as { date: Date; mood: 1|2|3|4|5 | null }[]),
+    userId
+      ? getLastWeekEntryDates(userId).catch(() => new Set<string>())
+      : Promise.resolve(new Set<string>()),
     getUpcomingWorkshops(3).catch(() => [] as { id: string; title: string; host: string; when: string; coverImageUrl: string | null; priceLabel: string }[]),
+    userId ? getSpineTherapist(userId).catch(() => null) : Promise.resolve(null),
   ])
 
   // Phase 3 — recent SessionFollowups feed the HomeEngaged "Your last N
@@ -105,13 +124,10 @@ export default async function UserHome({
   // Derive user display info from real DB row
   const userName = dbUser?.name ?? session?.user?.name ?? 'User'
 
-  // Suppress the unused-var warning for the rest of the previously-used
-  // computations (workshop, realStats, etc.) — desktop still uses them
-  // via ReflectionLanding / HomeRail's internal data, and `workshop` +
-  // assignments-from-prisma are preserved for the engaged-state mobile
-  // home (pendingAssignments) and may return for desktop tweaks.
+  // Keep these computed for the mobile path / future consumers.
   void workshop
   void realStats
+  void reflectionData
 
   return (
     <>
@@ -145,22 +161,37 @@ export default async function UserHome({
         />
       </div>
 
-      {/* Desktop: Reflection landing (unchanged from Phase 1). */}
+      {/* Desktop — Phase 2 Direction B Today. Single wide column with
+          next-session centrepiece, week strip, open items, and a
+          reflection pointer at the bottom. Three sub-views switched by
+          engagementState (empty / partial / engaged). */}
       <div className="hidden lg:block">
-        <CrisisBanner variant="callout" className="mb-5" />
-        {reflectionData ? (
-          <>
-            <ReflectionLanding data={reflectionData} engagementState={engagementState} />
-            <RailPortal>
-              <HomeRail engagementState={engagementState} />
-            </RailPortal>
-          </>
-        ) : (
-          <div className="py-8">
-            <h1 className="text-[22px] font-medium text-text">Welcome to Mindset</h1>
-            <p className="text-[14px] text-text-muted mt-1">Your reflection space is loading...</p>
-          </div>
-        )}
+        <BToday
+          engagementState={engagementState}
+          userName={userName}
+          upcomingSession={
+            upcomingSession
+              ? {
+                  id: upcomingSession.id,
+                  date: new Date(upcomingSession.date),
+                  meetLink: upcomingSession.meetLink,
+                  doctor: { user: { name: upcomingSession.doctorName } },
+                }
+              : null
+          }
+          todaysMood={todaysMood?.mood ?? null}
+          weekMoods={weekMoods}
+          weekEntryDateSet={weekEntryDates}
+          pendingAssignments={pendingAssignments.map((a) => ({
+            id: a.id,
+            title: a.title,
+            type: a.type,
+            dueDate: a.dueDate,
+          }))}
+          upcomingWorkshops={upcomingWorkshops}
+          therapist={therapist}
+          entriesSinceLastSession={reflectionData?.entriesSinceLastSession ?? 0}
+        />
       </div>
     </>
   )

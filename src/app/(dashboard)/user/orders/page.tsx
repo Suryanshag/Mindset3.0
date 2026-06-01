@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { format } from 'date-fns'
+import BOrdersList from '@/components/dashboard/desktop/b-orders-list'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -63,7 +64,22 @@ function isWithin24Hours(date: string | Date): boolean {
   return Date.now() - new Date(date).getTime() < 24 * 60 * 60 * 1000
 }
 
+// Phase 3h — wrap the existing mobile-shaped client component under
+// `lg:hidden` and render the new BOrdersList for desktop.
 export default function OrdersPage() {
+  return (
+    <>
+      <div className="lg:hidden">
+        <MobileOrdersView />
+      </div>
+      <div className="hidden lg:block">
+        <BOrdersList />
+      </div>
+    </>
+  )
+}
+
+function MobileOrdersView() {
   const { data: authSession } = useSession()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)

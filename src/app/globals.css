@@ -72,9 +72,16 @@
     --color-border-strong: rgba(0,0,0,0.18);
     --color-purple-tint:  #E8E4F2;
     --color-tan-tint:     #F4E4D6;
+    /* Phase 0 — desktop B design additions. Paper backs slot inside
+       product/library image placeholders; ink is the design's filter-pill
+       background ("All" chip) and the high-contrast surface in the C
+       monogram. Sourced from the B + C direction token tables. */
+    --color-bg-paper:     #FBF7EE;
+    --color-ink:          #15140F;
 
     --font-heading: "var(--font-heading-var)", "Barlow Condensed", "Helvetica", "Arial", sans-serif;
     --font-serif: "var(--font-serif-var)", "Source Serif 4", "Georgia", "Times New Roman", serif;
+    --font-mono: "var(--font-mono-var)", "JetBrains Mono", ui-monospace, "SFMono-Regular", "Menlo", monospace;
 }
 
 /* RESET */
@@ -171,6 +178,8 @@ button { cursor: pointer; background: none; border: none; }
     --border-strong: var(--color-border-strong);
     --purple-tint: var(--color-purple-tint);
     --tan-tint: var(--color-tan-tint);
+    --bg-paper: var(--color-bg-paper);
+    --ink: var(--color-ink);
     --amber-soft: var(--amber-light);
     --on-dark: var(--color-cream);
     --on-dark-muted: rgba(255, 248, 235, 0.66);
@@ -6377,36 +6386,21 @@ body .wp-site-blocks .ws-card__img-wrap--poster {
 }
 
 /* ============================================
-   DESKTOP SHELL — Sprint 7
+   DESKTOP SHELL — Phase 1 (Direction B)
+   Single wide main column. No right rail; portaled content from
+   /user, /user/reflection/today, /user/sessions/[id] moved inline.
+   Spine width matches the design's 224px.
    ============================================ */
 .desktop-shell {
     display: grid;
-    grid-template-columns: 280px 1fr 320px;
+    grid-template-columns: 224px 1fr;
     min-height: 100vh;
-}
-
-/* Utility pages: no rail, always two columns */
-.desktop-shell.no-rail {
-    grid-template-columns: 280px 1fr;
-}
-.desktop-shell.no-rail .desktop-rail {
-    display: none;
-}
-
-/* 1024-1279: hide rail even on reflection routes */
-@media (max-width: 1279px) {
-    .desktop-shell.with-rail {
-        grid-template-columns: 280px 1fr;
-    }
-    .desktop-shell.with-rail .desktop-rail {
-        display: none;
-    }
 }
 
 /* Spine sidebar */
 .spine {
     background: var(--color-bg-spine);
-    width: 280px;
+    width: 224px;
 }
 
 /* Spine active item left accent */

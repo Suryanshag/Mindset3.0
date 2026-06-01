@@ -1,8 +1,8 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import NotificationList from '@/components/dashboard/notification-list'
 import MobileNotifications from '@/components/mobile/notifications'
+import BNotifications from '@/components/dashboard/desktop/b-notifications'
 
 export default async function NotificationsPage() {
   const session = await auth()
@@ -56,7 +56,7 @@ export default async function NotificationsPage() {
         />
       </div>
       <div className="hidden lg:block">
-        <NotificationList notifications={serialized} hasUnread={hasUnread} />
+        <BNotifications notifications={serialized} hasUnread={hasUnread} />
       </div>
     </>
   )

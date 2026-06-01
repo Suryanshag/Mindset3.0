@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import PageHeader from '@/components/dashboard/page-header'
 import { formatSessionDateLong } from '@/lib/format-date'
 import ReorderButton from './reorder-button'
+import BOrderDetail from '@/components/dashboard/desktop/b-order-detail'
 
 const PAYMENT_CHIP: Record<string, { label: string; cls: string }> = {
   PAID: { label: 'Paid', cls: 'bg-primary-tint text-primary' },
@@ -93,7 +94,9 @@ export default async function OrderDetailPage({
     : null
 
   return (
-    <div>
+    <>
+      {/* Mobile — preserved Phase 1 layout. */}
+      <div className="lg:hidden">
       <PageHeader title="Order details" back="/user/orders" />
 
       <div className="space-y-5 pt-4">
@@ -294,6 +297,48 @@ export default async function OrderDetailPage({
           </a>
         </div>
       </div>
-    </div>
+      </div>
+
+      {/* Desktop — Phase 3h Direction B port. */}
+      <div className="hidden lg:block">
+        <BOrderDetail
+          order={{
+            id: order.id,
+            orderNumber: order.orderNumber,
+            paymentStatus: order.paymentStatus,
+            shippingStatus: order.shippingStatus,
+            totalAmount: total,
+            deliveryCharge,
+            selectedCourierName: order.selectedCourierName,
+            awbCode: order.awbCode,
+            courierName: order.courierName,
+            trackingUrl: order.trackingUrl,
+            shiprocketOrderId: order.shiprocketOrderId,
+            createdAt: order.createdAt,
+            items: order.orderItems.map((oi) => ({
+              productId: oi.productId,
+              quantity: oi.quantity,
+              price: Number(oi.price),
+              product: {
+                name: oi.product.name,
+                image: oi.product.image,
+                isDigital: oi.product.isDigital,
+              },
+            })),
+          }}
+          shippingAddress={hasAddress ? addr : null}
+          payment={
+            order.payment
+              ? {
+                  amount: Number(order.payment.amount),
+                  status: order.payment.status,
+                  razorpayPaymentId: order.payment.razorpayPaymentId,
+                  createdAt: order.payment.createdAt,
+                }
+              : null
+          }
+        />
+      </div>
+    </>
   )
 }

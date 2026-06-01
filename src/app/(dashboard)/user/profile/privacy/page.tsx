@@ -1,5 +1,5 @@
-import StubPage from '@/components/dashboard/stub-page'
 import MobileSettingsPrivacy from '@/components/mobile/settings-privacy'
+import BProfilePrivacy from '@/components/dashboard/desktop/b-profile-privacy'
 
 export default function PrivacyPage() {
   return (
@@ -8,7 +8,7 @@ export default function PrivacyPage() {
         <MobileSettingsPrivacy />
       </div>
       <div className="hidden lg:block">
-        <StubPage title="Privacy & data" />
+        <BProfilePrivacy />
       </div>
     </>
   )

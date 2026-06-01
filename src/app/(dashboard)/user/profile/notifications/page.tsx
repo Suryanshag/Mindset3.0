@@ -1,5 +1,5 @@
-import StubPage from '@/components/dashboard/stub-page'
 import MobileSettingsNotifications from '@/components/mobile/settings-notifications'
+import BProfileNotifs from '@/components/dashboard/desktop/b-profile-notifs'
 
 export default function NotificationSettingsPage() {
   return (
@@ -8,7 +8,7 @@ export default function NotificationSettingsPage() {
         <MobileSettingsNotifications />
       </div>
       <div className="hidden lg:block">
-        <StubPage title="Notifications" />
+        <BProfileNotifs />
       </div>
     </>
   )

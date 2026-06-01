@@ -2,9 +2,10 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { getActiveDraft, getPendingJournalPrompt } from '@/lib/queries/journal'
 import JournalCompose from '@/components/dashboard/journal/journal-compose'
-import PageHeader from '@/components/dashboard/page-header'
 import MobileJournalCompose from '@/components/mobile/journal-compose'
 import { CrisisBanner } from '@/components/shared/crisis-banner'
+import BPageHeader from '@/components/dashboard/desktop/b-page-header'
+import { BCard, BChip } from '@/components/dashboard/desktop/b-atoms'
 
 export default async function NewJournalEntryPage() {
   const session = await auth()
@@ -14,6 +15,9 @@ export default async function NewJournalEntryPage() {
     getActiveDraft(session.user.id),
     getPendingJournalPrompt(session.user.id).catch(() => null),
   ])
+
+  const now = new Date()
+  const subLine = `${now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })} · IST · private to you`
 
   return (
     <>
@@ -27,28 +31,56 @@ export default async function NewJournalEntryPage() {
         />
       </div>
 
-      {/* Desktop — existing layout (Phase 1, unchanged). */}
+      {/* Desktop — Phase 3d Direction B port: BPageHeader chrome, optional
+          prompt rail above the existing JournalCompose surface. */}
       <div className="hidden lg:block">
-        <PageHeader title="New entry" back="/user/practice/journal" />
+        <BPageHeader
+          title="New entry."
+          breadcrumb="PRACTICE  /  JOURNAL  /  NEW"
+          sub={subLine}
+          ctas={['search']}
+        />
 
-        <div className="pt-3.5">
-          <JournalCompose
-            mode="create"
-            serverDraft={
-              draft
-                ? {
-                    id: draft.id,
-                    title: draft.title ?? '',
-                    body: draft.body,
-                    mood: draft.mood,
-                  }
-                : null
-            }
-          />
-          <div className="mt-6">
-            <CrisisBanner variant="inline" dismissible />
-          </div>
-        </div>
+        {pendingPrompt && (
+          <BCard
+            padding={16}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14,
+              background: 'var(--bg-paper)',
+              border: '1px dashed var(--border-strong)',
+            }}
+          >
+            <BChip kind="accent">PROMPT</BChip>
+            <p
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontSize: 15,
+                color: 'var(--text)',
+                flex: 1,
+              }}
+            >
+              &ldquo;{pendingPrompt.title}&rdquo;
+            </p>
+          </BCard>
+        )}
+
+        <JournalCompose
+          mode="create"
+          serverDraft={
+            draft
+              ? {
+                  id: draft.id,
+                  title: draft.title ?? '',
+                  body: draft.body,
+                  mood: draft.mood,
+                }
+              : null
+          }
+        />
+        <CrisisBanner variant="inline" dismissible />
       </div>
     </>
   )

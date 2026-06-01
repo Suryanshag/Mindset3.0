@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { getJournalEntry } from '@/lib/queries/journal'
 import JournalCompose from '@/components/dashboard/journal/journal-compose'
 import PageHeader from '@/components/dashboard/page-header'
+import BPageHeader from '@/components/dashboard/desktop/b-page-header'
 
 export default async function EditJournalEntryPage({
   params,
@@ -16,22 +17,51 @@ export default async function EditJournalEntryPage({
   const entry = await getJournalEntry(session.user.id, id)
   if (!entry) notFound()
 
-  return (
-    <div>
-      <PageHeader title="Edit entry" back={`/user/practice/journal/${id}`} />
+  const dateLabel = entry.entryDate.toLocaleDateString('en-IN', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  })
 
-      <div className="pt-3.5">
-        <JournalCompose
-          mode="edit"
-          entryId={id}
-          initial={{
-            title: entry.title ?? '',
-            body: entry.body,
-            mood: entry.mood,
-            entryDate: entry.entryDate.toISOString().split('T')[0],
-          }}
-        />
+  return (
+    <>
+      <div className="lg:hidden">
+        <PageHeader title="Edit entry" back={`/user/practice/journal/${id}`} />
+
+        <div className="pt-3.5">
+          <JournalCompose
+            mode="edit"
+            entryId={id}
+            initial={{
+              title: entry.title ?? '',
+              body: entry.body,
+              mood: entry.mood,
+              entryDate: entry.entryDate.toISOString().split('T')[0],
+            }}
+          />
+        </div>
       </div>
-    </div>
+
+      <div className="hidden lg:block">
+        <BPageHeader
+          title="Edit entry."
+          breadcrumb="PRACTICE  /  JOURNAL  /  EDIT"
+          sub={`${dateLabel} · IST · private to you`}
+          ctas={['search']}
+        />
+        <div className="pt-2">
+          <JournalCompose
+            mode="edit"
+            entryId={id}
+            initial={{
+              title: entry.title ?? '',
+              body: entry.body,
+              mood: entry.mood,
+              entryDate: entry.entryDate.toISOString().split('T')[0],
+            }}
+          />
+        </div>
+      </div>
+    </>
   )
 }

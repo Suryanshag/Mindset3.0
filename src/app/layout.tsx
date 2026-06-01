@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito, Barlow_Condensed, Source_Serif_4 } from "next/font/google";
+import { Nunito, Barlow_Condensed, Source_Serif_4, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 import AuthSessionProvider from "@/components/providers/session-provider";
@@ -29,6 +29,15 @@ const sourceSerif = Source_Serif_4({
   variable: "--font-serif-var",
   weight: ["400", "600"],
   style: ["normal", "italic"],
+});
+
+// Mono used by the B desktop design for timestamps, durations, key hints,
+// and small uppercase metadata captions. Loaded only at the weights the
+// design actually uses.
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono-var",
+  weight: ["400", "500"],
 });
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://mindset.example";
@@ -139,7 +148,7 @@ export default async function RootLayout({
         <JsonLd data={websiteLd} />
       </head>
       <body
-        className={`${nunito.variable} ${barlowCondensed.variable} ${sourceSerif.variable}`}
+        className={`${nunito.variable} ${barlowCondensed.variable} ${sourceSerif.variable} ${jetbrainsMono.variable}`}
         suppressHydrationWarning
       >
         <ServiceWorkerProvider />

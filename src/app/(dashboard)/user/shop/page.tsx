@@ -1,8 +1,8 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import ShopContent from '@/components/dashboard/shop/shop-content'
 import MobileShop from '@/components/mobile/shop'
+import BShop from '@/components/dashboard/desktop/b-shop'
 
 export default async function ShopPage() {
   const session = await auth()
@@ -41,9 +41,9 @@ export default async function ShopPage() {
         <MobileShop products={serialized} />
       </div>
 
-      {/* Desktop — existing ShopContent, unchanged. */}
+      {/* Desktop — Phase 3h Direction B port. */}
       <div className="hidden lg:block">
-        <ShopContent cartCount={cartCount} products={serialized} />
+        <BShop products={serialized} cartCount={cartCount} />
       </div>
     </>
   )

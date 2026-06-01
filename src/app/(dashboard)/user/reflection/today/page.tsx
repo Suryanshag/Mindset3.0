@@ -5,9 +5,7 @@ import { getActiveDraft, getPendingJournalPrompt } from '@/lib/queries/journal'
 import { getTodaysMoodCheckIn } from '@/lib/queries/dashboard'
 import { prisma } from '@/lib/prisma'
 import { WritingProvider } from '@/components/dashboard/desktop/writing-context'
-import WritingSurface from '@/components/dashboard/desktop/writing-surface'
-import WritingRail from '@/components/dashboard/desktop/writing-rail'
-import RailPortal from '@/components/dashboard/desktop/rail-portal'
+import BReflectionWriter from '@/components/dashboard/desktop/b-reflection-writer'
 import MobileRedirect from './mobile-redirect'
 
 export default async function TodayWritingPage() {
@@ -51,14 +49,16 @@ export default async function TodayWritingPage() {
         initialDraft={initialDraft}
         initialAssignmentId={initialAssignmentId}
       >
+        {/* Desktop — Phase 3e Direction B port. Single composer card
+            with mood + autosave + publish all in the same surface,
+            mirroring BJournalCompose. */}
         <div className="hidden lg:block">
-          <WritingSurface initialMood={todaysMood?.mood ?? null} />
+          <BReflectionWriter
+            initialMood={todaysMood?.mood ?? null}
+            pendingPrompt={pendingPrompt}
+            isEmptyUser={isEmptyUser}
+          />
         </div>
-        {!isEmptyUser && (
-          <RailPortal>
-            <WritingRail pendingPrompt={pendingPrompt} />
-          </RailPortal>
-        )}
       </WritingProvider>
     </>
   )

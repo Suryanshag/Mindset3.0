@@ -12,6 +12,7 @@ import RazorpayCheckout, {
 } from '@/components/payments/razorpay-checkout'
 import SlotsCalendar, { type CalendarSlot } from '@/components/ui/slots-calendar'
 import { formatSessionDateLong } from '@/lib/format-date'
+import BBook from '@/components/dashboard/desktop/b-book'
 
 // TODO: wire to specialization data — filter pills are visual scaffolding only.
 const FILTER_PILLS = [
@@ -38,7 +39,25 @@ interface Doctor {
   slots?: CalendarSlot[]
 }
 
+// Phase 3c — Mobile keeps the existing single-page responsive flow
+// untouched. Desktop renders the new B port via `<BBook />` below.
+// The two share no state — they live in their own viewport and only
+// one is interactive at a time, so the slight overhead of mounting both
+// is acceptable until Phase 4 cleanup.
 export default function BookSessionPage() {
+  return (
+    <>
+      <div className="lg:hidden">
+        <MobileBookSessionView />
+      </div>
+      <div className="hidden lg:block">
+        <BBook />
+      </div>
+    </>
+  )
+}
+
+function MobileBookSessionView() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { data: authSession } = useSession()
