@@ -94,7 +94,6 @@ export default function Spine({ therapist }: Props) {
             <Link
               key={href}
               href={href}
-              prefetch={false}
               className="flex items-center gap-2.5 rounded-lg transition-colors duration-150"
               style={{
                 padding: '9px 10px',
@@ -245,7 +244,6 @@ export default function Spine({ therapist }: Props) {
       {/* User pill — bottom */}
       <Link
         href="/user/profile"
-        prefetch={false}
         className="flex items-center gap-2.5 px-[18px] py-3"
         style={{ borderTop: '1px solid var(--border)' }}
       >

@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { BCard, BChip } from './b-atoms'
@@ -43,10 +44,9 @@ function isWithin24Hours(date: string | Date): boolean {
   return Date.now() - new Date(date).getTime() < 24 * 60 * 60 * 1000
 }
 
-export default function BOrdersList() {
+export default function BOrdersList({ orders }: { orders: Order[] }) {
+  const router = useRouter()
   const { data: authSession } = useSession()
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<Filter>('all')
   const [trackingOrderId, setTrackingOrderId] = useState<string | null>(null)
   const [resumingOrderId, setResumingOrderId] = useState<string | null>(null)
@@ -57,19 +57,6 @@ export default function BOrdersList() {
   } | null>(null)
   const [error, setError] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
-
-  function fetchOrders() {
-    fetch('/api/user/orders')
-      .then((r) => r.json())
-      .then((res) => {
-        if (res.success) setOrders(res.data)
-      })
-      .finally(() => setLoading(false))
-  }
-
-  useEffect(() => {
-    fetchOrders()
-  }, [])
 
   async function handleResumeOrder(orderId: string) {
     setResumingOrderId(orderId)
@@ -99,7 +86,7 @@ export default function BOrdersList() {
     setPaymentData(null)
     setSuccessMsg('Payment successful! Your order is being processed.')
     setTimeout(() => setSuccessMsg(''), 5000)
-    fetchOrders()
+    router.refresh()
   }
 
   function handlePaymentDismiss() {
@@ -134,11 +121,7 @@ export default function BOrdersList() {
           { label: 'ORDERS' },
         ]}
         back="/user/shop"
-        sub={
-          loading
-            ? 'Loading…'
-            : `${orders.length} placed · ${counts['on-the-way']} on the way`
-        }
+        sub={`${orders.length} placed · ${counts['on-the-way']} on the way`}
         ctas={['search']}
       />
 
@@ -182,11 +165,7 @@ export default function BOrdersList() {
         </p>
       )}
 
-      {loading ? (
-        <BCard>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Loading your orders…</p>
-        </BCard>
-      ) : filtered.length === 0 ? (
+      {filtered.length === 0 ? (
         <BCard style={{ textAlign: 'center', padding: '48px 24px' }}>
           <p
             style={{
