@@ -113,6 +113,14 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "Mindset",
   },
+  // Next 15+ emits the unified `mobile-web-app-capable` meta from
+  // `appleWebApp.capable`, but iOS Safari still only recognises the
+  // legacy Apple-prefixed name. Without this, Safari refuses to treat
+  // the page as PWA-installable: "Add to Home Screen" creates a plain
+  // bookmark that opens with full Safari chrome instead of standalone.
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+  },
   category: "health",
 };
 
