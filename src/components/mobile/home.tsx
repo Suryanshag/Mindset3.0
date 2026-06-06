@@ -136,7 +136,14 @@ type SharedHomeProps = {
   workshops: WorkshopTeaserItem[]
 }
 
-function HomeEmpty({ name }: SharedHomeProps) {
+function HomeEmpty({
+  name,
+  unreadCount,
+  todaysMood,
+  onMoodOpen,
+  weekMoods,
+  workshops,
+}: SharedHomeProps) {
   return (
     <div
       className="screen-scroll"
@@ -147,75 +154,99 @@ function HomeEmpty({ name }: SharedHomeProps) {
         paddingBottom: 110,
       }}
     >
-      <MobileHeader name={name} showBell={false} />
+      <MobileHeader name={name} unreadCount={unreadCount} />
 
-      <section style={{ padding: '12px 20px 0', animation: 'fadeUp .6s both' }}>
-        <p
-          className="ms-serif"
-          style={{
-            fontSize: 17,
-            color: 'var(--text-muted)',
-            lineHeight: 1.55,
-            margin: 0,
-          }}
-        >
-          Mindset is a space for the work you do between sessions — and a place
-          to look back on it as your journey unfolds.
-        </p>
+      <section style={{ padding: '16px 20px 0' }}>
+        <MoodHero mood={todaysMood} onMoodOpen={onMoodOpen} />
       </section>
 
-      <section style={{ padding: '32px 20px 0' }}>
+      <section style={{ padding: '24px 20px 0' }}>
+        <SectionHead title="First steps" />
+        <Card padding={0}>
+          <NextStepLink
+            icon={<IconHeart size={16} />}
+            label="Find a therapist"
+            href="/user/sessions/book"
+          />
+          <NextStepLink
+            icon={<IconPen size={16} />}
+            label="Write your first entry"
+            href="/user/practice/journal/new"
+          />
+          <NextStepLink
+            icon={<IconBook size={16} />}
+            label="Browse workshops"
+            href="/user/discover/workshops"
+            last
+          />
+        </Card>
+      </section>
+
+      {/* No "Your next session" — empty-state users have none yet. */}
+
+      <section style={{ padding: '24px 20px 0' }}>
+        <SectionHead title="For today" />
         <div
           style={{
-            fontSize: 11,
-            fontWeight: 800,
-            letterSpacing: '0.16em',
-            color: 'var(--text-muted)',
-            textTransform: 'uppercase',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr 1fr',
+            gap: 10,
           }}
         >
-          First steps
-        </div>
-        <div style={{ display: 'grid', gap: 12, marginTop: 14 }}>
-          <FirstStepCard
-            accent="var(--accent)"
-            primary
-            href="/user/sessions/book"
-            title="Find a therapist"
-            sub="Browse our therapists and book your first session."
-            delay={120}
+          <QuickTile
+            icon={<IconWind size={20} />}
+            label="Breathe"
+            sub="3 min"
+            bg="var(--soft-blue)"
+            fg="var(--navy)"
+            href="/user/practice/breathe"
           />
-          <FirstStepCard
-            accent="var(--primary)"
+          <QuickTile
+            icon={<IconPen size={20} />}
+            label="Journal"
+            sub="Today"
+            bg="var(--accent-tint)"
+            fg="var(--accent-deep)"
             href="/user/practice/journal/new"
-            title="Write your first entry"
-            sub="Journal anything you'd like to remember or work through."
-            delay={220}
           />
-          <FirstStepCard
-            accent="var(--navy)"
-            href="/user/discover/workshops"
-            title="Browse workshops"
-            sub="Free and paid workshops on different aspects of wellness."
-            delay={320}
+          <QuickTile
+            icon={<IconHeart size={20} />}
+            label="SOS"
+            sub="Talk"
+            bg="var(--soft-pink)"
+            fg="#7A1F12"
+            href="/user/sos"
           />
         </div>
       </section>
 
-      <section style={{ padding: '32px 20px 0' }}>
-        <Card padding={18} bg="var(--bg-cream)" radius={22}>
+      <section style={{ padding: '24px 20px 0' }}>
+        <ReflectionOfDay />
+      </section>
+
+      <section style={{ padding: '24px 20px 0' }}>
+        <SectionHead
+          title="Your week"
+          action="See all"
+          onAction={() => (window.location.href = '/user/practice')}
+        />
+        <Card padding={18}>
+          <MoodWeek weekMoods={weekMoods} />
           <div
             className="ms-serif"
             style={{
-              fontSize: 15,
-              lineHeight: 1.55,
-              color: 'var(--text)',
+              fontSize: 13,
+              color: 'var(--text-muted)',
+              marginTop: 14,
+              textAlign: 'center',
             }}
           >
-            “Small steps, kept close. There’s no rush — you’re already here.”
+            Your week will fill in as you check in.
           </div>
         </Card>
       </section>
+
+      <WorkshopTeaser workshops={workshops} />
     </div>
   )
 }
