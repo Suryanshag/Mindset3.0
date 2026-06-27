@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/session'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
@@ -27,7 +27,7 @@ export default async function UserHome({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const params = await searchParams
-  const session = await auth()
+  const session = await getSession()
   const userId = session?.user?.id
 
   // First-time onboarding gate (Phase 1 sub-phase 1.3) — only on /user, per
@@ -70,6 +70,7 @@ export default async function UserHome({
     weekEntryDates,
     upcomingWorkshops,
     therapist,
+    recentFollowups,
   ] = await Promise.all([
     userId ? getCurrentUserBasics(userId).catch(() => null) : Promise.resolve(null),
     getNextWorkshop(userId ?? undefined).catch(() => null),
@@ -112,14 +113,14 @@ export default async function UserHome({
       : Promise.resolve(new Set<string>()),
     getUpcomingWorkshops(3).catch(() => [] as { id: string; title: string; host: string; when: string; coverImageUrl: string | null; priceLabel: string }[]),
     userId ? getSpineTherapist(userId).catch(() => null) : Promise.resolve(null),
+    // Phase 3 — recent SessionFollowups feed the HomeEngaged "Your last N
+    // sessions" panel. Empty array means HomeEngaged renders its fallback
+    // "A look back" copy card. Folded into this batch (was a separate
+    // serial await) so it no longer costs an extra round-trip per render.
+    userId
+      ? getRecentSessionFollowups(userId, 3).catch(() => [])
+      : Promise.resolve([] as Awaited<ReturnType<typeof getRecentSessionFollowups>>),
   ])
-
-  // Phase 3 — recent SessionFollowups feed the HomeEngaged "Your last N
-  // sessions" panel. Empty array means HomeEngaged renders its fallback
-  // "A look back" copy card.
-  const recentFollowups = userId
-    ? await getRecentSessionFollowups(userId, 3).catch(() => [])
-    : []
 
   // Derive user display info from real DB row
   const userName = dbUser?.name ?? session?.user?.name ?? 'User'

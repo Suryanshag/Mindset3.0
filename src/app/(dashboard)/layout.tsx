@@ -1,22 +1,16 @@
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/session'
 import { redirect } from 'next/navigation'
-import NavigationLoader from '@/components/navigation-loader'
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const session = await auth()
+  const session = await getSession()
 
   if (!session?.user) {
     redirect('/login')
   }
 
-  return (
-    <>
-      <NavigationLoader />
-      {children}
-    </>
-  )
+  return <>{children}</>
 }

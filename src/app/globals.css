@@ -6691,15 +6691,6 @@ body .wp-site-blocks .block-blog-hero__shape {
     0%   { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
 }
-/* Mobile-Polish-3: in-app navigation loader for the global
-   NavigationLoader client component (src/components/navigation-
-   loader.tsx). Faster cadence + longer trailing exit so the bar
-   reads as crisp activity rather than a slow drag — fires for every
-   client-side path change. */
-@keyframes loadingBar {
-    0%   { transform: translateX(-100%); }
-    100% { transform: translateX(250%); }
-}
 @keyframes ms-slide-in {
     from { opacity: 0; transform: translateX(16px); }
     to   { opacity: 1; transform: translateX(0); }

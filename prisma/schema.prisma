@@ -201,6 +201,10 @@ model Session {
   payment  Payment?
   earning  DoctorEarning?
   followup SessionFollowup?
+
+  // Hot path: /user home + spine + reflection all filter by
+  // (userId, date, status). Without this every such query was a seq scan.
+  @@index([userId, date, status])
 }
 
 enum SessionStatus {
@@ -242,7 +246,10 @@ model Assignment {
   user      User                 @relation(fields: [userId], references: [id])
   responses AssignmentResponse[]
 
-  @@index([userId, status])
+  // dueDate added: the /user home "due today" filter sorts/filters on it.
+  // The composite still serves the (userId, status) lookups the old index
+  // covered, so it fully replaces it.
+  @@index([userId, status, dueDate])
   @@index([doctorId])
 }
 

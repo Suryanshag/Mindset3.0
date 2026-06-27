@@ -85,8 +85,11 @@ export const getSpineTherapist = cache(async (userId: string) => {
 
 export type SpineTherapist = NonNullable<Awaited<ReturnType<typeof getSpineTherapist>>>
 
-/** Data for the ReflectionLanding component (desktop /user). */
-export async function getReflectionLandingData(userId: string) {
+/** Data for the ReflectionLanding component (desktop /user).
+ *  Cached per-request: the /user home page calls this directly and it also
+ *  fans out 6-8 queries, so memoizing avoids re-running the whole batch if
+ *  another component in the same render tree needs it. */
+export const getReflectionLandingData = cache(async (userId: string) => {
   const now = new Date()
 
   // First batch: 6 independent queries. user goes through the cached
@@ -226,7 +229,7 @@ export async function getReflectionLandingData(userId: string) {
     totalPendingCount: totalPending,
     upcomingWorkshop: registeredWorkshops[0]?.workshop ?? null,
   }
-}
+})
 
 export type ReflectionLandingData = Awaited<ReturnType<typeof getReflectionLandingData>>
 

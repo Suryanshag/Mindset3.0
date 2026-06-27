@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/session'
 import { redirect } from 'next/navigation'
 import MobileShell from '@/components/dashboard/mobile-shell'
 import DesktopShell from '@/components/dashboard/desktop-shell'
@@ -17,7 +17,7 @@ export default async function UserDashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const session = await auth()
+  const session = await getSession()
 
   if (!session?.user) {
     redirect('/login')

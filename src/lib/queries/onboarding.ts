@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { prisma } from '@/lib/prisma'
 
 /**
@@ -13,7 +14,7 @@ import { prisma } from '@/lib/prisma'
  * Returning users on a fresh device — cookie gone, but DB shows activity —
  * will not see the tutorial. New signups with no activity yet will.
  */
-export async function userHasOnboardingActivity(userId: string): Promise<boolean> {
+export const userHasOnboardingActivity = cache(async (userId: string): Promise<boolean> => {
   // Parallel counts; each is a cheap indexed lookup. We bail on the first
   // hit using Promise.race-style — but Prisma doesn't expose that cleanly;
   // running all three in parallel is fast enough on Neon.
@@ -30,4 +31,4 @@ export async function userHasOnboardingActivity(userId: string): Promise<boolean
   ])
 
   return sessionsCompleted > 0 || journalCount > 0 || moodCount > 0
-}
+})

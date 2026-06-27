@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+# downloaded env dumps (e.g. `vercel env pull` output) — contain live secrets
+env.download
+*.download
 
 # vercel
 .vercel
